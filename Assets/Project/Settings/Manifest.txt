@@ -1,0 +1,19 @@
+Project Final Gift 2026 – Manifesto
+
+Project Final Gift 2026 is a top-down pixel art hack & slash action-adventure mini game that reinterprets the spirit of classic games through a short, focused, and modern experience.
+
+The game takes place within an elementary school campus that appears ordinary on the surface, yet hides dark and unexpected secrets. The player controls Ali, a student who must enter three hidden dungeons scattered across the campus and retrieve three talismans. Each dungeon is built around simple but fluid combat, exploration, and spatial awareness.
+
+Throughout this journey, Ali encounters jelly-like enemies that have emerged from the depths of the school. The tone intentionally balances innocence and threat—childlike spaces contrasted with an underlying sense of danger.
+
+Once all three talismans are collected, the final dungeon at the heart of the campus is unlocked. There, Ali uncovers the truth:
+the school principal is the mastermind behind the chaos—the evil jelly boss.
+
+The game reaches its climax with a single boss fight, after which the story concludes.
+
+Project Final Gift 2026 offers a slightly over one hour long gameplay experience, with a clear beginning and end. It avoids unnecessary systems and artificial length, focusing instead on delivering a complete and self-contained adventure reminiscent of classic games.
+
+The project draws inspiration from the SNES-era top-down design philosophy, particularly titles such as The Legend of Zelda: A Link to the Past and Final Fantasy IV, as well as other games of that period. Its goal is not to build a massive world, but to create a small, meaningful, and cohesive game.
+
+Project Final Gift 2026 is not a nostalgia exercise.
+It is a personal and intentional mini adventure, told through the language of the past.
