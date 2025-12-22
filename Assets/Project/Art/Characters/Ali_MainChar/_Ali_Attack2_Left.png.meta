@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 72fe0f024bdbc054aade47dbb6d189c3
+guid: a21858dfb24d8a840a4a700304b308e1
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -136,7 +136,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: _Ali_Attack_Down_0
+      name: _Ali_Attack2_Left_0
       rect:
         serializedVersion: 2
         x: 0
@@ -150,14 +150,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1cb2faf2f4c16ba448cdba7c923d08b9
-      internalID: 759565615
+      spriteID: ea8355c59ec7a1542aff4efffceb883a
+      internalID: -2029411950
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: _Ali_Attack_Down_1
+      name: _Ali_Attack2_Left_1
       rect:
         serializedVersion: 2
         x: 32
@@ -171,14 +171,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 92ddbe64aa3e6a44ca83f041483734a6
-      internalID: 1965243287
+      spriteID: 39be1e02cff62a84e970332c23bc1980
+      internalID: 1981801199
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: _Ali_Attack_Down_2
+      name: _Ali_Attack2_Left_2
       rect:
         serializedVersion: 2
         x: 64
@@ -192,14 +192,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1530f7a7e213d6d4295a763dfe28060d
-      internalID: 1689594926
+      spriteID: 1b791498827cf744caba7db3eb92d3cf
+      internalID: -299831705
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: _Ali_Attack_Down_3
+      name: _Ali_Attack2_Left_3
       rect:
         serializedVersion: 2
         x: 96
@@ -213,14 +213,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 350359611383ed94fb9c4af3261e31f1
-      internalID: -729533345
+      spriteID: 3a2bd10782cc267418e9302a41103e63
+      internalID: -1391372370
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: _Ali_Attack_Down_4
+      name: _Ali_Attack2_Left_4
       rect:
         serializedVersion: 2
         x: 128
@@ -234,14 +234,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e3c0f0ad41a42e44b9c82c6329c7f47e
-      internalID: 1422559695
+      spriteID: b39cee011c784f847a98f103f63cd26d
+      internalID: -2004534558
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: _Ali_Attack_Down_5
+      name: _Ali_Attack2_Left_5
       rect:
         serializedVersion: 2
         x: 160
@@ -255,8 +255,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e2c1adb6998c2b147b8f8f7ba7cc5573
-      internalID: -1575656610
+      spriteID: a9ba0c3254e8a7044b3f715775785a6c
+      internalID: 723937220
       vertices: []
       indices: 
       edges: []
@@ -272,12 +272,12 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      _Ali_Attack_Down_0: 759565615
-      _Ali_Attack_Down_1: 1965243287
-      _Ali_Attack_Down_2: 1689594926
-      _Ali_Attack_Down_3: -729533345
-      _Ali_Attack_Down_4: 1422559695
-      _Ali_Attack_Down_5: -1575656610
+      _Ali_Attack2_Left_0: -2029411950
+      _Ali_Attack2_Left_1: 1981801199
+      _Ali_Attack2_Left_2: -299831705
+      _Ali_Attack2_Left_3: -1391372370
+      _Ali_Attack2_Left_4: -2004534558
+      _Ali_Attack2_Left_5: 723937220
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
