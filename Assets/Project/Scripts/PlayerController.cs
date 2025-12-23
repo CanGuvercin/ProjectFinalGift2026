@@ -131,27 +131,27 @@ public class PlayerController : MonoBehaviour
     // ================= INTERACT =================
 
     private void TryInteract()
-{
-    if (isInteracting) return;
-    if (Time.time - lastInteractTime < interactCooldown) return;
+    {
+        if (isInteracting) return;
+        if (Time.time - lastInteractTime < interactCooldown) return;
 
-    isInteracting = true;
-    lastInteractTime = Time.time;
+        isInteracting = true;
+        lastInteractTime = Time.time;
 
-    rb.velocity = Vector2.zero;
+        rb.velocity = Vector2.zero;
 
-    animator.SetFloat("moveX", lastMoveDir.x);
-    animator.SetFloat("moveY", lastMoveDir.y);
-    animator.SetTrigger("Interact");
-    
-    // TEMPORARY DEBUG - Remove after fixing animation event
-    Debug.Log("Interact started");
-    Invoke(nameof(EndInteract), 1f); // Force unlock after 1 second
-}
+        animator.SetFloat("moveX", lastMoveDir.x);
+        animator.SetFloat("moveY", lastMoveDir.y);
+        animator.SetTrigger("Interact");
 
-public void EndInteract()
-{
-    Debug.Log("EndInteract called"); // Check if this appears in console
-    isInteracting = false;
-}
+        CancelInvoke(nameof(EndInteract));
+        Invoke(nameof(EndInteract), 1f); // fallback only
+    }
+
+    public void EndInteract()
+    {
+        CancelInvoke(nameof(EndInteract));
+        isInteracting = false;
+    }
+
 }
