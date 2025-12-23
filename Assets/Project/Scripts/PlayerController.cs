@@ -5,10 +5,19 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
+    [Header("Movement")]
     [SerializeField] private float moveSpeed = 3.5f;
+
+    [Header("Combat")]
     [SerializeField] private float attackCooldown = 0.3f;
 
+    [Header("Interaction")]
+    [SerializeField] private float interactCooldown = 0.2f;
+
     private float lastAttackTime;
+    private float lastInteractTime;
+
+    private bool isInteracting;
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -17,7 +26,7 @@ public class PlayerController : MonoBehaviour
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
 
-    // Last direction memory
+    // Last direction memory (for idle / attack / interact direction)
     private Vector2 lastMoveDir = Vector2.down;
 
     private void Awake()
@@ -48,8 +57,17 @@ public class PlayerController : MonoBehaviour
         Move();
     }
 
+    // ================= INPUT =================
+
     private void ReadInput()
     {
+        // HARD LOCK during interaction
+        if (isInteracting)
+        {
+            moveInput = Vector2.zero;
+            return;
+        }
+
         moveInput = inputActions.Player.Move.ReadValue<Vector2>();
 
         if (moveInput != Vector2.zero)
@@ -61,12 +79,27 @@ public class PlayerController : MonoBehaviour
         {
             TryAttack();
         }
+
+        if (inputActions.Player.Interact.triggered)
+        {
+            TryInteract();
+        }
     }
+
+    // ================= MOVEMENT =================
 
     private void Move()
     {
+        if (isInteracting)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
+
         rb.velocity = moveInput.normalized * moveSpeed;
     }
+
+    // ================= ANIMATOR =================
 
     private void UpdateAnimator()
     {
@@ -79,17 +112,46 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("moveY", dir.y);
     }
 
+    // ================= ATTACK =================
+
     private void TryAttack()
     {
-        if (Time.time - lastAttackTime < attackCooldown)
-            return;
+        if (isInteracting) return;
+        if (Time.time - lastAttackTime < attackCooldown) return;
 
         lastAttackTime = Time.time;
 
-        // Attack yönünü son bakılan yöne kilitle
+        rb.velocity = Vector2.zero;
+
         animator.SetFloat("moveX", lastMoveDir.x);
         animator.SetFloat("moveY", lastMoveDir.y);
-
         animator.SetTrigger("attack");
     }
+
+    // ================= INTERACT =================
+
+    private void TryInteract()
+{
+    if (isInteracting) return;
+    if (Time.time - lastInteractTime < interactCooldown) return;
+
+    isInteracting = true;
+    lastInteractTime = Time.time;
+
+    rb.velocity = Vector2.zero;
+
+    animator.SetFloat("moveX", lastMoveDir.x);
+    animator.SetFloat("moveY", lastMoveDir.y);
+    animator.SetTrigger("Interact");
+    
+    // TEMPORARY DEBUG - Remove after fixing animation event
+    Debug.Log("Interact started");
+    Invoke(nameof(EndInteract), 1f); // Force unlock after 1 second
+}
+
+public void EndInteract()
+{
+    Debug.Log("EndInteract called"); // Check if this appears in console
+    isInteracting = false;
+}
 }
