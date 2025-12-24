@@ -7,6 +7,18 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
 
+    [Header("Combat")]
+    [SerializeField] private Collider2D hitBoxCollider;
+
+
+    [Header("For Player PosRef")]
+    [SerializeField] private Transform attackPoint;
+    [SerializeField] private Vector2 upOffset = new Vector2(0f, 0.5f);
+    [SerializeField] private Vector2 downOffset = new Vector2(0f, -0.5f);
+    [SerializeField] private Vector2 leftOffset = new Vector2(-0.5f, 0f);
+    [SerializeField] private Vector2 rightOffset = new Vector2(0.5f, 0f);
+
+
     [Header("SFX Settings")]
     [SerializeField] private AudioSource sfxSource;
     // Core sounds
@@ -56,6 +68,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         inputActions = new PlayerInputActions();
+        hitBoxCollider.enabled = false;
     }
 
     private void OnEnable()
@@ -138,6 +151,39 @@ public class PlayerController : MonoBehaviour
         PlaySfx(swordSwing);
     }
 
+    public void PlaySwordHitSfx()
+    {
+        PlaySfx(swordHit, 0.98f, 1.02f);
+    }
+
+    public void PlayDashSfx()
+    {
+        PlaySfx(dashSfx, 0.9f, 1.1f);
+    }
+
+    public void PlayWalkSfx()
+    {
+        if (moveInput.sqrMagnitude < 0.01f) return;
+
+        PlaySfx(walkSfx, 0.9f, 1.05f);
+    }
+
+    public void PlayHurtSfx()
+    {
+        PlaySfx(hurtSfx, 0.95f, 1.05f);
+    }
+
+    // ================ HITBOX / COMBAT ZONE ===================
+
+    public void EnableHitBox()
+{
+    hitBoxCollider.enabled = true;
+}
+
+public void DisableHitBox()
+{
+    hitBoxCollider.enabled = false;
+}
 
 
     // ================= ANIMATOR =================
@@ -155,7 +201,6 @@ public class PlayerController : MonoBehaviour
 
         // This MUST exist in Animator as a bool parameter
         animator.SetBool("isDashing", isDashing);
-        Debug.Log("isDashing: " + isDashing);
     }
 
     // ================= DASH =================
@@ -208,8 +253,24 @@ public class PlayerController : MonoBehaviour
 
         animator.SetFloat("moveX", lastMoveDir.x);
         animator.SetFloat("moveY", lastMoveDir.y);
+
+        UpdateAttackPointPosition();
+
         animator.SetTrigger("attack");
     }
+
+    private void UpdateAttackPointPosition()
+    {
+        if (lastMoveDir == Vector2.up)
+            attackPoint.localPosition = upOffset;
+        else if (lastMoveDir == Vector2.down)
+            attackPoint.localPosition = downOffset;
+        else if (lastMoveDir == Vector2.left)
+            attackPoint.localPosition = leftOffset;
+        else if (lastMoveDir == Vector2.right)
+            attackPoint.localPosition = rightOffset;
+    }
+
 
     // ================= INTERACT =================
 
