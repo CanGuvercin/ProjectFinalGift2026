@@ -7,6 +7,13 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
 
+
+    [Header("Damage")]
+    [SerializeField] private int maxHealth = 100;
+    [SerializeField] private int currentHealth;
+    [SerializeField] private float invulnerableTime = 0.6f;
+    [SerializeField] private float knockbackForce = 3f;
+
     [Header("Combat")]
     [SerializeField] private Collider2D hitBoxCollider;
 
@@ -44,6 +51,9 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Fallback unlock time if animation event is not set yet.")]
     [SerializeField] private float interactFallbackTime = 1f;
 
+    private bool isInvulnerable;
+
+
     private bool isDashing;
     private float lastDashTime;
     private Coroutine dashCo;
@@ -69,6 +79,8 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         inputActions = new PlayerInputActions();
         hitBoxCollider.enabled = false;
+        currentHealth = maxHealth;
+
     }
 
     private void OnEnable()
@@ -91,6 +103,52 @@ public class PlayerController : MonoBehaviour
     {
         Move();
     }
+
+    //=========================== DAMAGE SYSYEM ==========================
+
+    public void TakeDamage(int damage, Vector2 damageSourcePos)
+    {
+        if (isInvulnerable) return;
+
+        currentHealth -= damage;
+        if (currentHealth < 0) currentHealth = 0;
+
+        // Direction for damage animation
+        Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
+        lastMoveDir = hitDir;
+
+        animator.SetFloat("moveX", hitDir.x);
+        animator.SetFloat("moveY", hitDir.y);
+
+        animator.SetBool("isDamaged", true);
+
+        // SFX
+        PlayHurtSfx();
+
+        // Knockback
+        rb.velocity = Vector2.zero;
+        rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+
+        StartCoroutine(DamageRoutine());
+    }
+
+    private IEnumerator DamageRoutine()
+    {
+        isInvulnerable = true;
+
+        yield return new WaitForSeconds(0.1f);
+        animator.SetBool("isDamaged", false);
+
+        yield return new WaitForSeconds(invulnerableTime);
+        isInvulnerable = false;
+    }
+
+    public void TakeDamage()
+{
+    animator.SetTrigger("Damage");
+    PlayHurtSfx();
+}
+
 
     // ================= INPUT =================
 
@@ -176,14 +234,14 @@ public class PlayerController : MonoBehaviour
     // ================ HITBOX / COMBAT ZONE ===================
 
     public void EnableHitBox()
-{
-    hitBoxCollider.enabled = true;
-}
+    {
+        hitBoxCollider.enabled = true;
+    }
 
-public void DisableHitBox()
-{
-    hitBoxCollider.enabled = false;
-}
+    public void DisableHitBox()
+    {
+        hitBoxCollider.enabled = false;
+    }
 
 
     // ================= ANIMATOR =================
