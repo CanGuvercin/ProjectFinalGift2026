@@ -6,6 +6,16 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
+
+    [Header("SFX Settings")]
+    [SerializeField] private AudioSource sfxSource;
+    // Core sounds
+    [SerializeField] private AudioClip swordSwing;
+    [SerializeField] private AudioClip swordHit;
+    [SerializeField] private AudioClip dashSfx;
+    [SerializeField] private AudioClip walkSfx;
+    [SerializeField] private AudioClip hurtSfx;
+
     [Header("Dash")]
     [SerializeField] private float dashSpeed = 10f;
     [SerializeField] private float dashDuration = 0.12f;
@@ -115,6 +125,21 @@ public class PlayerController : MonoBehaviour
         rb.velocity = moveInput.normalized * moveSpeed;
     }
 
+    //=========================AUDIO AND SFX =========================
+
+    private void PlaySfx(AudioClip clip, float pitchMin = 0.95f, float pitchMax = 1.05f)
+    {
+        sfxSource.pitch = Random.Range(pitchMin, pitchMax);
+        sfxSource.PlayOneShot(clip);
+    }
+
+    public void PlaySwordSwingSfx()
+    {
+        PlaySfx(swordSwing);
+    }
+
+
+
     // ================= ANIMATOR =================
 
     private void UpdateAnimator()
@@ -135,40 +160,40 @@ public class PlayerController : MonoBehaviour
 
     // ================= DASH =================
 
-  private void TryDash()
-{
-    if (isInteracting || isDashing) return;
-    if (Time.time - lastDashTime < dashCooldown) return;
-
-    lastDashTime = Time.time;
-
-    Vector2 dir = (moveInput != Vector2.zero) ? moveInput.normalized : lastMoveDir;
-
-    animator.SetFloat("moveX", dir.x);
-    animator.SetFloat("moveY", dir.y);
-
-    isDashing = true;
-    animator.SetBool("isDashing", true);
-
-    StartCoroutine(DashRoutine(dir));
-}
-
-
-  private System.Collections.IEnumerator DashRoutine(Vector2 dir)
-{
-    float t = 0f;
-    while (t < dashDuration)
+    private void TryDash()
     {
-        rb.velocity = dir * dashSpeed;
-        t += Time.deltaTime;
-        yield return null;
+        if (isInteracting || isDashing) return;
+        if (Time.time - lastDashTime < dashCooldown) return;
+
+        lastDashTime = Time.time;
+
+        Vector2 dir = (moveInput != Vector2.zero) ? moveInput.normalized : lastMoveDir;
+
+        animator.SetFloat("moveX", dir.x);
+        animator.SetFloat("moveY", dir.y);
+
+        isDashing = true;
+        animator.SetBool("isDashing", true);
+
+        StartCoroutine(DashRoutine(dir));
     }
 
-    rb.velocity = Vector2.zero;
 
-    isDashing = false;
-    animator.SetBool("isDashing", false);
-}
+    private System.Collections.IEnumerator DashRoutine(Vector2 dir)
+    {
+        float t = 0f;
+        while (t < dashDuration)
+        {
+            rb.velocity = dir * dashSpeed;
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        rb.velocity = Vector2.zero;
+
+        isDashing = false;
+        animator.SetBool("isDashing", false);
+    }
 
 
     // ================= ATTACK =================
