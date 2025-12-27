@@ -12,8 +12,7 @@ public class SlimeProjectile : MonoBehaviour
     
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("PROJECTILE HIT: " + other.name);
-        // Player'a çarp
+                // Player'a çarp
         if (other.CompareTag("Player"))
         {
             PlayerController player = other.GetComponent<PlayerController>();
