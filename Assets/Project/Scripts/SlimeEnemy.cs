@@ -37,15 +37,13 @@ public class SlimeEnemy : MonoBehaviour
     [SerializeField] private float shootCooldown = 2f;
     [SerializeField] private float projectileSpeed = 5f;
 
-    [Header("Patrol Points")]
-    [SerializeField] private Transform patrolPointA;
-    [SerializeField] private Transform patrolPointB;
-    [SerializeField] private float patrolSpeed = 0.8f;
+    [Header("Patrol Settings")]
     [SerializeField] private bool enablePatrol = true;
+    [SerializeField] private Vector2 patrolPointA = new Vector2(0, 2);
+    [SerializeField] private Vector2 patrolPointB = new Vector2(0, -2);
+    [SerializeField] private float patrolSpeed = 0.8f;
     [SerializeField] private float patrolWaitTime = 1.5f;
-    [SerializeField] private float patrolPointThreshold = 0.2f;
-
-
+    [SerializeField] private float patrolPointThreshold = 0.3f;
 
     [Header("Collision Detection")]
     [SerializeField] private LayerMask obstacleLayer;
@@ -53,17 +51,16 @@ public class SlimeEnemy : MonoBehaviour
     [Header("Invulnerability")]
     [SerializeField] private float hitInvulnerableTime = 0.5f;
 
-
     private Transform player;
     private Rigidbody2D rb;
     private Animator animator;
     private CircleCollider2D circleCollider;
 
-    private Transform currentPatrolTarget;
+    // Patrol variables
+    private Vector2 spawnPosition;
+    private Vector2 currentPatrolTarget;
     private bool isWaitingAtPatrolPoint;
-
-    private Coroutine patrolWaitRoutine;
-
+    private bool isGoingToA = true;
 
     private float lastShootTime;
     private bool isShooting;
@@ -71,8 +68,6 @@ public class SlimeEnemy : MonoBehaviour
     private bool isInvulnerable;
     private bool isKnockedBack;
     private bool isDead;
-
-
 
     private enum SlimeState { Idle, Patrolling, Shooting, Charging }
     private SlimeState currentState = SlimeState.Idle;
@@ -86,20 +81,17 @@ public class SlimeEnemy : MonoBehaviour
 
         currentHealth = maxHealth;
 
-        // Rigidbody ayarları
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.gravityScale = 0;
         rb.freezeRotation = true;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
-        // Patrol başlangıç pozisyonu
-        if (patrolPointA != null)
-            currentPatrolTarget = patrolPointA;
+        spawnPosition = transform.position;
+        currentPatrolTarget = spawnPosition + patrolPointA;
     }
 
     private void Start()
     {
-        // Player'ı otomatik bul
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
@@ -107,63 +99,65 @@ public class SlimeEnemy : MonoBehaviour
 
     private void Update()
     {
-        if (isDead || isKnockedBack) return;
-
-        UpdateBehavior();
+        if (isDead) return;
+        
+        // Knockback sırasında sadece hareket durur, behavior devam eder
+        if (!isKnockedBack)
+        {
+            UpdateBehavior();
+        }
     }
 
     private void FixedUpdate()
     {
-        if (isDead || isKnockedBack) return;
+        if (isDead) return;
 
-        HandleMovement();
+        // Knockback sırasında physics zaten KnockbackRoutine tarafından kontrol ediliyor
+        if (!isKnockedBack)
+        {
+            HandleMovement();
+        }
     }
 
     // ================= BEHAVIOR =================
 
     private void UpdateBehavior()
-{
-    if (player == null)
     {
-        if (enablePatrol)
+        if (player == null)
+        {
+            if (enablePatrol)
+                ChangeState(SlimeState.Patrolling);
+            return;
+        }
+
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        bool seesPlayer = HasLineOfSight();
+
+        if (enablePatrol && (!seesPlayer || distanceToPlayer > detectionRange))
+        {
             ChangeState(SlimeState.Patrolling);
-        return;
+            return;
+        }
+
+        if (distanceToPlayer <= detectionRange && distanceToPlayer > shootingRange)
+        {
+            ChangeState(SlimeState.Idle);
+            return;
+        }
+
+        if (distanceToPlayer <= shootingRange && distanceToPlayer > chargeRange)
+        {
+            ChangeState(SlimeState.Shooting);
+            TryShoot();
+            return;
+        }
+
+        if (distanceToPlayer <= chargeRange && !isCharging)
+        {
+            ChangeState(SlimeState.Charging);
+            return;
+        }
     }
-
-    float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-    bool seesPlayer = HasLineOfSight();
-
-    // 1️⃣ PLAYER GÖRÜNMÜYOR → PATROL
-    if (enablePatrol && (!seesPlayer || distanceToPlayer > detectionRange))
-    {
-        ChangeState(SlimeState.Patrolling);
-        return;
-    }
-
-    // 2️⃣ PLAYER VAR AMA UZAK → IDLE
-    if (distanceToPlayer <= detectionRange && distanceToPlayer > shootingRange)
-    {
-        ChangeState(SlimeState.Idle);
-        return;
-    }
-
-    // 3️⃣ SHOOT
-    if (distanceToPlayer <= shootingRange && distanceToPlayer > chargeRange)
-    {
-        ChangeState(SlimeState.Shooting);
-        TryShoot();
-        return;
-    }
-
-    // 4️⃣ CHARGE
-    if (distanceToPlayer <= chargeRange && !isCharging)
-    {
-        ChangeState(SlimeState.Charging);
-        return;
-    }
-}
-
-
 
     private void ChangeState(SlimeState newState)
     {
@@ -171,7 +165,6 @@ public class SlimeEnemy : MonoBehaviour
 
         currentState = newState;
 
-        // Animasyon trigger'ları
         switch (newState)
         {
             case SlimeState.Idle:
@@ -179,99 +172,32 @@ public class SlimeEnemy : MonoBehaviour
                 break;
 
             case SlimeState.Patrolling:
-                if (currentPatrolTarget == null)
-                    currentPatrolTarget = patrolPointA;
+                UpdatePatrolTarget();
                 break;
-
 
             case SlimeState.Shooting:
                 rb.velocity = Vector2.zero;
                 break;
 
             case SlimeState.Charging:
-    rb.velocity = Vector2.zero;
-    animator.SetTrigger("Charge");
-    PlaySfx(chargeSfx);
-    StopAllCoroutines();
-    StartCoroutine(ChargeRoutine());
-    break;
-
+                rb.velocity = Vector2.zero;
+                animator.SetTrigger("Charge");
+                PlaySfx(chargeSfx);
+                StopAllCoroutines();
+                StartCoroutine(ChargeRoutine());
+                break;
         }
     }
 
     // ================= PATROL =================
 
-
- private void HandlePatrol()
-{
-    if (currentPatrolTarget == null || isWaitingAtPatrolPoint)
-        return;
-
-    float distance =
-        Vector2.Distance(transform.position, currentPatrolTarget.position);
-
-    if (distance <= patrolPointThreshold)
+    private void UpdatePatrolTarget()
     {
-        // 🛑 DURSUN
-        rb.velocity = Vector2.zero;
-
-        // ⏳ BEKLE + TARGET DEĞİŞTİR
-        patrolWaitRoutine = StartCoroutine(PatrolWaitAndSwitch());
+        if (isGoingToA)
+            currentPatrolTarget = spawnPosition + patrolPointA;
+        else
+            currentPatrolTarget = spawnPosition + patrolPointB;
     }
-}
-
-private IEnumerator PatrolWaitAndSwitch()
-{
-    isWaitingAtPatrolPoint = true;
-
-    yield return new WaitForSeconds(patrolWaitTime);
-
-    // A <-> B swap
-    currentPatrolTarget =
-        currentPatrolTarget == patrolPointA
-            ? patrolPointB
-            : patrolPointA;
-
-    isWaitingAtPatrolPoint = false;
-}
-
-
-
-
-
-    private IEnumerator PatrolWaitRoutine()
-    {
-        isWaitingAtPatrolPoint = true;
-        rb.velocity = Vector2.zero;
-
-        yield return new WaitForSeconds(patrolWaitTime);
-
-        // Target değiştir
-        currentPatrolTarget =
-            currentPatrolTarget == patrolPointA ? patrolPointB : patrolPointA;
-
-        isWaitingAtPatrolPoint = false;
-    }
-
-
-
-    // ================= LINE OF SIGHT =================
-
-    private bool HasLineOfSight()
-    {
-        if (player == null) return false;
-
-        Vector2 direction = (player.position - transform.position).normalized;
-        float distance = Vector2.Distance(transform.position, player.position);
-
-        // Player'a raycast at, araya obstacle giriyor mu kontrol et
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, distance, obstacleLayer);
-
-        // Eğer bir obstacle hit olduysa, player görünmüyor
-        return hit.collider == null;
-    }
-
-    // ================= MOVEMENT =================
 
     private void HandleMovement()
     {
@@ -286,27 +212,61 @@ private IEnumerator PatrolWaitAndSwitch()
 
         if (currentState == SlimeState.Patrolling)
         {
-            if (currentPatrolTarget == null)
+            if (isWaitingAtPatrolPoint)
             {
                 rb.velocity = Vector2.zero;
                 return;
             }
 
-            Vector2 direction =
-                ((Vector2)currentPatrolTarget.position - (Vector2)transform.position).normalized;
+            float distanceToTarget = Vector2.Distance(transform.position, currentPatrolTarget);
 
-            rb.velocity = direction * patrolSpeed;
+            if (distanceToTarget <= patrolPointThreshold)
+            {
+                rb.velocity = Vector2.zero;
+                StartCoroutine(PatrolWaitAndSwitch());
+            }
+            else
+            {
+                Vector2 direction = (currentPatrolTarget - (Vector2)transform.position).normalized;
+                rb.velocity = direction * patrolSpeed;
+            }
             return;
         }
 
         if (currentState == SlimeState.Shooting && !isShooting)
-{
-    Vector2 direction = (player.position - transform.position).normalized;
-    rb.velocity = direction * chaseSpeed;
-}
-
+        {
+            Vector2 direction = (player.position - transform.position).normalized;
+            rb.velocity = direction * chaseSpeed;
+        }
     }
 
+    private IEnumerator PatrolWaitAndSwitch()
+    {
+        if (isWaitingAtPatrolPoint) yield break;
+        
+        isWaitingAtPatrolPoint = true;
+
+        yield return new WaitForSeconds(patrolWaitTime);
+
+        isGoingToA = !isGoingToA;
+        UpdatePatrolTarget();
+
+        isWaitingAtPatrolPoint = false;
+    }
+
+    // ================= LINE OF SIGHT =================
+
+    private bool HasLineOfSight()
+    {
+        if (player == null) return false;
+
+        Vector2 direction = (player.position - transform.position).normalized;
+        float distance = Vector2.Distance(transform.position, player.position);
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, distance, obstacleLayer);
+
+        return hit.collider == null;
+    }
 
     // ================= SHOOTING =================
 
@@ -329,7 +289,8 @@ private IEnumerator PatrolWaitAndSwitch()
             yield return new WaitForSeconds(0.1f);
 
             ShootProjectile();
-            PlaySfx(shootSfx);
+            //PlaySfx(shootSfx);
+            // shoot sesi artık bullet prefab'da 27 dec 2025
 
             if (i < burstCount - 1)
                 yield return new WaitForSeconds(burstDelay);
@@ -341,33 +302,20 @@ private IEnumerator PatrolWaitAndSwitch()
 
     private void ShootProjectile()
     {
-        if (projectilePrefab == null)
-        {
-            return;
-        }
-
-        if (player == null)
-        {
-            return;
-        }
+        if (projectilePrefab == null || player == null) return;
 
         Vector2 direction = (player.position - transform.position).normalized;
 
         Transform spawnPoint = shootPoint != null ? shootPoint : transform;
 
-
         GameObject projectile = Instantiate(projectilePrefab,
-        transform.position + (Vector3)direction * 0.5f,
-        Quaternion.identity);
-
+            spawnPoint.position,
+            Quaternion.identity);
 
         Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
         if (projRb != null)
         {
             projRb.velocity = direction * projectileSpeed;
-        }
-        else
-        {
         }
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -397,7 +345,6 @@ private IEnumerator PatrolWaitAndSwitch()
         yield return new WaitForSeconds(0.5f);
         isCharging = false;
         ChangeState(SlimeState.Shooting);
-
     }
 
     // ================= DAMAGE SYSTEM =================
@@ -407,11 +354,17 @@ private IEnumerator PatrolWaitAndSwitch()
         if (isInvulnerable || isDead) return;
 
         currentHealth -= damage;
+        
+        // Önce animasyon ve ses
         animator.SetTrigger("Hit");
         PlaySfx(hitSfx);
+        
+        Debug.Log($"[SLIME] Hit! Triggering Hit animation. Health: {currentHealth}/{maxHealth}");
 
-        // Knockback yönü: hasar kaynağından UZAKLAŞ
+        // Knockback yönü
         Vector2 knockbackDir = ((Vector2)transform.position - damageSourcePos).normalized;
+        
+        // Knockback başlat (coroutine)
         StartCoroutine(KnockbackRoutine(knockbackDir));
 
         if (currentHealth <= 0)
@@ -426,15 +379,35 @@ private IEnumerator PatrolWaitAndSwitch()
 
     private IEnumerator KnockbackRoutine(Vector2 direction)
     {
+        // İşaretleme
         isKnockedBack = true;
 
-        // Hallaç pamuğu gibi savrulma!
-        rb.velocity = direction * knockbackForce;
+        // Mevcut coroutine'leri durdur (ama behavior devam etsin)
+        if (isShooting)
+        {
+            StopCoroutine(ShootBurstRoutine());
+            isShooting = false;
+        }
+        
+        if (isCharging)
+        {
+            StopCoroutine(ChargeRoutine());
+            isCharging = false;
+        }
 
+        // Knockback force uygula
+        rb.velocity = direction * knockbackForce;
+        
+        Debug.Log($"[SLIME] Knockback! Direction: {direction}, Force: {knockbackForce}");
+
+        // Knockback süresi
         yield return new WaitForSeconds(knockbackDuration);
 
+        // Durdur
         rb.velocity = Vector2.zero;
         isKnockedBack = false;
+        
+        Debug.Log("[SLIME] Knockback ended");
     }
 
     private IEnumerator InvulnerabilityRoutine()
@@ -473,8 +446,13 @@ private IEnumerator PatrolWaitAndSwitch()
                 // Player'a hasar ver
                 playerController.TakeDamage(contactDamage, transform.position);
 
-                // Slime de temastan geriye savrulsun
+                // Slime de temastan geriye savrulsun!
                 Vector2 knockbackDir = ((Vector2)transform.position - (Vector2)collision.transform.position).normalized;
+                
+                Debug.Log($"[SLIME] Collided with player! Knockback direction: {knockbackDir}");
+                
+                // NOT: TakeDamage çağırmıyoruz çünkü slime player'a temas edince hasar almıyor
+                // Sadece knockback yiyor
                 StartCoroutine(KnockbackRoutine(knockbackDir));
             }
         }
@@ -487,8 +465,10 @@ private IEnumerator PatrolWaitAndSwitch()
         // Player'ın attack'ından hasar al
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAttack"))
         {
-            // Sword'un pozisyonundan knockback hesapla
             Vector2 swordPos = other.transform.position;
+            
+            Debug.Log($"[SLIME] Hit by sword at {swordPos}!");
+            
             TakeDamage(10, swordPos);
         }
     }
@@ -508,31 +488,34 @@ private IEnumerator PatrolWaitAndSwitch()
 
     private void OnDrawGizmosSelected()
     {
-        // Detection range
+        Vector2 origin = Application.isPlaying ? spawnPosition : (Vector2)transform.position;
+
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
 
-        // Shooting range
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, shootingRange);
 
-        // Charge range
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, chargeRange);
 
-        // Patrol path
-        if (enablePatrol && Application.isPlaying)
+        if (enablePatrol)
         {
-            Gizmos.color = Color.green;
-            if (currentPatrolTarget != null)
-            {
-                Gizmos.DrawLine(transform.position, currentPatrolTarget.position);
-                Gizmos.DrawWireSphere(currentPatrolTarget.position, 0.3f);
-            }
+            Vector2 pointA = origin + patrolPointA;
+            Vector2 pointB = origin + patrolPointB;
 
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(pointA, 0.3f);
+            Gizmos.DrawWireSphere(pointB, 0.3f);
+            Gizmos.DrawLine(pointA, pointB);
+
+            if (Application.isPlaying)
+            {
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawLine(transform.position, currentPatrolTarget);
+            }
         }
 
-        // Line of sight
         if (player != null && Application.isPlaying)
         {
             Gizmos.color = HasLineOfSight() ? Color.green : Color.red;

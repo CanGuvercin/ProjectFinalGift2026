@@ -211,7 +211,7 @@ MonoBehaviour:
   audioSource: {fileID: 1037373608540796922}
   shootPoint: {fileID: 6354379343944887734}
   hitSfx: {fileID: 8300000, guid: c9a827d96b312054ca8c7ad890f637c1, type: 3}
-  shootSfx: {fileID: 8300000, guid: f13696db70b60b546bfc503a5f5ae744, type: 3}
+  shootSfx: {fileID: 0}
   chargeSfx: {fileID: 8300000, guid: a4e58ba3ce6ac36439143a2209e07733, type: 3}
   dieSfx: {fileID: 8300000, guid: d591b9a5805275a4f9b2a6071fab2b3a, type: 3}
   maxHealth: 30
@@ -230,9 +230,11 @@ MonoBehaviour:
   shootCooldown: 2
   projectileSpeed: 5
   enablePatrol: 1
+  patrolPointA: {x: 0, y: 2}
+  patrolPointB: {x: 0, y: -2}
   patrolSpeed: 0.8
-  patrolDistance: 3
   patrolWaitTime: 1.5
+  patrolPointThreshold: 0.3
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 0
