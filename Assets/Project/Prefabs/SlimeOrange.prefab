@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 1874212113085408542}
   - component: {fileID: 4901225817056385389}
   - component: {fileID: 2584406803486011771}
+  - component: {fileID: 1037373608540796922}
+  - component: {fileID: 3783776457484004746}
+  - component: {fileID: 4792519341080839664}
   m_Layer: 0
   m_Name: SlimeOrange
   m_TagString: Untagged
@@ -98,6 +101,159 @@ CircleCollider2D:
   m_Offset: {x: 0, y: -0.04161668}
   serializedVersion: 2
   m_Radius: 0.42568135
+--- !u!82 &1037373608540796922
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 683955557842113744}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.805
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!95 &3783776457484004746
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 683955557842113744}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4792519341080839664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 683955557842113744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91141107996a55540abe93758c796dfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  audioSource: {fileID: 1037373608540796922}
+  shootPoint: {fileID: 6354379343944887734}
+  hitSfx: {fileID: 8300000, guid: c9a827d96b312054ca8c7ad890f637c1, type: 3}
+  shootSfx: {fileID: 8300000, guid: f13696db70b60b546bfc503a5f5ae744, type: 3}
+  chargeSfx: {fileID: 8300000, guid: 157b6ba42a04b9f4d96b9a82947d2335, type: 3}
+  dieSfx: {fileID: 8300000, guid: d591b9a5805275a4f9b2a6071fab2b3a, type: 3}
+  maxHealth: 30
+  contactDamage: 10
+  currentHealth: 0
+  shootingRange: 6
+  chargeRange: 3
+  chaseSpeed: 1.5
+  chargeSpeed: 4
+  projectilePrefab: {fileID: 3707776937079977791, guid: 62048fbf4a8b0274a8a164fe98004723, type: 3}
+  burstCount: 2
+  burstDelay: 0.3
+  shootCooldown: 2
+  projectileSpeed: 5
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  raycastDistance: 0.5
+  hitInvulnerableTime: 0.3
 --- !u!1 &4289334263097105767
 GameObject:
   m_ObjectHideFlags: 0
