@@ -14,17 +14,17 @@ TagManager:
   - Water
   - UI
   - 
-  - Player
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
   - Obstacle
-  - 'Enemy '
-  - 
+  - EnemyProjectile
   - PlayerAttack
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Enemy
+  - Player
   - 
   - 
   - 

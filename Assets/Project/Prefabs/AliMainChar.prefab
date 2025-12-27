@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1216956779344672230}
   - component: {fileID: 3428855159176183972}
-  m_Layer: 11
+  m_Layer: 15
   m_Name: HitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -86,7 +86,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1061379918424137475}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: AttackPoint
   m_TagString: PlayerAttack
   m_Icon: {fileID: 0}
@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 7586275723873141575}
   - component: {fileID: 6268389341975164359}
   - component: {fileID: 9023769278335123522}
-  m_Layer: 7
+  m_Layer: 17
   m_Name: AliMainChar
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -327,7 +327,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5349705682675190892}
   - component: {fileID: 6919709539321117686}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: PlayerSFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}

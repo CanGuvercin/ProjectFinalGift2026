@@ -12,9 +12,8 @@ GameObject:
   - component: {fileID: 4901225817056385389}
   - component: {fileID: 2584406803486011771}
   - component: {fileID: 1037373608540796922}
-  - component: {fileID: 3783776457484004746}
   - component: {fileID: 4792519341080839664}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: SlimeOrange
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -197,27 +196,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!95 &3783776457484004746
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 683955557842113744}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &4792519341080839664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,7 +208,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91141107996a55540abe93758c796dfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
   audioSource: {fileID: 1037373608540796922}
   shootPoint: {fileID: 6354379343944887734}
   hitSfx: {fileID: 8300000, guid: c9a827d96b312054ca8c7ad890f637c1, type: 3}
@@ -240,6 +217,9 @@ MonoBehaviour:
   maxHealth: 30
   contactDamage: 10
   currentHealth: 0
+  knockbackForce: 5
+  knockbackDuration: 0.3
+  detectionRange: 8
   shootingRange: 6
   chargeRange: 3
   chaseSpeed: 1.5
@@ -249,10 +229,13 @@ MonoBehaviour:
   burstDelay: 0.3
   shootCooldown: 2
   projectileSpeed: 5
+  enablePatrol: 1
+  patrolSpeed: 0.8
+  patrolDistance: 3
+  patrolWaitTime: 1.5
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 256
-  raycastDistance: 0.5
+    m_Bits: 0
   hitInvulnerableTime: 0.3
 --- !u!1 &4289334263097105767
 GameObject:
@@ -263,7 +246,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1792095689726218929}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Hitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,7 +277,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6354379343944887734}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: ShootPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -327,7 +310,7 @@ GameObject:
   - component: {fileID: 8281553358353314537}
   - component: {fileID: 370497038152276781}
   - component: {fileID: 4643570393677636790}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}

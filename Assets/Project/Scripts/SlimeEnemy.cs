@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CircleCollider2D))]
 public class SlimeEnemy : MonoBehaviour
 {
@@ -73,7 +72,7 @@ public class SlimeEnemy : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
+        animator = GetComponentInChildren<Animator>();
         circleCollider = GetComponent<CircleCollider2D>();
         audioSource = GetComponent<AudioSource>();
         
@@ -337,7 +336,10 @@ public class SlimeEnemy : MonoBehaviour
     
     Debug.Log($"[SLIME] Spawning projectile at {spawnPoint.position}");
     
-    GameObject projectile = Instantiate(projectilePrefab, spawnPoint.position, Quaternion.identity);
+    GameObject projectile = Instantiate(projectilePrefab,
+    transform.position + (Vector3)direction * 0.5f,
+    Quaternion.identity);
+
     
     Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
     if (projRb != null)
