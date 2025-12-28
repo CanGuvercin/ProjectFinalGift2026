@@ -51,6 +51,9 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Fallback unlock time if animation event is not set yet.")]
     [SerializeField] private float interactFallbackTime = 1f;
 
+    [Header("Camera Reference")]
+    [SerializeField] private CameraController cameraController;
+
     private bool isInvulnerable;
 
 
@@ -73,6 +76,9 @@ public class PlayerController : MonoBehaviour
     // Last direction memory (for idle / attack / interact / dash direction)
     private Vector2 lastMoveDir = Vector2.down;
 
+    private PlayerHitBox playerHitBox; // ← Ekle
+
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -80,6 +86,13 @@ public class PlayerController : MonoBehaviour
         inputActions = new PlayerInputActions();
         hitBoxCollider.enabled = false;
         currentHealth = maxHealth;
+
+        // PlayerHitBox referansını al
+        playerHitBox = hitBoxCollider.GetComponent<PlayerHitBox>();
+
+         // Kamerayı otomatik bul
+        if (cameraController == null)
+        cameraController = Camera.main.GetComponent<CameraController>();
 
     }
 
@@ -235,12 +248,19 @@ public class PlayerController : MonoBehaviour
 
     public void EnableHitBox()
     {
-        hitBoxCollider.enabled = true;
+         hitBoxCollider.enabled = true;
+    
+    // Hit flag'ini sıfırla - YENİ SWING BAŞLIYOR!
+    if (playerHitBox != null)
+        playerHitBox.ResetHitFlag();
+        
+    Debug.Log("[PLAYER] HitBox ENABLED + Flag reset");
     }
 
     public void DisableHitBox()
     {
         hitBoxCollider.enabled = false;
+    Debug.Log("[PLAYER] HitBox DISABLED");
     }
 
 
@@ -315,6 +335,10 @@ public class PlayerController : MonoBehaviour
         UpdateAttackPointPosition();
 
         animator.SetTrigger("attack");
+
+        // Kamera'ya attack bildir (miss olabilir)
+        if (cameraController != null)
+        cameraController.OnAttackMiss(); // Önce miss varsay
     }
 
     private void UpdateAttackPointPosition()
@@ -356,5 +380,11 @@ public class PlayerController : MonoBehaviour
     {
         CancelInvoke(nameof(EndInteract));
         isInteracting = false;
+    }
+
+    public void OnSwordHit()
+    {
+    PlaySwordHitSfx();
+    Debug.Log("[PLAYER] Sword HIT sound played!");
     }
 }

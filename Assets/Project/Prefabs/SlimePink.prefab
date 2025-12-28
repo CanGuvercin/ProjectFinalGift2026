@@ -16,6 +16,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SlimePink
       objectReference: {fileID: 0}
+    - target: {fileID: 683955557842113744, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     - target: {fileID: 1037373608540796922, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
       propertyPath: m_Volume
       value: 0.6
