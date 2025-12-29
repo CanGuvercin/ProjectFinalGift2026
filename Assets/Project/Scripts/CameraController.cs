@@ -1,81 +1,58 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-
+[RequireComponent(typeof(Camera))]
 public class CameraController : MonoBehaviour
 {
-    [Header("Target")]
-    [SerializeField] private Transform target; // Player
+    public enum ShakeType { Miss, Hit, PlayerHurtProjectile, PlayerHurtContact }
 
-    [Header("Follow Settings")]
-    [SerializeField] private float followSpeed = 5f;
-    [SerializeField] private Vector3 offset = new Vector3(0, 0, -10);
-    
     [Header("Zoom Settings")]
     [SerializeField] private float baseOrthographicSize = 5f;
     [SerializeField] private float zoomSpeed = 8f;
-    
+
     [Header("Attack Zoom (Miss)")]
-    [SerializeField] private float attackZoomOut = 1.05f; // Zoom out miktarı
+    [SerializeField] private float attackZoomOut = 1.05f;
     [SerializeField] private float attackZoomDuration = 0.15f;
-    
+
     [Header("Hit Zoom (Multi-hit Combo)")]
-    [SerializeField] private float hitZoomStep = 0.05f; // Her hit'te zoom miktarı (0.95, 0.90, 0.85...)
-    [SerializeField] private int maxHitZoomSteps = 3; // Max 3 hit combo zoom
-    [SerializeField] private float hitZoomResetDelay = 0.5f; // Hit yoksa zoom sıfırlanır
-    
-    [Header("Screen Shake")]
-    [SerializeField] private float shakeOnHitIntensity = 0.15f;
-    [SerializeField] private float shakeOnMissIntensity = 0.05f;
+    [SerializeField] private float hitZoomStep = 0.05f;
+    [SerializeField] private int maxHitZoomSteps = 3;
+    [SerializeField] private float hitZoomResetDelay = 0.5f;
+
+    [Header("Screen Shake - Base Intensities")]
+    [SerializeField] private float missIntensity = 0.05f;
+    [SerializeField] private float hitBaseIntensity = 0.15f;
+    [SerializeField] private float hurtProjectileIntensity = 0.12f;
+    [SerializeField] private float hurtContactBaseIntensity = 0.25f;
+
+    [Header("Screen Shake - Scaling")]
+    [SerializeField] private bool scaleHurtByDamage = true;
+    [SerializeField] private float damageToIntensityDivider = 15f;   // damage/15
+    [SerializeField] private float hurtMin = 0.25f;
+    [SerializeField] private float hurtMax = 0.50f;
+
+    [Header("Screen Shake - Timing")]
     [SerializeField] private float shakeDuration = 0.1f;
-    
+
     private Camera cam;
     private float targetZoom;
     private int currentHitCombo = 0;
+
     private Coroutine zoomResetRoutine;
     private Coroutine shakeRoutine;
-    private Vector3 shakeOffset;
+
+    private Vector3 originalLocalPos;
 
     private void Awake()
     {
         cam = GetComponent<Camera>();
-        
-        if (cam == null)
-        {
-            Debug.LogError("Camera component not found!");
-            return;
-        }
+        originalLocalPos = transform.localPosition;
 
-        // Başlangıç zoom
         cam.orthographicSize = baseOrthographicSize;
         targetZoom = baseOrthographicSize;
-        
-        // Player'ı otomatik bul
-        if (target == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-                target = player.transform;
-        }
     }
 
-    private void LateUpdate()
-    {
-        if (target == null) return;
-
-        // Target'ı takip et
-        FollowTarget();
-        
-        // Zoom smooth geçişi
-        SmoothZoom();
-    }
-
-    private void FollowTarget()
-    {
-        Vector3 desiredPosition = target.position + offset + shakeOffset;
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, followSpeed * Time.deltaTime);
-    }
+    private void LateUpdate() => SmoothZoom();
 
     private void SmoothZoom()
     {
@@ -84,79 +61,92 @@ public class CameraController : MonoBehaviour
 
     // ================= PUBLIC API =================
 
-    /// <summary>
-    /// Kılıç sallandı ama hedef yok (miss) - Hafif zoom out
-    /// </summary>
     public void OnAttackMiss()
     {
-        // Zoom out yap
         targetZoom = baseOrthographicSize * attackZoomOut;
-        
-        // Hafif shake
-        TriggerScreenShake(shakeOnMissIntensity);
-        
-        // Hızlıca geri dön
-        if (zoomResetRoutine != null)
-            StopCoroutine(zoomResetRoutine);
-        
-        zoomResetRoutine = StartCoroutine(ResetZoomAfterDelay(attackZoomDuration));
-        
-        Debug.Log("[CAMERA] Attack Miss - Zoom Out");
+        TriggerShake(ShakeType.Miss);
+
+        RestartZoomReset(attackZoomDuration);
     }
 
-    /// <summary>
-    /// Düşmana hit! - Combo zoom in (her hit'te daha fazla)
-    /// </summary>
     public void OnAttackHit()
     {
-        // Combo sayacını artır (max limit var)
         currentHitCombo = Mathf.Min(currentHitCombo + 1, maxHitZoomSteps);
-        
-        // Zoom in yap (her hit daha fazla zoom)
+
         float zoomMultiplier = 1f - (hitZoomStep * currentHitCombo);
         targetZoom = baseOrthographicSize * zoomMultiplier;
-        
-        // Güçlü shake
-        TriggerScreenShake(shakeOnHitIntensity * currentHitCombo);
-        
-        // Combo reset timer'ı yeniden başlat
-        if (zoomResetRoutine != null)
-            StopCoroutine(zoomResetRoutine);
-        
-        zoomResetRoutine = StartCoroutine(ResetZoomAfterDelay(hitZoomResetDelay));
-        
-        Debug.Log($"[CAMERA] Hit! Combo: {currentHitCombo}, Zoom: {zoomMultiplier:F2}x");
+
+        // Combo kuvveti: base * combo
+        TriggerShake(ShakeType.Hit, comboMultiplier: currentHitCombo);
+
+        RestartZoomReset(hitZoomResetDelay);
     }
 
-    /// <summary>
-    /// Manuel zoom reset (örn: dash sonrası)
-    /// </summary>
     public void ResetZoom()
     {
         targetZoom = baseOrthographicSize;
         currentHitCombo = 0;
     }
 
-    // ================= ZOOM RESET =================
+    public void OnPlayerHurt(float damageAmount = 10f, bool isProjectile = false)
+    {
+        if (isProjectile)
+        {
+            TriggerShake(ShakeType.PlayerHurtProjectile);
+            Debug.Log($"[CAMERA] Player Hurt! Type: Projectile");
+        }
+        else
+        {
+            // İstersen damage’e göre ölçekle
+            float scaled = scaleHurtByDamage
+                ? Mathf.Clamp(damageAmount / damageToIntensityDivider, hurtMin, hurtMax)
+                : hurtContactBaseIntensity;
+
+            TriggerShake(ShakeType.PlayerHurtContact, overrideIntensity: scaled);
+            Debug.Log($"[CAMERA] Player Hurt! Type: Contact, Intensity: {scaled:F2}");
+        }
+    }
+
+    // ================= INTERNAL =================
+
+    private void RestartZoomReset(float delay)
+    {
+        if (zoomResetRoutine != null) StopCoroutine(zoomResetRoutine);
+        zoomResetRoutine = StartCoroutine(ResetZoomAfterDelay(delay));
+    }
 
     private IEnumerator ResetZoomAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        
-        // Zoom'u base'e geri getir
         targetZoom = baseOrthographicSize;
         currentHitCombo = 0;
-        
-        Debug.Log("[CAMERA] Zoom Reset");
     }
 
-    // ================= SCREEN SHAKE =================
-
-    private void TriggerScreenShake(float intensity)
+    private void TriggerShake(ShakeType type, int comboMultiplier = 1, float? overrideIntensity = null)
     {
-        if (shakeRoutine != null)
-            StopCoroutine(shakeRoutine);
-        
+        float intensity = overrideIntensity ?? GetBaseIntensity(type);
+
+        if (type == ShakeType.Hit)
+            intensity *= comboMultiplier;
+
+        StartShake(intensity);
+    }
+
+    private float GetBaseIntensity(ShakeType type)
+    {
+        switch (type)
+        {
+            case ShakeType.Miss: return missIntensity;
+            case ShakeType.Hit: return hitBaseIntensity;
+            case ShakeType.PlayerHurtProjectile: return hurtProjectileIntensity;
+            case ShakeType.PlayerHurtContact: return hurtContactBaseIntensity;
+            default: return 0.1f;
+        }
+    }
+
+    private void StartShake(float intensity)
+    {
+        if (shakeRoutine != null) StopCoroutine(shakeRoutine);
         shakeRoutine = StartCoroutine(ScreenShakeRoutine(intensity));
     }
 
@@ -166,50 +156,15 @@ public class CameraController : MonoBehaviour
 
         while (elapsed < shakeDuration)
         {
-            // Random shake offset
             float x = Random.Range(-1f, 1f) * intensity;
             float y = Random.Range(-1f, 1f) * intensity;
-            
-            shakeOffset = new Vector3(x, y, 0);
+
+            transform.localPosition = originalLocalPos + new Vector3(x, y, 0);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Shake bitince sıfırla
-        shakeOffset = Vector3.zero;
-    }
-
-    // ================= DEBUG =================
-
-    private void OnDrawGizmosSelected()
-    {
-        if (target != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, target.position);
-            Gizmos.DrawWireSphere(target.position, 0.5f);
-        }
-    }
-
-
-public void OnPlayerHurt(float damageAmount = 10f, bool isProjectile = false)
-    {
-    float shakeIntensity;
-    
-    if (isProjectile)
-    {
-        // Mermi hasarı - daha hafif
-        shakeIntensity = 0.15f;
-    }
-    else
-    {
-        // Temas hasarı - daha güçlü
-        shakeIntensity = Mathf.Clamp(damageAmount / 15f, 0.25f, 0.5f);
-    }
-    
-    TriggerScreenShake(shakeIntensity);
-    
-    Debug.Log($"[CAMERA] Player Hurt! Type: {(isProjectile ? "Projectile" : "Contact")}, Intensity: {shakeIntensity:F2}");
+        transform.localPosition = originalLocalPos;
     }
 }
