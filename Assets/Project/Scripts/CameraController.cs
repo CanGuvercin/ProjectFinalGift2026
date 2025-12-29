@@ -1,8 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Collections;
-using UnityEngine;
+
 
 public class CameraController : MonoBehaviour
 {
@@ -191,5 +190,26 @@ public class CameraController : MonoBehaviour
             Gizmos.DrawLine(transform.position, target.position);
             Gizmos.DrawWireSphere(target.position, 0.5f);
         }
+    }
+
+
+public void OnPlayerHurt(float damageAmount = 10f, bool isProjectile = false)
+    {
+    float shakeIntensity;
+    
+    if (isProjectile)
+    {
+        // Mermi hasarı - daha hafif
+        shakeIntensity = 0.15f;
+    }
+    else
+    {
+        // Temas hasarı - daha güçlü
+        shakeIntensity = Mathf.Clamp(damageAmount / 15f, 0.25f, 0.5f);
+    }
+    
+    TriggerScreenShake(shakeIntensity);
+    
+    Debug.Log($"[CAMERA] Player Hurt! Type: {(isProjectile ? "Projectile" : "Contact")}, Intensity: {shakeIntensity:F2}");
     }
 }

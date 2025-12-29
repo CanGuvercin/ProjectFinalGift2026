@@ -135,6 +135,10 @@ public class PlayerController : MonoBehaviour
 
         animator.SetBool("isDamaged", true);
 
+        // ✅ KAMERA SHAKE
+        if (cameraController != null)
+        cameraController.OnPlayerHurt(damage);
+
         // SFX
         PlayHurtSfx();
 

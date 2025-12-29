@@ -19,6 +19,11 @@ public class SlimeProjectile : MonoBehaviour
             if (player != null)
             {
                 player.TakeDamage(damage, transform.position);
+
+                CameraController cam = Camera.main?.GetComponent<CameraController>();
+                   if (cam != null)
+                    cam.OnPlayerHurt(damage);
+
             }
             Destroy(gameObject);
         }
