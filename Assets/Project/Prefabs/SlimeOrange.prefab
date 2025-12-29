@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4901225817056385389}
   - component: {fileID: 2584406803486011771}
   - component: {fileID: 1037373608540796922}
-  - component: {fileID: 4792519341080839664}
+  - component: {fileID: 6890684589858651969}
   m_Layer: 16
   m_Name: SlimeOrange
   m_TagString: Enemy
@@ -196,7 +196,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &4792519341080839664
+--- !u!114 &6890684589858651969
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -205,40 +205,48 @@ MonoBehaviour:
   m_GameObject: {fileID: 683955557842113744}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91141107996a55540abe93758c796dfe, type: 3}
+  m_Script: {fileID: 11500000, guid: 705c1dc772af9be44b14626d56ab75b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSource: {fileID: 1037373608540796922}
-  shootPoint: {fileID: 6354379343944887734}
-  hitSfx: {fileID: 8300000, guid: c9a827d96b312054ca8c7ad890f637c1, type: 3}
-  shootSfx: {fileID: 0}
-  chargeSfx: {fileID: 8300000, guid: a4e58ba3ce6ac36439143a2209e07733, type: 3}
-  dieSfx: {fileID: 8300000, guid: d591b9a5805275a4f9b2a6071fab2b3a, type: 3}
+  shootPoint: {fileID: 0}
+  projectilePrefab: {fileID: 3707776937079977791, guid: 62048fbf4a8b0274a8a164fe98004723, type: 3}
+  audioSource: {fileID: 0}
+  hitSfx: {fileID: 0}
+  chargeSfx: {fileID: 0}
+  dieSfx: {fileID: 0}
   maxHealth: 20
   contactDamage: 10
-  currentHealth: 0
   knockbackForce: 5
   knockbackDuration: 0.3
-  detectionRange: 9
-  shootingRange: 6
-  chargeRange: 2
-  chaseSpeed: 7
-  chargeSpeed: 10
-  projectilePrefab: {fileID: 3707776937079977791, guid: 62048fbf4a8b0274a8a164fe98004723, type: 3}
+  hitInvulnerableTime: 0.5
+  detectionRange: 8
+  shootRange: 6
+  alertedShootRange: 12
+  chargeRange: 3
+  patrolSpeed: 0.8
+  chaseSpeed: 1.5
+  retreatSpeed: 1.7
+  chargeSpeed: 4
   burstCount: 2
-  burstDelay: 0.3
-  shootCooldown: 2
+  burstDelay: 0.2
+  shootCooldown: 4
   projectileSpeed: 5
+  chargeDuration: 0.8
+  chargeCooldown: 2.8
+  forgetAfter: 6
+  investigateStopDistance: 0.5
+  hitMemoryTime: 2
+  retreatDuration: 1.1
+  retreatTriggerDistance: 3.2
+  shootWhileRetreating: 1
   enablePatrol: 1
   patrolPointA: {x: 0, y: 2}
   patrolPointB: {x: 0, y: -2}
-  patrolSpeed: 0.8
   patrolWaitTime: 1.5
   patrolPointThreshold: 0.3
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 8192
-  hitInvulnerableTime: 0.3
 --- !u!1 &4289334263097105767
 GameObject:
   m_ObjectHideFlags: 0
