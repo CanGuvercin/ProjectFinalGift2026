@@ -261,13 +261,14 @@ MonoBehaviour:
   dashSfx: {fileID: 8300000, guid: 87b70e6640c83f442b34d86212562846, type: 3}
   walkSfx: {fileID: 8300000, guid: 6bbe3a0a950b30545bad70dd095218eb, type: 3}
   hurtSfx: {fileID: 8300000, guid: 4bc49a37728b80f49a5bd5964b9bd2fa, type: 3}
-  dashSpeed: 10
-  dashDuration: 0.12
-  dashCooldown: 0.35
+  dashSpeed: 15
+  dashDuration: 0.15
+  dashCooldown: 0.5
   moveSpeed: 3.5
   attackCooldown: 0.3
   interactCooldown: 0.2
   interactFallbackTime: 1
+  cameraController: {fileID: 0}
 --- !u!50 &6268389341975164359
 Rigidbody2D:
   serializedVersion: 4

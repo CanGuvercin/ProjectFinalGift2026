@@ -161,9 +161,9 @@ MonoBehaviour:
   maxHitZoomSteps: 3
   hitZoomResetDelay: 0.9
   missIntensity: 0.05
-  hitBaseIntensity: 0.15
-  hurtProjectileIntensity: 0.12
-  hurtContactBaseIntensity: 0.25
+  hitBaseIntensity: 0.09
+  hurtProjectileIntensity: 0.07
+  hurtContactBaseIntensity: 0.17
   scaleHurtByDamage: 1
   damageToIntensityDivider: 1.5
   hurtMin: 0.05

@@ -214,16 +214,16 @@ MonoBehaviour:
   shootSfx: {fileID: 0}
   chargeSfx: {fileID: 8300000, guid: a4e58ba3ce6ac36439143a2209e07733, type: 3}
   dieSfx: {fileID: 8300000, guid: d591b9a5805275a4f9b2a6071fab2b3a, type: 3}
-  maxHealth: 30
+  maxHealth: 20
   contactDamage: 10
   currentHealth: 0
   knockbackForce: 5
   knockbackDuration: 0.3
-  detectionRange: 8
+  detectionRange: 9
   shootingRange: 6
-  chargeRange: 3
-  chaseSpeed: 1.5
-  chargeSpeed: 4
+  chargeRange: 2
+  chaseSpeed: 7
+  chargeSpeed: 10
   projectilePrefab: {fileID: 3707776937079977791, guid: 62048fbf4a8b0274a8a164fe98004723, type: 3}
   burstCount: 2
   burstDelay: 0.3
@@ -237,7 +237,7 @@ MonoBehaviour:
   patrolPointThreshold: 0.3
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8192
   hitInvulnerableTime: 0.3
 --- !u!1 &4289334263097105767
 GameObject:
