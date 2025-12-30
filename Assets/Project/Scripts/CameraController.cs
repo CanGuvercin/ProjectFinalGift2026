@@ -43,6 +43,8 @@ public class CameraController : MonoBehaviour
 
     private Vector3 originalLocalPos;
 
+    public Vector3 CurrentShakeOffset { get; private set; }
+
     private void Awake()
     {
         cam = GetComponent<Camera>();
