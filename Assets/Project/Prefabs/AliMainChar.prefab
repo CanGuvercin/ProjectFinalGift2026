@@ -258,7 +258,7 @@ MonoBehaviour:
   sfxSource: {fileID: 6919709539321117686}
   swordSwing: {fileID: 8300000, guid: b10b4edeb42aa9e40abd6b7a66c211df, type: 3}
   swordHit: {fileID: 8300000, guid: edf8491defa9e8c42843b6b8cbec064a, type: 3}
-  dashSfx: {fileID: 8300000, guid: 87b70e6640c83f442b34d86212562846, type: 3}
+  dashSfx: {fileID: 8300000, guid: b10b4edeb42aa9e40abd6b7a66c211df, type: 3}
   walkSfx: {fileID: 8300000, guid: 6bbe3a0a950b30545bad70dd095218eb, type: 3}
   hurtSfx: {fileID: 8300000, guid: 4bc49a37728b80f49a5bd5964b9bd2fa, type: 3}
   dashSpeed: 15

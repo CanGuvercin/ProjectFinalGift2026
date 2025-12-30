@@ -44,3 +44,21 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Background
+    uniqueID: 672399765
+    locked: 0
+  - name: Ground
+    uniqueID: 1751793587
+    locked: 0
+  - name: World
+    uniqueID: 3566459705
+    locked: 0
+  - name: AboveWorld
+    uniqueID: 1216082445
+    locked: 0
+  - name: ForeGround
+    uniqueID: 475218997
+    locked: 0
+  - name: UI
+    uniqueID: 3692639039
+    locked: 0
