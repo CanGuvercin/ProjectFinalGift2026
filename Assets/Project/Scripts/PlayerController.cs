@@ -51,8 +51,11 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Fallback unlock time if animation event is not set yet.")]
     [SerializeField] private float interactFallbackTime = 1f;
 
+    // old cam v1
+    //[Header("Camera Reference")]
+    //[SerializeField] private CameraController cameraController;
     [Header("Camera Reference")]
-    [SerializeField] private CameraController cameraController;
+    [SerializeField] private PixelPerfectCameraController cameraController;
 
     private bool isInvulnerable;
 
@@ -92,7 +95,7 @@ public class PlayerController : MonoBehaviour
 
          // Kamerayı otomatik bul
         if (cameraController == null)
-        cameraController = Camera.main.GetComponent<CameraController>();
+        cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
 
     }
 

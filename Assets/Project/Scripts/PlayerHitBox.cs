@@ -3,17 +3,18 @@ using UnityEngine;
 public class PlayerHitBox : MonoBehaviour
 {
     private PlayerController playerController;
-    private CameraController cameraController;
+    //private CameraController cameraController;
     private bool hasHitThisSwing = false;
+
+    private PixelPerfectCameraController cameraController;
     
     private void Start()
-    {
-        playerController = GetComponentInParent<PlayerController>();
-        cameraController = Camera.main?.GetComponent<CameraController>();
-        
-        Debug.Log($"[HITBOX] Start - PlayerController: {(playerController != null ? "FOUND" : "NULL")}");
-        Debug.Log($"[HITBOX] Start - CameraController: {(cameraController != null ? "FOUND" : "NULL")}");
-    }
+{
+    playerController = GetComponentInParent<PlayerController>();
+    cameraController = Camera.main?.GetComponent<PixelPerfectCameraController>();
+    
+    Debug.Log($"[HITBOX] Start - CameraController: {(cameraController != null ? "FOUND" : "NULL")}");
+}
     
     public void ResetHitFlag()
     {

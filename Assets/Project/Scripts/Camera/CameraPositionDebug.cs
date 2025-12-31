@@ -2,21 +2,35 @@ using UnityEngine;
 
 public class CameraPositionDebug : MonoBehaviour
 {
+    [SerializeField] private float pixelsPerUnit = 16f;
+    
     private void OnGUI()
     {
         Vector3 pos = transform.position;
-        float ppu = 16f;
         
-        float subPixelX = (pos.x * ppu) % 1f;
-        float subPixelY = (pos.y * ppu) % 1f;
+        float subPixelX = (pos.x * pixelsPerUnit) % 1f;
+        float subPixelY = (pos.y * pixelsPerUnit) % 1f;
         
-        GUI.Label(new Rect(10, 10, 300, 20), $"Cam X: {pos.x:F4} (sub: {subPixelX:F2})");
-        GUI.Label(new Rect(10, 30, 300, 20), $"Cam Y: {pos.y:F4} (sub: {subPixelY:F2})");
+        // Normalize to -0.5 to 0.5 range
+        if (subPixelX > 0.5f) subPixelX -= 1f;
+        if (subPixelY > 0.5f) subPixelY -= 1f;
         
-        if (Mathf.Abs(subPixelX) > 0.01f || Mathf.Abs(subPixelY) > 0.01f)
+        GUIStyle style = new GUIStyle(GUI.skin.label);
+        style.fontSize = 16;
+        style.normal.textColor = Color.white;
+        
+        GUI.Label(new Rect(10, 10, 400, 30), $"Camera X: {pos.x:F4} (offset: {subPixelX:F3})", style);
+        GUI.Label(new Rect(10, 40, 400, 30), $"Camera Y: {pos.y:F4} (offset: {subPixelY:F3})", style);
+        
+        if (Mathf.Abs(subPixelX) > 0.02f || Mathf.Abs(subPixelY) > 0.02f)
         {
-            GUI.color = Color.red;
-            GUI.Label(new Rect(10, 50, 300, 20), "⚠️ SUB-PIXEL OFFSET DETECTED!");
+            style.normal.textColor = Color.red;
+            GUI.Label(new Rect(10, 70, 400, 30), "⚠️ SUB-PIXEL JITTER!", style);
+        }
+        else
+        {
+            style.normal.textColor = Color.green;
+            GUI.Label(new Rect(10, 70, 400, 30), "✓ Pixel Perfect", style);
         }
     }
 }
