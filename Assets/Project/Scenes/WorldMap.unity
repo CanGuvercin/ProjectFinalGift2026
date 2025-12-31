@@ -202,7 +202,7 @@ TilemapRenderer:
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
-  m_Mode: 1
+  m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
 --- !u!1839735485 &275546535
@@ -3271,11 +3271,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -11.53
+      value: -11.79
       objectReference: {fileID: 0}
     - target: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.49
+      value: 5.41
       objectReference: {fileID: 0}
     - target: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3409,7 +3409,7 @@ TilemapRenderer:
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
-  m_Mode: 1
+  m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
 --- !u!1839735485 &626357225
