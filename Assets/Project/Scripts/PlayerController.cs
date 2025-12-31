@@ -210,7 +210,8 @@ public class PlayerController : MonoBehaviour
         if (isDashing)
             return;
 
-        rb.velocity = moveInput.normalized * moveSpeed;
+        Vector2 velocity = moveInput.normalized * moveSpeed;
+        rb.velocity = velocity;
     }
 
     //=========================AUDIO AND SFX =========================

@@ -152,21 +152,39 @@ public class CameraController : MonoBehaviour
         shakeRoutine = StartCoroutine(ScreenShakeRoutine(intensity));
     }
 
-    private IEnumerator ScreenShakeRoutine(float intensity)
+private IEnumerator ScreenShakeRoutine(float intensity)
+{
+    float elapsed = 0f;
+    float pixelsPerUnit = 16f;
+
+    while (elapsed < shakeDuration)
     {
-        float elapsed = 0f;
+        // Shake miktarını pixel cinsinden hesapla
+        int xPixelOffset = Mathf.RoundToInt(Random.Range(-intensity * pixelsPerUnit, intensity * pixelsPerUnit));
+        int yPixelOffset = Mathf.RoundToInt(Random.Range(-intensity * pixelsPerUnit, intensity * pixelsPerUnit));
+        
+        // Pixel offset'i world space'e çevir
+        float x = xPixelOffset / pixelsPerUnit;
+        float y = yPixelOffset / pixelsPerUnit;
 
-        while (elapsed < shakeDuration)
-        {
-            float x = Random.Range(-1f, 1f) * intensity;
-            float y = Random.Range(-1f, 1f) * intensity;
+        // Local position'a ekle (zaten snap'li olmalı)
+        Vector3 shakePos = originalLocalPos + new Vector3(x, y, 0);
+        
+        // Ek güvenlik: bir kez daha snap
+        shakePos.x = Mathf.Round(shakePos.x * pixelsPerUnit) / pixelsPerUnit;
+        shakePos.y = Mathf.Round(shakePos.y * pixelsPerUnit) / pixelsPerUnit;
+        
+        transform.localPosition = shakePos;
 
-            transform.localPosition = originalLocalPos + new Vector3(x, y, 0);
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.localPosition = originalLocalPos;
+        elapsed += Time.deltaTime;
+        yield return null;
     }
+
+    // Bitince tam orijinal pozisyona dön (snap'li)
+    Vector3 resetPos = originalLocalPos;
+    resetPos.x = Mathf.Round(resetPos.x * pixelsPerUnit) / pixelsPerUnit;
+    resetPos.y = Mathf.Round(resetPos.y * pixelsPerUnit) / pixelsPerUnit;
+    
+    transform.localPosition = resetPos;
+}
 }
