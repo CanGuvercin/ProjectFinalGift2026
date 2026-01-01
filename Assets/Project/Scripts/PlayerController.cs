@@ -6,8 +6,6 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
-
-
     [Header("Damage")]
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private int currentHealth;
@@ -17,7 +15,6 @@ public class PlayerController : MonoBehaviour
     [Header("Combat")]
     [SerializeField] private Collider2D hitBoxCollider;
 
-
     [Header("For Player PosRef")]
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Vector2 upOffset = new Vector2(0f, 0.5f);
@@ -25,10 +22,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Vector2 leftOffset = new Vector2(-0.5f, 0f);
     [SerializeField] private Vector2 rightOffset = new Vector2(0.5f, 0f);
 
-
     [Header("SFX Settings")]
     [SerializeField] private AudioSource sfxSource;
-    // Core sounds
     [SerializeField] private AudioClip swordSwing;
     [SerializeField] private AudioClip swordHit;
     [SerializeField] private AudioClip dashSfx;
@@ -51,52 +46,42 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Fallback unlock time if animation event is not set yet.")]
     [SerializeField] private float interactFallbackTime = 1f;
 
-    // old cam v1
-    //[Header("Camera Reference")]
-    //[SerializeField] private CameraController cameraController;
     [Header("Camera Reference")]
     [SerializeField] private PixelPerfectCameraController cameraController;
 
+    [Header("Rendering Fix")]
+    [SerializeField] private int forcedSortingOrder = 0;
+
     private bool isInvulnerable;
-
-
     private bool isDashing;
     private float lastDashTime;
     private Coroutine dashCo;
-
     private float lastAttackTime;
     private float lastInteractTime;
-
     private bool isInteracting;
 
     private Rigidbody2D rb;
     private Animator animator;
+    private SpriteRenderer spriteRenderer; // YENİ
 
-    // Input System
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
-
-    // Last direction memory (for idle / attack / interact / dash direction)
     private Vector2 lastMoveDir = Vector2.down;
-
-    private PlayerHitBox playerHitBox; // ← Ekle
-
+    private PlayerHitBox playerHitBox;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>(); // YENİ
         inputActions = new PlayerInputActions();
         hitBoxCollider.enabled = false;
         currentHealth = maxHealth;
 
-        // PlayerHitBox referansını al
         playerHitBox = hitBoxCollider.GetComponent<PlayerHitBox>();
 
-         // Kamerayı otomatik bul
         if (cameraController == null)
-        cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
-
+            cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
     }
 
     private void OnEnable()
@@ -120,7 +105,25 @@ public class PlayerController : MonoBehaviour
         Move();
     }
 
-    //=========================== DAMAGE SYSYEM ==========================
+    // YENİ - Rendering'i garanti altına al
+    private void LateUpdate()
+    {
+        // Z pozisyonunu ZORLA sıfırda tut
+        Vector3 pos = transform.position;
+        if (Mathf.Abs(pos.z) > 0.001f)
+        {
+            pos.z = 0f;
+            transform.position = pos;
+        }
+
+        // Sorting Order'ı ZORLA sabit tut (Animator override'ı önle)
+        if (spriteRenderer != null && spriteRenderer.sortingOrder != forcedSortingOrder)
+        {
+            spriteRenderer.sortingOrder = forcedSortingOrder;
+        }
+    }
+
+    // ================= DAMAGE SYSTEM =================
 
     public void TakeDamage(int damage, Vector2 damageSourcePos)
     {
@@ -129,23 +132,18 @@ public class PlayerController : MonoBehaviour
         currentHealth -= damage;
         if (currentHealth < 0) currentHealth = 0;
 
-        // Direction for damage animation
         Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
         lastMoveDir = hitDir;
 
         animator.SetFloat("moveX", hitDir.x);
         animator.SetFloat("moveY", hitDir.y);
-
         animator.SetBool("isDamaged", true);
 
-        // ✅ KAMERA SHAKE
         if (cameraController != null)
-        cameraController.OnPlayerHurt(damage);
+            cameraController.OnPlayerHurt(damage);
 
-        // SFX
         PlayHurtSfx();
 
-        // Knockback
         rb.velocity = Vector2.zero;
         rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
 
@@ -155,26 +153,22 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DamageRoutine()
     {
         isInvulnerable = true;
-
         yield return new WaitForSeconds(0.1f);
         animator.SetBool("isDamaged", false);
-
         yield return new WaitForSeconds(invulnerableTime);
         isInvulnerable = false;
     }
 
     public void TakeDamage()
-{
-    animator.SetTrigger("Damage");
-    PlayHurtSfx();
-}
-
+    {
+        animator.SetTrigger("Damage");
+        PlayHurtSfx();
+    }
 
     // ================= INPUT =================
 
     private void ReadInput()
     {
-        // During dash / interact, ignore movement input updates (but we still allow dash coroutine to move rb)
         if (isInteracting || isDashing)
         {
             moveInput = Vector2.zero;
@@ -182,18 +176,14 @@ public class PlayerController : MonoBehaviour
         else
         {
             moveInput = inputActions.Player.Move.ReadValue<Vector2>();
-
             if (moveInput != Vector2.zero)
                 lastMoveDir = moveInput.normalized;
         }
 
-        // Actions
         if (inputActions.Player.Attack.triggered)
             TryAttack();
-
         if (inputActions.Player.Interact.triggered)
             TryInteract();
-
         if (inputActions.Player.Dash.triggered)
             TryDash();
     }
@@ -202,8 +192,6 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        // IMPORTANT: Do NOT zero velocity here while dashing,
-        // because DashRoutine controls rb.velocity during the dash.
         if (isInteracting)
         {
             rb.velocity = Vector2.zero;
@@ -217,7 +205,7 @@ public class PlayerController : MonoBehaviour
         rb.velocity = velocity;
     }
 
-    //=========================AUDIO AND SFX =========================
+    // ================= AUDIO AND SFX =================
 
     private void PlaySfx(AudioClip clip, float pitchMin = 0.95f, float pitchMax = 1.05f)
     {
@@ -225,67 +213,42 @@ public class PlayerController : MonoBehaviour
         sfxSource.PlayOneShot(clip);
     }
 
-    public void PlaySwordSwingSfx()
-    {
-        PlaySfx(swordSwing);
-    }
-
-    public void PlaySwordHitSfx()
-    {
-        PlaySfx(swordHit, 0.98f, 1.02f);
-    }
-
-    public void PlayDashSfx()
-    {
-        PlaySfx(dashSfx, 0.9f, 1.1f);
-    }
-
+    public void PlaySwordSwingSfx() => PlaySfx(swordSwing);
+    public void PlaySwordHitSfx() => PlaySfx(swordHit, 0.98f, 1.02f);
+    public void PlayDashSfx() => PlaySfx(dashSfx, 0.9f, 1.1f);
     public void PlayWalkSfx()
     {
         if (moveInput.sqrMagnitude < 0.01f) return;
-
         PlaySfx(walkSfx, 0.9f, 1.05f);
     }
+    public void PlayHurtSfx() => PlaySfx(hurtSfx, 0.95f, 1.05f);
 
-    public void PlayHurtSfx()
-    {
-        PlaySfx(hurtSfx, 0.95f, 1.05f);
-    }
-
-    // ================ HITBOX / COMBAT ZONE ===================
+    // ================= HITBOX / COMBAT ZONE =================
 
     public void EnableHitBox()
     {
-         hitBoxCollider.enabled = true;
-    
-    // Hit flag'ini sıfırla - YENİ SWING BAŞLIYOR!
-    if (playerHitBox != null)
-        playerHitBox.ResetHitFlag();
-        
-    Debug.Log("[PLAYER] HitBox ENABLED + Flag reset");
+        hitBoxCollider.enabled = true;
+        if (playerHitBox != null)
+            playerHitBox.ResetHitFlag();
+        Debug.Log("[PLAYER] HitBox ENABLED + Flag reset");
     }
 
     public void DisableHitBox()
     {
         hitBoxCollider.enabled = false;
-    Debug.Log("[PLAYER] HitBox DISABLED");
+        Debug.Log("[PLAYER] HitBox DISABLED");
     }
-
 
     // ================= ANIMATOR =================
 
     private void UpdateAnimator()
     {
-        // While dashing/interacting, keep "isMoving" false so Idle/Dash trees behave cleanly
         bool isMoving = !isDashing && !isInteracting && moveInput != Vector2.zero;
         animator.SetBool("isMoving", isMoving);
 
         Vector2 dir = isMoving ? moveInput : lastMoveDir;
-
         animator.SetFloat("moveX", dir.x);
         animator.SetFloat("moveY", dir.y);
-
-        // This MUST exist in Animator as a bool parameter
         animator.SetBool("isDashing", isDashing);
     }
 
@@ -297,7 +260,6 @@ public class PlayerController : MonoBehaviour
         if (Time.time - lastDashTime < dashCooldown) return;
 
         lastDashTime = Time.time;
-
         Vector2 dir = (moveInput != Vector2.zero) ? moveInput.normalized : lastMoveDir;
 
         animator.SetFloat("moveX", dir.x);
@@ -309,10 +271,10 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(DashRoutine(dir));
     }
 
-
     private System.Collections.IEnumerator DashRoutine(Vector2 dir)
     {
         float t = 0f;
+        
         while (t < dashDuration)
         {
             rb.velocity = dir * dashSpeed;
@@ -321,11 +283,9 @@ public class PlayerController : MonoBehaviour
         }
 
         rb.velocity = Vector2.zero;
-
         isDashing = false;
         animator.SetBool("isDashing", false);
     }
-
 
     // ================= ATTACK =================
 
@@ -341,12 +301,10 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("moveY", lastMoveDir.y);
 
         UpdateAttackPointPosition();
-
         animator.SetTrigger("attack");
 
-        // Kamera'ya attack bildir (miss olabilir)
         if (cameraController != null)
-        cameraController.OnAttackMiss(); // Önce miss varsay
+            cameraController.OnAttackMiss();
     }
 
     private void UpdateAttackPointPosition()
@@ -361,7 +319,6 @@ public class PlayerController : MonoBehaviour
             attackPoint.localPosition = rightOffset;
     }
 
-
     // ================= INTERACT =================
 
     private void TryInteract()
@@ -371,19 +328,16 @@ public class PlayerController : MonoBehaviour
 
         isInteracting = true;
         lastInteractTime = Time.time;
-
         rb.velocity = Vector2.zero;
 
         animator.SetFloat("moveX", lastMoveDir.x);
         animator.SetFloat("moveY", lastMoveDir.y);
         animator.SetTrigger("Interact");
 
-        // Fallback unlock (until you wire Animation Event properly)
         CancelInvoke(nameof(EndInteract));
         Invoke(nameof(EndInteract), interactFallbackTime);
     }
 
-    // Called by Animation Event on the LAST frame of Interact (recommended)
     public void EndInteract()
     {
         CancelInvoke(nameof(EndInteract));
@@ -392,7 +346,8 @@ public class PlayerController : MonoBehaviour
 
     public void OnSwordHit()
     {
-    PlaySwordHitSfx();
-    Debug.Log("[PLAYER] Sword HIT sound played!");
+        PlaySwordHitSfx();
+        Debug.Log("[PLAYER] Sword HIT sound played!");
     }
 }
+//..
