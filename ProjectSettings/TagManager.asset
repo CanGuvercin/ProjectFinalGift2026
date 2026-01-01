@@ -53,6 +53,9 @@ TagManager:
   - name: World
     uniqueID: 3566459705
     locked: 0
+  - name: Player
+    uniqueID: 4083161143
+    locked: 0
   - name: AboveWorld
     uniqueID: 1216082445
     locked: 0
