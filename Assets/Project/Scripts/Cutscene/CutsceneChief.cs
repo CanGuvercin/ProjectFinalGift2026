@@ -42,6 +42,9 @@ public class CutsceneChief : MonoBehaviour
         CutsceneState state = cutsceneStates[currentState];
         Debug.Log($"[CutsceneChief] === Playing State {currentState}: {state.stateName} ===");
         
+        // Kamera pozisyonunu senkronize et (ÖNCE!)
+        SyncCameraPositions(state);
+        
         // ÖNCE DEACTIVATE (önceki state'in objelerini kapat)
         if (state.objectsToDeactivate != null)
         {
@@ -86,6 +89,48 @@ public class CutsceneChief : MonoBehaviour
         else
         {
             Debug.Log($"[State {currentState}] No timeline, state ready");
+        }
+    }
+    
+    private void SyncCameraPositions(CutsceneState nextState)
+    {
+        // Aktif kamerayı bul
+        Camera activeCamera = Camera.main;
+        if (activeCamera == null)
+        {
+            // Fallback: İlk aktif kamerayı bul
+            Camera[] allCameras = FindObjectsOfType<Camera>();
+            foreach (Camera cam in allCameras)
+            {
+                if (cam.enabled)
+                {
+                    activeCamera = cam;
+                    break;
+                }
+            }
+        }
+        
+        // Yeni state'in kamerasını bul
+        Camera nextCamera = null;
+        foreach (GameObject obj in nextState.objectsToActivate)
+        {
+            if (obj != null)
+            {
+                Camera cam = obj.GetComponentInChildren<Camera>(true);
+                if (cam != null)
+                {
+                    nextCamera = cam;
+                    break;
+                }
+            }
+        }
+        
+        // Pozisyonu kopyala
+        if (activeCamera != null && nextCamera != null && activeCamera != nextCamera)
+        {
+            nextCamera.transform.position = activeCamera.transform.position;
+            nextCamera.transform.rotation = activeCamera.transform.rotation;
+            Debug.Log($"[CutsceneChief] Camera synced: {activeCamera.name} → {nextCamera.name} at {nextCamera.transform.position}");
         }
     }
     
