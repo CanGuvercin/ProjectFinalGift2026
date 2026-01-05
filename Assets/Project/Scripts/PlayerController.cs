@@ -230,13 +230,11 @@ public class PlayerController : MonoBehaviour
         hitBoxCollider.enabled = true;
         if (playerHitBox != null)
             playerHitBox.ResetHitFlag();
-        Debug.Log("[PLAYER] HitBox ENABLED + Flag reset");
     }
 
     public void DisableHitBox()
     {
         hitBoxCollider.enabled = false;
-        Debug.Log("[PLAYER] HitBox DISABLED");
     }
 
     // ================= ANIMATOR =================
@@ -347,7 +345,6 @@ public class PlayerController : MonoBehaviour
     public void OnSwordHit()
     {
         PlaySwordHitSfx();
-        Debug.Log("[PLAYER] Sword HIT sound played!");
     }
 }
 //..
