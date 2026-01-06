@@ -76,7 +76,9 @@ public class PlayerController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>(); // YENİ
         inputActions = new PlayerInputActions();
         hitBoxCollider.enabled = false;
-        currentHealth = maxHealth;
+        //currentHealth = maxHealth;
+        currentHealth = 50;
+        Debug.Log(currentHealth);
 
         playerHitBox = hitBoxCollider.GetComponent<PlayerHitBox>();
 
@@ -272,7 +274,7 @@ public class PlayerController : MonoBehaviour
     private System.Collections.IEnumerator DashRoutine(Vector2 dir)
     {
         float t = 0f;
-        
+
         while (t < dashDuration)
         {
             rb.velocity = dir * dashSpeed;
@@ -320,21 +322,35 @@ public class PlayerController : MonoBehaviour
     // ================= INTERACT =================
 
     private void TryInteract()
-    {
-        if (isInteracting || isDashing) return;
-        if (Time.time - lastInteractTime < interactCooldown) return;
+{
+    if (isInteracting || isDashing) return;
+    if (Time.time - lastInteractTime < interactCooldown) return;
 
-        isInteracting = true;
-        lastInteractTime = Time.time;
-        rb.velocity = Vector2.zero;
+    // Medic pack kontrolü (YENİ!)
+    //MedicPack[] medicPacks = FindObjectsOfType<MedicPack>();
+    //foreach (MedicPack pack in medicPacks)
+    //{
+        //if (pack.CanInteract(transform))
+        //{
+         //   pack.Interact(gameObject);
+       //     return; // Medic pack kullanıldı, normal interact animasyonu oynama
+     //   }
+   // }
+    
 
-        animator.SetFloat("moveX", lastMoveDir.x);
-        animator.SetFloat("moveY", lastMoveDir.y);
-        animator.SetTrigger("Interact");
+    // Normal interact animasyonu (kılıç çekme vs.)
+    isInteracting = true;
+    lastInteractTime = Time.time;
+    rb.velocity = Vector2.zero;
 
-        CancelInvoke(nameof(EndInteract));
-        Invoke(nameof(EndInteract), interactFallbackTime);
-    }
+    animator.SetFloat("moveX", lastMoveDir.x);
+    animator.SetFloat("moveY", lastMoveDir.y);
+    animator.SetTrigger("Interact");
+
+    CancelInvoke(nameof(EndInteract));
+    Invoke(nameof(EndInteract), interactFallbackTime);
+}
+
 
     public void EndInteract()
     {
@@ -346,5 +362,27 @@ public class PlayerController : MonoBehaviour
     {
         PlaySwordHitSfx();
     }
+
+    public void Heal(int amount)
+    {
+        currentHealth += amount;
+        currentHealth = Mathf.Min(maxHealth, currentHealth); // Max'ı geçme
+
+        Debug.Log($"[Player] Healed {amount} HP! Current HP: {currentHealth}/{maxHealth}");
+
+        // TODO: HP Bar UI update
+    }
+
+    public int GetMaxHealth()
+    {
+        return maxHealth;
+    }
+
+    public int GetCurrentHealth()
+    {
+        return currentHealth;
+    }
+
+
+    
 }
-//..
