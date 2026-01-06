@@ -5258,6 +5258,8 @@ PlayableDirector:
     value: {fileID: 1009985890}
   - key: {fileID: -7695354700701399580, guid: 41c4c1a7f955c364ca853476789e1009, type: 2}
     value: {fileID: 0}
+  - key: {fileID: 7714670079258236138, guid: 41c4c1a7f955c364ca853476789e1009, type: 2}
+    value: {fileID: 0}
   m_ExposedReferences:
     m_References:
     - 65273dac350c6ba49bc0c4408847cfa1: {fileID: 1515629483}
@@ -5289,12 +5291,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41efb90487c4763418237f8077080c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  masterTimeline: {fileID: 361106727}
-  cutsceneCamera: {fileID: 1852348990}
-  cutsceneObjects: {fileID: 453324504}
-  mainCamera: {fileID: 1592345070}
-  player: {fileID: 1603027724}
-  spawnPosition: {fileID: 2138274028}
 --- !u!1 &391901403
 GameObject:
   m_ObjectHideFlags: 0
@@ -68511,6 +68507,10 @@ PlayableDirector:
     value: {fileID: 2113595898}
   - key: {fileID: 2453809762473319272, guid: fe5e1db6b1bc6104a888d5664594f69e, type: 2}
     value: {fileID: 544980768}
+  - key: {fileID: 4237923563935433943, guid: fe5e1db6b1bc6104a888d5664594f69e, type: 2}
+    value: {fileID: 0}
+  - key: {fileID: -8748227916846263840, guid: fe5e1db6b1bc6104a888d5664594f69e, type: 2}
+    value: {fileID: 0}
   m_ExposedReferences:
     m_References: []
 --- !u!4 &1515629485
@@ -68671,11 +68671,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!1 &1592345070 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8914404382816989638, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-  m_PrefabInstance: {fileID: 6298110647093521938}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1602333889
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -69337,6 +69332,9 @@ MonoBehaviour:
     - {fileID: 1603027724}
     - {fileID: 1478051495}
     playerSpawnPosition: {fileID: 0}
+    ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
   - stateName: State1_Tutorial
     timeline: {fileID: 0}
     objectsToActivate:
@@ -69346,8 +69344,13 @@ MonoBehaviour:
     - {fileID: 453324504}
     - {fileID: 1852348990}
     playerSpawnPosition: {fileID: 2138274028}
+    ambientMusic: {fileID: 0}
+    musicVolume: 0.5
+    fadeMusic: 1
   currentState: 0
   saveKey: GameState
+  musicSource: {fileID: 0}
+  fadeDuration: 1.5
 --- !u!4 &2133392118
 Transform:
   m_ObjectHideFlags: 0

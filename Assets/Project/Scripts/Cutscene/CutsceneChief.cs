@@ -11,6 +11,11 @@ public class CutsceneChief : MonoBehaviour
         public GameObject[] objectsToActivate;
         public GameObject[] objectsToDeactivate;
         public Transform playerSpawnPosition;
+        
+        [Header("Music")]
+        public AudioClip ambientMusic; // YENİ!
+        [Range(0f, 1f)] public float musicVolume = 0.5f; // YENİ!
+        public bool fadeMusic = true; // YENİ! (Smooth geçiş)
     }
     
     [Header("Cutscene States")]
@@ -22,12 +27,28 @@ public class CutsceneChief : MonoBehaviour
     [Header("Save Key")]
     [SerializeField] private string saveKey = "GameState";
     
+    [Header("Music Settings")]
+    [SerializeField] private AudioSource musicSource;
+    [SerializeField] private float fadeDuration = 1.5f;
+    
+    private Coroutine musicFadeCoroutine;
+    
+    private void Awake()
+    {
+        // Music AudioSource yoksa oluştur
+        if (musicSource == null)
+        {
+            GameObject musicObj = new GameObject("CutsceneMusic");
+            musicObj.transform.SetParent(transform);
+            musicSource = musicObj.AddComponent<AudioSource>();
+            musicSource.loop = true;
+            musicSource.playOnAwake = false;
+        }
+    }
+    
     private void Start()
     {
-        // Kayıtlı state'i yükle
         LoadState();
-        
-        // Mevcut state'i oynat
         PlayCurrentState();
     }
     
@@ -42,10 +63,13 @@ public class CutsceneChief : MonoBehaviour
         CutsceneState state = cutsceneStates[currentState];
         Debug.Log($"[CutsceneChief] === Playing State {currentState}: {state.stateName} ===");
         
-        // Kamera pozisyonunu senkronize et (ÖNCE!)
+        // Müziği kontrol et
+        HandleMusic(state);
+        
+        // Kamera pozisyonunu senkronize et
         SyncCameraPositions(state);
         
-        // ÖNCE DEACTIVATE (önceki state'in objelerini kapat)
+        // Deactivate
         if (state.objectsToDeactivate != null)
         {
             foreach (GameObject obj in state.objectsToDeactivate)
@@ -58,7 +82,7 @@ public class CutsceneChief : MonoBehaviour
             }
         }
         
-        // SONRA ACTIVATE (bu state'in objelerini aç)
+        // Activate
         if (state.objectsToActivate != null)
         {
             foreach (GameObject obj in state.objectsToActivate)
@@ -71,7 +95,7 @@ public class CutsceneChief : MonoBehaviour
             }
         }
         
-        // Player spawn (eğer varsa)
+        // Player spawn
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null && state.playerSpawnPosition != null)
         {
@@ -79,7 +103,7 @@ public class CutsceneChief : MonoBehaviour
             Debug.Log($"[State {currentState}] Player spawned at: {state.playerSpawnPosition.position}");
         }
         
-        // Timeline varsa oynat
+        // Timeline
         if (state.timeline != null)
         {
             state.timeline.Play();
@@ -92,13 +116,81 @@ public class CutsceneChief : MonoBehaviour
         }
     }
     
+    private void HandleMusic(CutsceneState newState)
+    {
+        // Müzik slotu boş → Devam et (değişiklik yok)
+        if (newState.ambientMusic == null)
+        {
+            Debug.Log($"[Music] No music defined for State {currentState}, continuing current music");
+            return;
+        }
+        
+        // Aynı müzik çalıyor → Devam et
+        if (musicSource.clip == newState.ambientMusic && musicSource.isPlaying)
+        {
+            Debug.Log($"[Music] Same music already playing: {newState.ambientMusic.name}");
+            return;
+        }
+        
+        // Yeni müzik çal
+        if (newState.fadeMusic)
+        {
+            // Fade ile geçiş
+            if (musicFadeCoroutine != null)
+            {
+                StopCoroutine(musicFadeCoroutine);
+            }
+            musicFadeCoroutine = StartCoroutine(FadeToNewMusic(newState.ambientMusic, newState.musicVolume));
+        }
+        else
+        {
+            // Anında geçiş
+            musicSource.clip = newState.ambientMusic;
+            musicSource.volume = newState.musicVolume;
+            musicSource.Play();
+            Debug.Log($"[Music] Playing: {newState.ambientMusic.name}");
+        }
+    }
+    
+    private System.Collections.IEnumerator FadeToNewMusic(AudioClip newClip, float targetVolume)
+    {
+        // Fade out (mevcut müzik)
+        float startVolume = musicSource.volume;
+        
+        if (musicSource.isPlaying)
+        {
+            float elapsed = 0f;
+            while (elapsed < fadeDuration / 2f)
+            {
+                elapsed += Time.deltaTime;
+                musicSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / (fadeDuration / 2f));
+                yield return null;
+            }
+        }
+        
+        // Yeni müziği başlat
+        musicSource.clip = newClip;
+        musicSource.volume = 0f;
+        musicSource.Play();
+        Debug.Log($"[Music] Fading to: {newClip.name}");
+        
+        // Fade in (yeni müzik)
+        float elapsed2 = 0f;
+        while (elapsed2 < fadeDuration / 2f)
+        {
+            elapsed2 += Time.deltaTime;
+            musicSource.volume = Mathf.Lerp(0f, targetVolume, elapsed2 / (fadeDuration / 2f));
+            yield return null;
+        }
+        
+        musicSource.volume = targetVolume;
+    }
+    
     private void SyncCameraPositions(CutsceneState nextState)
     {
-        // Aktif kamerayı bul
         Camera activeCamera = Camera.main;
         if (activeCamera == null)
         {
-            // Fallback: İlk aktif kamerayı bul
             Camera[] allCameras = FindObjectsOfType<Camera>();
             foreach (Camera cam in allCameras)
             {
@@ -110,7 +202,6 @@ public class CutsceneChief : MonoBehaviour
             }
         }
         
-        // Yeni state'in kamerasını bul
         Camera nextCamera = null;
         foreach (GameObject obj in nextState.objectsToActivate)
         {
@@ -125,7 +216,6 @@ public class CutsceneChief : MonoBehaviour
             }
         }
         
-        // Pozisyonu kopyala
         if (activeCamera != null && nextCamera != null && activeCamera != nextCamera)
         {
             nextCamera.transform.position = activeCamera.transform.position;
@@ -137,11 +227,7 @@ public class CutsceneChief : MonoBehaviour
     private void OnTimelineStopped(PlayableDirector director)
     {
         Debug.Log($"[CutsceneChief] Timeline finished: {director.name}");
-        
-        // Event'i temizle
         director.stopped -= OnTimelineStopped;
-        
-        // Bir sonraki state'e geç
         AdvanceState();
     }
     
@@ -195,7 +281,6 @@ public class CutsceneChief : MonoBehaviour
         }
     }
     
-    // Debug: State'i sıfırla
     [ContextMenu("Reset State to 0")]
     public void ResetState()
     {
@@ -205,14 +290,12 @@ public class CutsceneChief : MonoBehaviour
         Debug.Log("[CutsceneChief] State reset to 0 (save deleted)");
     }
     
-    // Debug: Bir sonraki state
     [ContextMenu("Advance State (Debug)")]
     public void DebugAdvanceState()
     {
         AdvanceState();
     }
     
-    // Debug: Belirli state'e git
     [ContextMenu("Go to State 1")]
     public void GoToState1() { SetState(1); }
     
@@ -222,7 +305,6 @@ public class CutsceneChief : MonoBehaviour
     [ContextMenu("Go to State 3")]
     public void GoToState3() { SetState(3); }
     
-    // ESC ile skip
     private void Update()
     {
         if (currentState >= 0 && currentState < cutsceneStates.Length)
