@@ -6821,7 +6821,12 @@ MonoBehaviour:
   heartFull: {fileID: -133034080, guid: 8cfd0a4e65899f74a8ccb1d7305eab8d, type: 3}
   heartHalf: {fileID: 128393670, guid: 8cfd0a4e65899f74a8ccb1d7305eab8d, type: 3}
   heartEmpty: {fileID: -238239699, guid: 8cfd0a4e65899f74a8ccb1d7305eab8d, type: 3}
-  heartImages: []
+  heartImages:
+  - {fileID: 1493124056}
+  - {fileID: 1221936581}
+  - {fileID: 142399313}
+  - {fileID: 610100155}
+  - {fileID: 790099372}
   player: {fileID: 1603027727}
   hpPerHeart: 20
 --- !u!1 &453324504
@@ -124873,9 +124878,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healAmount: 30
   fullHeal: 1
-  interactionRadius: 1.2
+  pickupRadius: 0.8
   interactPrompt: {fileID: 0}
-  pickupSound: {fileID: 0}
+  pickupSound: {fileID: 8300000, guid: 92687cd0eb6504049987e174bd617c99, type: 3}
+  enableFloating: 1
+  floatHeight: 0.3
+  floatSpeed: 2
 --- !u!212 &2044250311
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -124937,7 +124945,7 @@ Transform:
   m_GameObject: {fileID: 2044250309}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.74, y: -3.79, z: -10.226391}
+  m_LocalPosition: {x: 12.74, y: -3.79, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
