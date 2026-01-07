@@ -80,6 +80,7 @@ public class PlayerHitBox : MonoBehaviour
             if (playerController != null)
             {
                 playerController.OnSwordHit();
+                playerController.PlaySlashVFX();
                 Debug.Log("[HITBOX] Called PlayerController.OnSwordHit()");
             }
             
@@ -94,4 +95,6 @@ public class PlayerHitBox : MonoBehaviour
             Debug.Log("[HITBOX] ❌ NOT an enemy, ignoring");
         }
     }
+
+    
 }

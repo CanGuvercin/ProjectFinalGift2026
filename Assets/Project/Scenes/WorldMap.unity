@@ -9030,6 +9030,8 @@ MonoBehaviour:
   medicPack: {fileID: 2044250309}
   door: {fileID: 1991564599}
   exitBarrier: {fileID: 612518107}
+  stateTransitionLine: {fileID: 1697308710}
+  nextState: 2
   tutorialCanvas: {fileID: 1672044948}
   tutorialText: {fileID: 1225843091}
   proximityRadius: 3
@@ -9052,11 +9054,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -22.11
+      value: 1.71
       objectReference: {fileID: 0}
     - target: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.62
+      value: 0.99
       objectReference: {fileID: 0}
     - target: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9090,9 +9092,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7372164780629816392, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8693013018182232900, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
       propertyPath: m_Name
       value: AliMainChar
+      objectReference: {fileID: 0}
+    - target: {fileID: 8693013018182232900, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -9277,8 +9287,8 @@ MonoBehaviour:
   startDelay: 1
   dialogDuration: 2.5
   endDelay: 1
-  dialogCanvas: {fileID: 0}
-  dialogText: {fileID: 0}
+  dialogCanvas: {fileID: 1672044948}
+  dialogText: {fileID: 1225843091}
   audioSource: {fileID: 261605107}
   dialogSfx: {fileID: 0}
   dialogLines:
@@ -135887,6 +135897,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9eaf4d983cb42474ab90f99cf9dc8309, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &1603027728 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
+  m_PrefabInstance: {fileID: 486484134}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1617956422
 GameObject:
   m_ObjectHideFlags: 0
@@ -136849,6 +136864,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 1603027728}
+    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
@@ -136871,6 +136890,10 @@ PrefabInstance:
     - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
+      propertyPath: m_TagString
+      value: MainCamera
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -136927,7 +136950,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: currentState
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.size
@@ -136964,7 +136987,7 @@ PrefabInstance:
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[2].playerSpawnPosition
       value: 
-      objectReference: {fileID: 2138274028}
+      objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[2].objectsToActivate.Array.size
       value: 1

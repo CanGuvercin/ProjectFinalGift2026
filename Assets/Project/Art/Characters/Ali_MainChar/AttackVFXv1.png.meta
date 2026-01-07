@@ -139,12 +139,12 @@ TextureImporter:
       name: AttackVFXv1_0
       rect:
         serializedVersion: 2
-        x: 48
+        x: 0
         y: 0
         width: 48
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -160,12 +160,12 @@ TextureImporter:
       name: AttackVFXv1_1
       rect:
         serializedVersion: 2
-        x: 96
+        x: 48
         y: 0
         width: 48
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -181,12 +181,12 @@ TextureImporter:
       name: AttackVFXv1_2
       rect:
         serializedVersion: 2
-        x: 144
+        x: 96
         y: 0
         width: 48
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -202,12 +202,12 @@ TextureImporter:
       name: AttackVFXv1_3
       rect:
         serializedVersion: 2
-        x: 192
+        x: 144
         y: 0
         width: 48
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -223,12 +223,12 @@ TextureImporter:
       name: AttackVFXv1_4
       rect:
         serializedVersion: 2
-        x: 240
+        x: 192
         y: 0
         width: 48
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -244,12 +244,12 @@ TextureImporter:
       name: AttackVFXv1_5
       rect:
         serializedVersion: 2
-        x: 288
+        x: 240
         y: 0
         width: 48
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -265,12 +265,12 @@ TextureImporter:
       name: AttackVFXv1_6
       rect:
         serializedVersion: 2
-        x: 336
+        x: 288
         y: 0
         width: 48
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -278,6 +278,27 @@ TextureImporter:
       bones: []
       spriteID: dca27bb2986a67f499a73193c642ca6b
       internalID: 1609893577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AttackVFXv1_7
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 0
+        width: 48
+        height: 32
+      alignment: 4
+      pivot: {x: 0, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: de2860ec0fd432549873e571ffda2c39
+      internalID: -855780925
       vertices: []
       indices: 
       edges: []
@@ -300,6 +321,7 @@ TextureImporter:
       AttackVFXv1_4: 1130565680
       AttackVFXv1_5: -279145443
       AttackVFXv1_6: 1609893577
+      AttackVFXv1_7: -855780925
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

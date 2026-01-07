@@ -52,6 +52,11 @@ public class PlayerController : MonoBehaviour
     [Header("Rendering Fix")]
     [SerializeField] private int forcedSortingOrder = 0;
 
+    [Header("VFX")]
+    [SerializeField] private Animator slashVFXAnimator; // SlashVFX child'ının animator'u
+
+
+
     private bool isInvulnerable;
     private bool isDashing;
     private float lastDashTime;
@@ -383,6 +388,29 @@ public class PlayerController : MonoBehaviour
         return currentHealth;
     }
 
-
+    public void PlaySlashVFX()
+{
+    if (slashVFXAnimator == null) return;
+    
+    // Yöne göre trigger
+    if (lastMoveDir == Vector2.right)
+    {
+        slashVFXAnimator.SetTrigger("SlashRight");
+    }
+    else if (lastMoveDir == Vector2.left)
+    {
+        slashVFXAnimator.SetTrigger("SlashLeft");
+    }
+    else if (lastMoveDir == Vector2.up)
+    {
+        slashVFXAnimator.SetTrigger("SlashUp");
+    }
+    else if (lastMoveDir == Vector2.down)
+    {
+        slashVFXAnimator.SetTrigger("SlashDown");
+    }
+    
+    Debug.Log($"[VFX] Slash played: {lastMoveDir}");
+}
     
 }
