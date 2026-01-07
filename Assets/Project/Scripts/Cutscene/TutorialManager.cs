@@ -13,10 +13,8 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private GameObject exitBarrier;
     
     [Header("State Transition")]
+    [SerializeField] private GameObject stateTransitionLine; // 2. collider line GameObject'i
     [SerializeField] private int nextState = 2;
-    [SerializeField] private Transform player;
-    [SerializeField] private Vector2 transitionPosition;
-    [SerializeField] private float transitionRadius = 1f;
     
     [Header("Tutorial UI")]
     [SerializeField] private GameObject tutorialCanvas; // DialogBox background
@@ -57,7 +55,8 @@ public class TutorialManager : MonoBehaviour
     private bool isFrozen = false;
     private float freezeTimer = 0f;
     
-    private PlayerController playerController; // YENİ!
+    private Transform player;
+    private PlayerController playerController;
     
     public static TutorialManager instance;
     
@@ -65,14 +64,11 @@ public class TutorialManager : MonoBehaviour
     {
         instance = this;
         
-        if (player == null)
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
         {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-                playerController = playerObj.GetComponent<PlayerController>(); // YENİ!
-            }
+            player = playerObj.transform;
+            playerController = playerObj.GetComponent<PlayerController>();
         }
     }
     
@@ -107,7 +103,7 @@ public class TutorialManager : MonoBehaviour
         }
         else if (!stateTransitioned)
         {
-            CheckStateTransition();
+            CheckStateTransitionDistance();
         }
     }
     
@@ -190,7 +186,7 @@ public class TutorialManager : MonoBehaviour
             tutorialText.text = message;
         }
         
-        // Player kontrolünü kapat (YENİ!)
+        // Player kontrolünü kapat
         if (playerController != null)
         {
             playerController.enabled = false;
@@ -225,7 +221,7 @@ public class TutorialManager : MonoBehaviour
     
     private void UnfreezeGame()
     {
-        // Player kontrolünü aç (YENİ!)
+        // Player kontrolünü aç
         if (playerController != null)
         {
             playerController.enabled = true;
@@ -305,13 +301,21 @@ public class TutorialManager : MonoBehaviour
         }
     }
     
-    private void CheckStateTransition()
+    private void CheckStateTransitionDistance()
     {
-        if (player == null) return;
+        if (stateTransitionLine == null || player == null) return;
         
-        float distance = Vector2.Distance(player.position, transitionPosition);
+        // Transition line ile player arasındaki mesafe
+        float distance = Vector2.Distance(player.position, stateTransitionLine.transform.position);
         
-        if (distance <= transitionRadius)
+        // Debug log (her 30 frame'de bir)
+        if (Time.frameCount % 30 == 0)
+        {
+            Debug.Log($"[Tutorial] Distance to transition line: {distance:F2}");
+        }
+        
+        // 1 birim yakınsa state geçişi yap
+        if (distance <= 1f)
         {
             TransitionToNextState();
         }
@@ -319,28 +323,46 @@ public class TutorialManager : MonoBehaviour
     
     private void TransitionToNextState()
     {
+        if (stateTransitioned) return;
+        
         stateTransitioned = true;
         
-        Debug.Log($"[Tutorial] Transitioning to State {nextState}");
+        Debug.Log($"[Tutorial] ✅✅✅ Transitioning to State {nextState}!");
         
+        // State değiştir
         CutsceneChief cutsceneChief = FindObjectOfType<CutsceneChief>();
         if (cutsceneChief != null)
         {
+            Debug.Log("[Tutorial] CutsceneChief found! Calling SetState...");
             cutsceneChief.SetState(nextState);
+            Debug.Log($"[Tutorial] SetState({nextState}) called!");
+        }
+        else
+        {
+            Debug.LogError("[Tutorial] CutsceneChief NOT FOUND!");
         }
     }
     
     private void OnDrawGizmosSelected()
     {
-        // State transition point
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transitionPosition, transitionRadius);
+        // Transition line
+        if (stateTransitionLine != null)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(stateTransitionLine.transform.position, 1f);
+            
+            // Player'dan çizgi çek
+            if (player != null)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(player.position, stateTransitionLine.transform.position);
+            }
+        }
         
         // Proximity radius (Enemy)
         if (slimes != null && slimes.Length > 0)
         {
             Gizmos.color = Color.red;
-            //..
             foreach (GameObject slime in slimes)
             {
                 if (slime != null)

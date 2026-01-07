@@ -269,6 +269,7 @@ MonoBehaviour:
   interactCooldown: 0.2
   interactFallbackTime: 1
   cameraController: {fileID: 0}
+  forcedSortingOrder: 0
 --- !u!50 &6268389341975164359
 Rigidbody2D:
   serializedVersion: 4
