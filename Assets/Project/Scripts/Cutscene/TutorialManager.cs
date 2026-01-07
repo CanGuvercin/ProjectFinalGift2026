@@ -57,6 +57,8 @@ public class TutorialManager : MonoBehaviour
     private bool isFrozen = false;
     private float freezeTimer = 0f;
     
+    private PlayerController playerController; // YENİ!
+    
     public static TutorialManager instance;
     
     private void Awake()
@@ -69,6 +71,7 @@ public class TutorialManager : MonoBehaviour
             if (playerObj != null)
             {
                 player = playerObj.transform;
+                playerController = playerObj.GetComponent<PlayerController>(); // YENİ!
             }
         }
     }
@@ -187,6 +190,12 @@ public class TutorialManager : MonoBehaviour
             tutorialText.text = message;
         }
         
+        // Player kontrolünü kapat (YENİ!)
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+        }
+        
         // Oyunu dondur
         Time.timeScale = 0f;
         isFrozen = true;
@@ -216,6 +225,12 @@ public class TutorialManager : MonoBehaviour
     
     private void UnfreezeGame()
     {
+        // Player kontrolünü aç (YENİ!)
+        if (playerController != null)
+        {
+            playerController.enabled = true;
+        }
+        
         // Oyunu devam ettir
         Time.timeScale = 1f;
         isFrozen = false;
@@ -325,6 +340,7 @@ public class TutorialManager : MonoBehaviour
         if (slimes != null && slimes.Length > 0)
         {
             Gizmos.color = Color.red;
+            //..
             foreach (GameObject slime in slimes)
             {
                 if (slime != null)
