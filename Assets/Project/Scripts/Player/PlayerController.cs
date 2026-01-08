@@ -376,6 +376,8 @@ public class PlayerController : MonoBehaviour
 
         animator.SetTrigger("attack");
 
+        PlaySlashVFX();
+
         if (cameraController != null)
             cameraController.OnAttackMiss();
     }

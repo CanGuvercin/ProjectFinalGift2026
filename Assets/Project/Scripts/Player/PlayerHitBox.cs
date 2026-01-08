@@ -58,7 +58,7 @@ public class PlayerHitBox : MonoBehaviour
             if (playerController != null)
             {
                 playerController.OnSwordHit();
-                playerController.PlaySlashVFX();
+                //playerController.PlaySlashVFX();
             }
             
             if (cameraController != null)
