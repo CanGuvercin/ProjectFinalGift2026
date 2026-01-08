@@ -78,7 +78,7 @@ public class PlayerController : MonoBehaviour
         DisableAllHitBoxes();
         
         currentHealth = 50;
-        Debug.Log($"[Player] Starting health: {currentHealth}");
+        
 
         if (cameraController == null)
             cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
@@ -226,100 +226,85 @@ public class PlayerController : MonoBehaviour
 
     public void EnableHitBox()
     {
-        Debug.Log($"[HitBox] EnableHitBox called! lastMoveDir: {lastMoveDir}");
+        
 
-        // Sadece doğru yöndeki hitbox'ı aç
+        // Önce hepsini kapat
         DisableAllHitBoxes();
         
         // Dominant eksene göre yön belirle
         if (Mathf.Abs(lastMoveDir.x) > Mathf.Abs(lastMoveDir.y))
-    {
-        // Yatay
-        if (lastMoveDir.x > 0)
         {
-            if (hitBoxRight != null)
+            // Yatay
+            if (lastMoveDir.x > 0)
             {
-                hitBoxRight.SetActive(true);
-                Debug.Log("[HitBox] ✅ Enabled RIGHT hitbox");
+                if (hitBoxRight != null)
+                {
+                    hitBoxRight.SetActive(true);
+                    
+                }
+                else
+                {
+                    
+                }
             }
             else
             {
-                Debug.LogError("[HitBox] ❌ hitBoxRight is NULL!");
+                if (hitBoxLeft != null)
+                {
+                    hitBoxLeft.SetActive(true);
+                    
+                }
+                else
+                {
+                    
+                }
             }
         }
         else
         {
-            if (hitBoxLeft != null)
+            // Dikey
+            if (lastMoveDir.y > 0)
             {
-                hitBoxLeft.SetActive(true);
-                Debug.Log("[HitBox] ✅ Enabled LEFT hitbox");
+                if (hitBoxUp != null)
+                {
+                    hitBoxUp.SetActive(true);
+                    
+                }
+                else
+                {
+                    
+                }
             }
             else
             {
-                Debug.LogError("[HitBox] ❌ hitBoxLeft is NULL!");
+                if (hitBoxDown != null)
+                {
+                    hitBoxDown.SetActive(true);
+                    
+                }
+                else
+                {
+                    
+                }
             }
         }
-    }
-    else
-    {
-        // Dikey
-        if (lastMoveDir.y > 0)
-        {
-            if (hitBoxUp != null)
-            {
-                hitBoxUp.SetActive(true);
-                Debug.Log("[HitBox] ✅ Enabled UP hitbox");
-            }
-            else
-            {
-                Debug.LogError("[HitBox] ❌ hitBoxUp is NULL!");
-            }
-        }
-        else
-        {
-            if (hitBoxDown != null)
-            {
-                hitBoxDown.SetActive(true);
-                Debug.Log("[HitBox] ✅ Enabled DOWN hitbox");
-            }
-            else
-            {
-                Debug.LogError("[HitBox] ❌ hitBoxDown is NULL!");
-            }
-        }
-    }
         
-        // Aktif hitbox'ın hit flag'ini reset et
-        ResetActiveHitBoxFlag();
+        
     }
 
     public void DisableHitBox()
-{
-    Debug.Log("[HitBox] DisableHitBox called!");
-    DisableAllHitBoxes();
-}
+    {
+        
+        DisableAllHitBoxes();
+    }
     
     private void DisableAllHitBoxes()
-{
-    hitBoxRight?.SetActive(false);
-    hitBoxLeft?.SetActive(false);
-    hitBoxUp?.SetActive(false);
-    hitBoxDown?.SetActive(false);
-}
-    
-    private void ResetActiveHitBoxFlag()
-{
-    // Aktif olan hitbox'ın PlayerHitBox script'ini bul ve reset et
-    PlayerHitBox[] allHitBoxes = GetComponentsInChildren<PlayerHitBox>(true); // true = inactive da dahil
-    foreach (PlayerHitBox hitBox in allHitBoxes)
     {
-        if (hitBox.gameObject.activeInHierarchy)
-        {
-            hitBox.ResetHitFlag();
-            Debug.Log($"[HitBox] Reset flag for: {hitBox.gameObject.name}");
-        }
+        hitBoxRight?.SetActive(false);
+        hitBoxLeft?.SetActive(false);
+        hitBoxUp?.SetActive(false);
+        hitBoxDown?.SetActive(false);
     }
-}
 
     // ================= ANIMATOR =================
 
@@ -430,7 +415,7 @@ public class PlayerController : MonoBehaviour
         currentHealth += amount;
         currentHealth = Mathf.Min(maxHealth, currentHealth);
 
-        Debug.Log($"[Player] Healed {amount} HP! Current HP: {currentHealth}/{maxHealth}");
+        
     }
 
     public int GetMaxHealth()
@@ -449,7 +434,7 @@ public class PlayerController : MonoBehaviour
     {
         if (slashVFXAnimator == null)
         {
-            Debug.LogError("[VFX] slashVFXAnimator is NULL!");
+            
             return;
         }
         
@@ -457,7 +442,7 @@ public class PlayerController : MonoBehaviour
         AnimatorStateInfo stateInfo = slashVFXAnimator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.IsName("SlashBlendTree") && stateInfo.normalizedTime < 0.9f)
         {
-            Debug.Log("[VFX] VFX already playing, skipping...");
+            
             return;
         }
         
@@ -468,6 +453,6 @@ public class PlayerController : MonoBehaviour
         // VFX tetikle
         slashVFXAnimator.SetTrigger("PlaySlash");
         
-        Debug.Log($"[VFX] ⚔️ Slash triggered! Direction: ({lastMoveDir.x:F1}, {lastMoveDir.y:F1})");
+        
     }
 }

@@ -11,33 +11,33 @@ public class PlayerHitBox : MonoBehaviour
         playerController = GetComponentInParent<PlayerController>();
         cameraController = Camera.main?.GetComponent<PixelPerfectCameraController>();
         
-        Debug.Log($"[HITBOX] {gameObject.name} Awake - PlayerController: {(playerController != null ? "FOUND" : "NULL")}");
+        
     }
     
     public void ResetHitFlag()
     {
         hasHitThisSwing = false;
-        Debug.Log($"[HITBOX] {gameObject.name} 🔄 Flag RESET to FALSE");
+        
     }
     
     private void OnEnable()
     {
         hasHitThisSwing = false;
-        Debug.Log($"[HITBOX] {gameObject.name} ✅ OnEnable - Flag = FALSE");
+        
     }
     
     private void OnDisable()
     {
-        Debug.Log($"[HITBOX] {gameObject.name} ❌ OnDisable");
+        
     }
     
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log($"[HITBOX] {gameObject.name} 💥 TRIGGER! Target: {other.gameObject.name}, CurrentFlag: {hasHitThisSwing}");
+        
         
         if (hasHitThisSwing)
         {
-            Debug.LogWarning($"[HITBOX] {gameObject.name} ⛔ BLOCKED! Already hit this swing!");
+            
             return;
         }
         
@@ -53,7 +53,7 @@ public class PlayerHitBox : MonoBehaviour
         {
             hasHitThisSwing = true;
             
-            Debug.Log($"[HITBOX] {gameObject.name} ✅✅✅ HIT CONFIRMED! Flag → TRUE");
+            
             
             if (playerController != null)
             {
@@ -68,7 +68,7 @@ public class PlayerHitBox : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[HITBOX] {gameObject.name} ❌ NOT an enemy");
+            
         }
     }
 }

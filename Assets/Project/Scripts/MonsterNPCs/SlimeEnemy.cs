@@ -359,7 +359,7 @@ public class SlimeEnemy : MonoBehaviour
         animator.SetTrigger("Hit");
         PlaySfx(hitSfx);
         
-        Debug.Log($"[SLIME] Hit! Triggering Hit animation. Health: {currentHealth}/{maxHealth}");
+        
 
         // Knockback yönü
         Vector2 knockbackDir = ((Vector2)transform.position - damageSourcePos).normalized;
@@ -398,7 +398,7 @@ public class SlimeEnemy : MonoBehaviour
         // Knockback force uygula
         rb.velocity = direction * knockbackForce;
         
-        Debug.Log($"[SLIME] Knockback! Direction: {direction}, Force: {knockbackForce}");
+        
 
         // Knockback süresi
         yield return new WaitForSeconds(knockbackDuration);
@@ -407,7 +407,7 @@ public class SlimeEnemy : MonoBehaviour
         rb.velocity = Vector2.zero;
         isKnockedBack = false;
         
-        Debug.Log("[SLIME] Knockback ended");
+        
     }
 
     private IEnumerator InvulnerabilityRoutine()
@@ -449,7 +449,7 @@ public class SlimeEnemy : MonoBehaviour
                 // Slime de temastan geriye savrulsun!
                 Vector2 knockbackDir = ((Vector2)transform.position - (Vector2)collision.transform.position).normalized;
                 
-                Debug.Log($"[SLIME] Collided with player! Knockback direction: {knockbackDir}");
+                
                 
                 // NOT: TakeDamage çağırmıyoruz çünkü slime player'a temas edince hasar almıyor
                 // Sadece knockback yiyor
@@ -467,7 +467,7 @@ public class SlimeEnemy : MonoBehaviour
         {
             Vector2 swordPos = other.transform.position;
             
-            Debug.Log($"[SLIME] Hit by sword at {swordPos}!");
+            
             
             TakeDamage(10, swordPos);
         }

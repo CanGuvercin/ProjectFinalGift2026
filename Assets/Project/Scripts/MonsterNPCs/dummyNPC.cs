@@ -42,7 +42,7 @@ public class DummyNPC : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (showDebugLogs)
-            Debug.Log($"[DUMMY] Collision with: {collision.gameObject.name}, Tag: {collision.gameObject.tag}");
+            
 
         if (!collision.gameObject.CompareTag("Player")) return;
 
@@ -54,7 +54,7 @@ public class DummyNPC : MonoBehaviour
         if (player != null)
         {
             if (showDebugLogs)
-                Debug.Log($"[DUMMY] Dealing {damage} damage to Player!");
+                
             
             player.TakeDamage(damage, transform.position);
         }
@@ -64,7 +64,7 @@ public class DummyNPC : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (showDebugLogs)
-            Debug.Log($"[DUMMY] Trigger with: {other.gameObject.name}, Tag: {other.tag}, Layer: {LayerMask.LayerToName(other.gameObject.layer)}");
+            
 
         // PlayerAttack layer veya HitBox isimli objelerden hasar al
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAttack") || 
@@ -78,8 +78,8 @@ public class DummyNPC : MonoBehaviour
     {
         if (showDebugLogs)
         {
-            Debug.Log($"[DUMMY] Hit detected at {Time.time}");
-            Debug.Log($"[DUMMY] Health: {currentHealth}/{maxHealth}");
+            
+            
         }
 
         // Visual feedback
@@ -94,7 +94,7 @@ public class DummyNPC : MonoBehaviour
         currentHealth -= 10;
         if (currentHealth <= 0)
         {
-            Debug.Log("[DUMMY] Destroyed!");
+            
             Destroy(gameObject);
         }
     }

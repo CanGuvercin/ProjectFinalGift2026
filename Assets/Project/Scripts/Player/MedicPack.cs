@@ -91,7 +91,7 @@ public class MedicPack : MonoBehaviour
         
         if (playerController == null)
         {
-            Debug.LogWarning("[MedicPack] Player doesn't have PlayerController!");
+            
             return;
         }
         
@@ -107,7 +107,7 @@ public class MedicPack : MonoBehaviour
         
         // Consume et
         isConsumed = true;
-        Debug.Log($"[MedicPack] Auto-pickup! Healed: {healedAmount} HP");
+        
         
         // Destroy
         Destroy(gameObject);
@@ -162,7 +162,7 @@ public class MedicPack : MonoBehaviour
         PlayerController playerController = playerObject.GetComponent<PlayerController>();
         if (playerController == null)
         {
-            Debug.LogWarning("[MedicPack] Player doesn't have PlayerController!");
+            
             return;
         }
         
@@ -178,7 +178,7 @@ public class MedicPack : MonoBehaviour
         
         // Consume et
         isConsumed = true;
-        Debug.Log($"[MedicPack] Consumed! Healed: {healedAmount} HP");
+        
         
         // Destroy
         Destroy(gameObject);
