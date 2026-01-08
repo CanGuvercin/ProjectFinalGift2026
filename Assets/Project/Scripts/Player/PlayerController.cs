@@ -55,8 +55,6 @@ public class PlayerController : MonoBehaviour
     [Header("VFX")]
     [SerializeField] private Animator slashVFXAnimator; // SlashVFX child'ının animator'u
 
-
-
     private bool isInvulnerable;
     private bool isDashing;
     private float lastDashTime;
@@ -67,7 +65,7 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody2D rb;
     private Animator animator;
-    private SpriteRenderer spriteRenderer; // YENİ
+    private SpriteRenderer spriteRenderer;
 
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
@@ -78,7 +76,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        spriteRenderer = GetComponent<SpriteRenderer>(); // YENİ
+        spriteRenderer = GetComponent<SpriteRenderer>();
         inputActions = new PlayerInputActions();
         hitBoxCollider.enabled = false;
         //currentHealth = maxHealth;
@@ -112,7 +110,7 @@ public class PlayerController : MonoBehaviour
         Move();
     }
 
-    // YENİ - Rendering'i garanti altına al
+    // Rendering'i garanti altına al
     private void LateUpdate()
     {
         // Z pozisyonunu ZORLA sıfırda tut
@@ -305,6 +303,13 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("moveX", lastMoveDir.x);
         animator.SetFloat("moveY", lastMoveDir.y);
 
+        // VFX'i önceden sync et (direction hazır olsun)
+        if (slashVFXAnimator != null)
+        {
+            slashVFXAnimator.SetFloat("moveX", lastMoveDir.x);
+            slashVFXAnimator.SetFloat("moveY", lastMoveDir.y);
+        }
+
         UpdateAttackPointPosition();
         animator.SetTrigger("attack");
 
@@ -327,35 +332,22 @@ public class PlayerController : MonoBehaviour
     // ================= INTERACT =================
 
     private void TryInteract()
-{
-    if (isInteracting || isDashing) return;
-    if (Time.time - lastInteractTime < interactCooldown) return;
+    {
+        if (isInteracting || isDashing) return;
+        if (Time.time - lastInteractTime < interactCooldown) return;
 
-    // Medic pack kontrolü (YENİ!)
-    //MedicPack[] medicPacks = FindObjectsOfType<MedicPack>();
-    //foreach (MedicPack pack in medicPacks)
-    //{
-        //if (pack.CanInteract(transform))
-        //{
-         //   pack.Interact(gameObject);
-       //     return; // Medic pack kullanıldı, normal interact animasyonu oynama
-     //   }
-   // }
-    
+        // Normal interact animasyonu (kılıç çekme vs.)
+        isInteracting = true;
+        lastInteractTime = Time.time;
+        rb.velocity = Vector2.zero;
 
-    // Normal interact animasyonu (kılıç çekme vs.)
-    isInteracting = true;
-    lastInteractTime = Time.time;
-    rb.velocity = Vector2.zero;
+        animator.SetFloat("moveX", lastMoveDir.x);
+        animator.SetFloat("moveY", lastMoveDir.y);
+        animator.SetTrigger("Interact");
 
-    animator.SetFloat("moveX", lastMoveDir.x);
-    animator.SetFloat("moveY", lastMoveDir.y);
-    animator.SetTrigger("Interact");
-
-    CancelInvoke(nameof(EndInteract));
-    Invoke(nameof(EndInteract), interactFallbackTime);
-}
-
+        CancelInvoke(nameof(EndInteract));
+        Invoke(nameof(EndInteract), interactFallbackTime);
+    }
 
     public void EndInteract()
     {
@@ -388,29 +380,31 @@ public class PlayerController : MonoBehaviour
         return currentHealth;
     }
 
+    // ================= VFX =================
+
     public void PlaySlashVFX()
-{
-    if (slashVFXAnimator == null) return;
-    
-    // Yöne göre trigger
-    if (lastMoveDir == Vector2.right)
     {
-        slashVFXAnimator.SetTrigger("SlashRight");
+        if (slashVFXAnimator == null)
+        {
+            Debug.LogError("[VFX] slashVFXAnimator is NULL!");
+            return;
+        }
+        
+        // VFX zaten oynuyorsa interrupt etme (Animator state kontrolü)
+        AnimatorStateInfo stateInfo = slashVFXAnimator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.IsName("SlashBlendTree") && stateInfo.normalizedTime < 0.9f)
+        {
+            Debug.Log("[VFX] VFX already playing, skipping...");
+            return;
+        }
+        
+        // Direction sync (ÖNCE sync, sonra trigger!)
+        slashVFXAnimator.SetFloat("moveX", lastMoveDir.x);
+        slashVFXAnimator.SetFloat("moveY", lastMoveDir.y);
+        
+        // VFX tetikle
+        slashVFXAnimator.SetTrigger("PlaySlash");
+        
+        Debug.Log($"[VFX] ⚔️ Slash triggered! Direction: ({lastMoveDir.x:F1}, {lastMoveDir.y:F1})");
     }
-    else if (lastMoveDir == Vector2.left)
-    {
-        slashVFXAnimator.SetTrigger("SlashLeft");
-    }
-    else if (lastMoveDir == Vector2.up)
-    {
-        slashVFXAnimator.SetTrigger("SlashUp");
-    }
-    else if (lastMoveDir == Vector2.down)
-    {
-        slashVFXAnimator.SetTrigger("SlashDown");
-    }
-    
-    Debug.Log($"[VFX] Slash played: {lastMoveDir}");
-}
-    
 }
