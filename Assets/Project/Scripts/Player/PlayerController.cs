@@ -12,15 +12,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float invulnerableTime = 0.6f;
     [SerializeField] private float knockbackForce = 3f;
 
-    [Header("Combat")]
-    [SerializeField] private Collider2D hitBoxCollider;
-
-    [Header("For Player PosRef")]
-    [SerializeField] private Transform attackPoint;
-    [SerializeField] private Vector2 upOffset = new Vector2(0f, 0.5f);
-    [SerializeField] private Vector2 downOffset = new Vector2(0f, -0.5f);
-    [SerializeField] private Vector2 leftOffset = new Vector2(-0.5f, 0f);
-    [SerializeField] private Vector2 rightOffset = new Vector2(0.5f, 0f);
+    [Header("Combat - Directional HitBoxes")]
+    [SerializeField] private GameObject hitBoxRight;
+    [SerializeField] private GameObject hitBoxLeft;
+    [SerializeField] private GameObject hitBoxUp;
+    [SerializeField] private GameObject hitBoxDown;
 
     [Header("SFX Settings")]
     [SerializeField] private AudioSource sfxSource;
@@ -38,7 +34,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3.5f;
 
-    [Header("Combat")]
+    [Header("Combat Cooldown")]
     [SerializeField] private float attackCooldown = 0.3f;
 
     [Header("Interaction")]
@@ -53,7 +49,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int forcedSortingOrder = 0;
 
     [Header("VFX")]
-    [SerializeField] private Animator slashVFXAnimator; // SlashVFX child'ının animator'u
+    [SerializeField] private Animator slashVFXAnimator;
 
     private bool isInvulnerable;
     private bool isDashing;
@@ -70,7 +66,6 @@ public class PlayerController : MonoBehaviour
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
     private Vector2 lastMoveDir = Vector2.down;
-    private PlayerHitBox playerHitBox;
 
     private void Awake()
     {
@@ -78,12 +73,12 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         inputActions = new PlayerInputActions();
-        hitBoxCollider.enabled = false;
-        //currentHealth = maxHealth;
+        
+        // Tüm hitbox'ları başta kapat
+        DisableAllHitBoxes();
+        
         currentHealth = 50;
-        Debug.Log(currentHealth);
-
-        playerHitBox = hitBoxCollider.GetComponent<PlayerHitBox>();
+        Debug.Log($"[Player] Starting health: {currentHealth}");
 
         if (cameraController == null)
             cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
@@ -110,7 +105,6 @@ public class PlayerController : MonoBehaviour
         Move();
     }
 
-    // Rendering'i garanti altına al
     private void LateUpdate()
     {
         // Z pozisyonunu ZORLA sıfırda tut
@@ -121,7 +115,7 @@ public class PlayerController : MonoBehaviour
             transform.position = pos;
         }
 
-        // Sorting Order'ı ZORLA sabit tut (Animator override'ı önle)
+        // Sorting Order'ı ZORLA sabit tut
         if (spriteRenderer != null && spriteRenderer.sortingOrder != forcedSortingOrder)
         {
             spriteRenderer.sortingOrder = forcedSortingOrder;
@@ -232,15 +226,100 @@ public class PlayerController : MonoBehaviour
 
     public void EnableHitBox()
     {
-        hitBoxCollider.enabled = true;
-        if (playerHitBox != null)
-            playerHitBox.ResetHitFlag();
+        Debug.Log($"[HitBox] EnableHitBox called! lastMoveDir: {lastMoveDir}");
+
+        // Sadece doğru yöndeki hitbox'ı aç
+        DisableAllHitBoxes();
+        
+        // Dominant eksene göre yön belirle
+        if (Mathf.Abs(lastMoveDir.x) > Mathf.Abs(lastMoveDir.y))
+    {
+        // Yatay
+        if (lastMoveDir.x > 0)
+        {
+            if (hitBoxRight != null)
+            {
+                hitBoxRight.SetActive(true);
+                Debug.Log("[HitBox] ✅ Enabled RIGHT hitbox");
+            }
+            else
+            {
+                Debug.LogError("[HitBox] ❌ hitBoxRight is NULL!");
+            }
+        }
+        else
+        {
+            if (hitBoxLeft != null)
+            {
+                hitBoxLeft.SetActive(true);
+                Debug.Log("[HitBox] ✅ Enabled LEFT hitbox");
+            }
+            else
+            {
+                Debug.LogError("[HitBox] ❌ hitBoxLeft is NULL!");
+            }
+        }
+    }
+    else
+    {
+        // Dikey
+        if (lastMoveDir.y > 0)
+        {
+            if (hitBoxUp != null)
+            {
+                hitBoxUp.SetActive(true);
+                Debug.Log("[HitBox] ✅ Enabled UP hitbox");
+            }
+            else
+            {
+                Debug.LogError("[HitBox] ❌ hitBoxUp is NULL!");
+            }
+        }
+        else
+        {
+            if (hitBoxDown != null)
+            {
+                hitBoxDown.SetActive(true);
+                Debug.Log("[HitBox] ✅ Enabled DOWN hitbox");
+            }
+            else
+            {
+                Debug.LogError("[HitBox] ❌ hitBoxDown is NULL!");
+            }
+        }
+    }
+        
+        // Aktif hitbox'ın hit flag'ini reset et
+        ResetActiveHitBoxFlag();
     }
 
     public void DisableHitBox()
+{
+    Debug.Log("[HitBox] DisableHitBox called!");
+    DisableAllHitBoxes();
+}
+    
+    private void DisableAllHitBoxes()
+{
+    hitBoxRight?.SetActive(false);
+    hitBoxLeft?.SetActive(false);
+    hitBoxUp?.SetActive(false);
+    hitBoxDown?.SetActive(false);
+}
+    
+    private void ResetActiveHitBoxFlag()
+{
+    // Aktif olan hitbox'ın PlayerHitBox script'ini bul ve reset et
+    PlayerHitBox[] allHitBoxes = GetComponentsInChildren<PlayerHitBox>(true); // true = inactive da dahil
+    foreach (PlayerHitBox hitBox in allHitBoxes)
     {
-        hitBoxCollider.enabled = false;
+        if (hitBox.gameObject.activeInHierarchy)
+        {
+            hitBox.ResetHitFlag();
+            Debug.Log($"[HitBox] Reset flag for: {hitBox.gameObject.name}");
+        }
     }
+}
 
     // ================= ANIMATOR =================
 
@@ -274,7 +353,7 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(DashRoutine(dir));
     }
 
-    private System.Collections.IEnumerator DashRoutine(Vector2 dir)
+    private IEnumerator DashRoutine(Vector2 dir)
     {
         float t = 0f;
 
@@ -303,30 +382,17 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("moveX", lastMoveDir.x);
         animator.SetFloat("moveY", lastMoveDir.y);
 
-        // VFX'i önceden sync et (direction hazır olsun)
+        // VFX'i önceden sync et
         if (slashVFXAnimator != null)
         {
             slashVFXAnimator.SetFloat("moveX", lastMoveDir.x);
             slashVFXAnimator.SetFloat("moveY", lastMoveDir.y);
         }
 
-        UpdateAttackPointPosition();
         animator.SetTrigger("attack");
 
         if (cameraController != null)
             cameraController.OnAttackMiss();
-    }
-
-    private void UpdateAttackPointPosition()
-    {
-        if (lastMoveDir == Vector2.up)
-            attackPoint.localPosition = upOffset;
-        else if (lastMoveDir == Vector2.down)
-            attackPoint.localPosition = downOffset;
-        else if (lastMoveDir == Vector2.left)
-            attackPoint.localPosition = leftOffset;
-        else if (lastMoveDir == Vector2.right)
-            attackPoint.localPosition = rightOffset;
     }
 
     // ================= INTERACT =================
@@ -336,7 +402,6 @@ public class PlayerController : MonoBehaviour
         if (isInteracting || isDashing) return;
         if (Time.time - lastInteractTime < interactCooldown) return;
 
-        // Normal interact animasyonu (kılıç çekme vs.)
         isInteracting = true;
         lastInteractTime = Time.time;
         rb.velocity = Vector2.zero;
@@ -363,11 +428,9 @@ public class PlayerController : MonoBehaviour
     public void Heal(int amount)
     {
         currentHealth += amount;
-        currentHealth = Mathf.Min(maxHealth, currentHealth); // Max'ı geçme
+        currentHealth = Mathf.Min(maxHealth, currentHealth);
 
         Debug.Log($"[Player] Healed {amount} HP! Current HP: {currentHealth}/{maxHealth}");
-
-        // TODO: HP Bar UI update
     }
 
     public int GetMaxHealth()
@@ -390,7 +453,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
         
-        // VFX zaten oynuyorsa interrupt etme (Animator state kontrolü)
+        // VFX zaten oynuyorsa interrupt etme
         AnimatorStateInfo stateInfo = slashVFXAnimator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.IsName("SlashBlendTree") && stateInfo.normalizedTime < 0.9f)
         {
@@ -398,7 +461,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
         
-        // Direction sync (ÖNCE sync, sonra trigger!)
+        // Direction sync
         slashVFXAnimator.SetFloat("moveX", lastMoveDir.x);
         slashVFXAnimator.SetFloat("moveY", lastMoveDir.y);
         
