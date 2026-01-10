@@ -12,11 +12,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float invulnerableTime = 0.6f;
     [SerializeField] private float knockbackForce = 3f;
 
+    [Header("Death Settings")]
+    [Tooltip("Bu state'lerde ölüm yok (HP 1'de kalır)")]
+    [SerializeField] private int[] immortalStates = { 0, 1 }; // Tutorial state'ler
+
     [Header("Combat - Directional HitBoxes")]
     [SerializeField] private GameObject hitBoxRight;
     [SerializeField] private GameObject hitBoxLeft;
     [SerializeField] private GameObject hitBoxUp;
     [SerializeField] private GameObject hitBoxDown;
+
 
     [Header("SFX Settings")]
     [SerializeField] private AudioSource sfxSource;
@@ -78,7 +83,6 @@ public class PlayerController : MonoBehaviour
         DisableAllHitBoxes();
         
         currentHealth = 50;
-        
 
         if (cameraController == null)
             cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
@@ -125,60 +129,94 @@ public class PlayerController : MonoBehaviour
     // ================= DAMAGE SYSTEM =================
 
     public void TakeDamage(int damage, Vector2 damageSourcePos)
-    {
-        if (isInvulnerable) return;
-
-        currentHealth -= damage;
-        if (currentHealth < 0) currentHealth = 0;
-
-        if (currentHealth <= 0)
-    {
-        Debug.Log("[Player] ☠️ HP = 0! Triggering Game Over...");
-        OnPlayerDeath();
-        return; // Damage rutinini çalıştırma
-    }
-
-        Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
-        lastMoveDir = hitDir;
-
-        animator.SetFloat("moveX", hitDir.x);
-        animator.SetFloat("moveY", hitDir.y);
-        animator.SetBool("isDamaged", true);
-
-        if (cameraController != null)
-            cameraController.OnPlayerHurt(damage);
-
-        PlayHurtSfx();
-
-        rb.velocity = Vector2.zero;
-        rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
-
-        StartCoroutine(DamageRoutine());
-    }
-
-    private void OnPlayerDeath()
 {
-    Debug.Log("[Player] Player died!");
-    
-    // Input'u devre dışı bırak
-    enabled = false;
-    
-    // Animator'da death animation varsa tetikle
-    if (animator != null)
+    if (isInvulnerable) return;
+
+    currentHealth -= damage;
+    if (currentHealth < 0) currentHealth = 0;
+
+    // Hit direction'ı ÖNCE hesapla (tek sefer!)
+    Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
+    lastMoveDir = hitDir;
+
+    // HP 0 kontrolü
+    if (currentHealth <= 0)
     {
-        animator.SetTrigger("Death"); // Optional
+        Debug.Log("[Player] ☠️ HP = 0!");
+        
+        // Mevcut state'i kontrol et
+        int currentState = PlayerPrefs.GetInt("GameState", 1);
+        
+        // Bu state'de ölünmez mi?
+        bool isImmortal = System.Array.Exists(immortalStates, state => state == currentState);
+        
+        if (isImmortal)
+        {
+            Debug.Log($"[Player] ⚠️ State {currentState} is immortal - HP clamped to 1!");
+            currentHealth = 1; // HP'yi 1'de tut
+            
+            // Damage animasyonu oyna (hitDir zaten hesaplandı!)
+            animator.SetFloat("moveX", hitDir.x);
+            animator.SetFloat("moveY", hitDir.y);
+            animator.SetBool("isDamaged", true);
+            
+            if (cameraController != null)
+                cameraController.OnPlayerHurt(damage);
+            
+            PlayHurtSfx();
+            
+            rb.velocity = Vector2.zero;
+            rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+            
+            StartCoroutine(DamageRoutine());
+            return;
+        }
+        
+        // State 2+: Normal ölüm
+        Debug.Log("[Player] Triggering Game Over...");
+        OnPlayerDeath();
+        return;
     }
-    
-    // GameOverManager'ı tetikle
-    if (GameOverManager.Instance != null)
-    {
-        GameOverManager.Instance.ShowGameOver();
-    }
-    else
-    {
-        Debug.LogError("[Player] GameOverManager not found!");
-    }
+
+    // Normal damage rutini (HP > 0) - hitDir zaten hesaplandı!
+    animator.SetFloat("moveX", hitDir.x);
+    animator.SetFloat("moveY", hitDir.y);
+    animator.SetBool("isDamaged", true);
+
+    if (cameraController != null)
+        cameraController.OnPlayerHurt(damage);
+
+    PlayHurtSfx();
+
+    rb.velocity = Vector2.zero;
+    rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+
+    StartCoroutine(DamageRoutine());
 }
+    
+        private void OnPlayerDeath()
+    {
+        Debug.Log("[Player] Player died!");
+        
+        // Input'u devre dışı bırak
+        enabled = false;
+        
+        // Animator'da death animation varsa tetikle
+        if (animator != null)
+        {
+            animator.SetTrigger("Death"); // Optional
+        }
+        
+        // GameOverManager'ı tetikle
+        if (GameOverManager.Instance != null)
+        {
+            GameOverManager.Instance.ShowGameOver();
+        }
+        else
+        {
+            Debug.LogError("[Player] GameOverManager not found!");
+        }
+    }
 
     private IEnumerator DamageRoutine()
     {
@@ -257,8 +295,6 @@ public class PlayerController : MonoBehaviour
 
     public void EnableHitBox()
     {
-        
-
         // Önce hepsini kapat
         DisableAllHitBoxes();
         
@@ -271,11 +307,6 @@ public class PlayerController : MonoBehaviour
                 if (hitBoxRight != null)
                 {
                     hitBoxRight.SetActive(true);
-                    
-                }
-                else
-                {
-                    
                 }
             }
             else
@@ -283,11 +314,6 @@ public class PlayerController : MonoBehaviour
                 if (hitBoxLeft != null)
                 {
                     hitBoxLeft.SetActive(true);
-                    
-                }
-                else
-                {
-                    
                 }
             }
         }
@@ -299,11 +325,6 @@ public class PlayerController : MonoBehaviour
                 if (hitBoxUp != null)
                 {
                     hitBoxUp.SetActive(true);
-                    
-                }
-                else
-                {
-                    
                 }
             }
             else
@@ -311,21 +332,13 @@ public class PlayerController : MonoBehaviour
                 if (hitBoxDown != null)
                 {
                     hitBoxDown.SetActive(true);
-                    
-                }
-                else
-                {
-                    
                 }
             }
         }
-        
-        
     }
 
     public void DisableHitBox()
     {
-        
         DisableAllHitBoxes();
     }
     
@@ -447,8 +460,6 @@ public class PlayerController : MonoBehaviour
     {
         currentHealth += amount;
         currentHealth = Mathf.Min(maxHealth, currentHealth);
-
-        
     }
 
     public int GetMaxHealth()
@@ -467,7 +478,6 @@ public class PlayerController : MonoBehaviour
     {
         if (slashVFXAnimator == null)
         {
-            
             return;
         }
         
@@ -475,7 +485,6 @@ public class PlayerController : MonoBehaviour
         AnimatorStateInfo stateInfo = slashVFXAnimator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.IsName("SlashBlendTree") && stateInfo.normalizedTime < 0.9f)
         {
-            
             return;
         }
         
@@ -485,7 +494,5 @@ public class PlayerController : MonoBehaviour
         
         // VFX tetikle
         slashVFXAnimator.SetTrigger("PlaySlash");
-        
-        
     }
 }
