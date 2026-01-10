@@ -62,10 +62,10 @@ public class MainMenuController : MonoBehaviour
     
     public void OnContinue()
     {
-        Debug.Log("[MainMenu] Continue clicked - Loading WorldMap...");
+        Debug.Log("Seni şimdi loading ekranının o siyah sularına bırakıyorum hehehe");
         
         // WorldMap scene'i yükle (CutsceneChief otomatik state'i yükler)
-        SceneManager.LoadScene("WorldMap");
+        LoadingManager.LoadScene("WorldMap");
     }
     
     public void OnNewGame()

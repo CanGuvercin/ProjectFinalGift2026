@@ -12,6 +12,12 @@ EditorBuildSettings:
     path: Assets/Project/Scenes/MainMenu.unity
     guid: 6d4ce4b3fb81d7f45876ea5fb77bc790
   - enabled: 1
+    path: Assets/Project/Scenes/LoadingScene.unity
+    guid: 1a356030c6fa68c4297b9e1a49f1a47c
+  - enabled: 1
     path: Assets/Project/Scenes/WorldMap.unity
     guid: f3eb414b13812b54fbe66e6674b9008d
+  - enabled: 1
+    path: Assets/Project/Scenes/Dungeon1.unity
+    guid: f84b629538a92824c8b2dfe551c4d987
   m_configObjects: {}
