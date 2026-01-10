@@ -597,6 +597,7 @@ MonoBehaviour:
   currentHealth: 0
   invulnerableTime: 0.6
   knockbackForce: 3
+  immortalStates: 000000000100000002000000
   hitBoxRight: {fileID: 5182356928041664884}
   hitBoxLeft: {fileID: 6074527280215241222}
   hitBoxUp: {fileID: 49111028638459229}
