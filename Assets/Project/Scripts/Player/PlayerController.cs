@@ -131,6 +131,13 @@ public class PlayerController : MonoBehaviour
         currentHealth -= damage;
         if (currentHealth < 0) currentHealth = 0;
 
+        if (currentHealth <= 0)
+    {
+        Debug.Log("[Player] ☠️ HP = 0! Triggering Game Over...");
+        OnPlayerDeath();
+        return; // Damage rutinini çalıştırma
+    }
+
         Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
         lastMoveDir = hitDir;
 
@@ -148,6 +155,30 @@ public class PlayerController : MonoBehaviour
 
         StartCoroutine(DamageRoutine());
     }
+
+    private void OnPlayerDeath()
+{
+    Debug.Log("[Player] Player died!");
+    
+    // Input'u devre dışı bırak
+    enabled = false;
+    
+    // Animator'da death animation varsa tetikle
+    if (animator != null)
+    {
+        animator.SetTrigger("Death"); // Optional
+    }
+    
+    // GameOverManager'ı tetikle
+    if (GameOverManager.Instance != null)
+    {
+        GameOverManager.Instance.ShowGameOver();
+    }
+    else
+    {
+        Debug.LogError("[Player] GameOverManager not found!");
+    }
+}
 
     private IEnumerator DamageRoutine()
     {
