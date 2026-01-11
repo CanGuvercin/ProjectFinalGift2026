@@ -8899,7 +8899,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startDelay: 1
   dialogDuration: 2.5
-  endDelay: 1
+  endDelay: 3
   dialogCanvas: {fileID: 1672044948}
   dialogText: {fileID: 1225843091}
   audioSource: {fileID: 261605107}
@@ -137269,6 +137269,10 @@ PrefabInstance:
     - target: {fileID: 340980590999949008, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: currentState
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].timeline

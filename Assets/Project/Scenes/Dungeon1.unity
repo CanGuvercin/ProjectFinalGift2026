@@ -145,6 +145,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SlimePink (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 7149856105233817662, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8090162814594535920, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9.966295
@@ -2247,10 +2251,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3002694625275264653, guid: 451fd35f7027abe4eabf6c5326c08316, type: 3}
-      propertyPath: detectionRange
-      value: 4.5
-      objectReference: {fileID: 0}
     - target: {fileID: 4864609980641263158, guid: 451fd35f7027abe4eabf6c5326c08316, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.2586555
@@ -13439,6 +13439,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SlimePink (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 7149856105233817662, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8090162814594535920, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.9447007
@@ -13557,6 +13561,10 @@ PrefabInstance:
     - target: {fileID: 7149856105233817662, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
       propertyPath: m_Name
       value: SlimePink (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7149856105233817662, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8090162814594535920, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
       propertyPath: m_LocalPosition.x
@@ -19569,6 +19577,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SlimePink (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 7149856105233817662, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8090162814594535920, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.7504315
@@ -19635,6 +19647,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SlimePink
       objectReference: {fileID: 0}
+    - target: {fileID: 7149856105233817662, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8090162814594535920, guid: 75953c09c2586074dac264750ae16ac6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.75
@@ -19700,7 +19716,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1874859376
 Transform:
   m_ObjectHideFlags: 0
