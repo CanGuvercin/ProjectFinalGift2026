@@ -8,6 +8,7 @@ TagManager:
   - Obstacle
   - Enemy
   - medicPack
+  - gate
   layers:
   - Default
   - TransparentFX

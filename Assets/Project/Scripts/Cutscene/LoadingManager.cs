@@ -67,6 +67,22 @@ public class LoadingManager : MonoBehaviour
     }
     
     /// <summary>
+    /// STATIC METHOD: Target state'i döndürür (CutsceneChief için)
+    /// </summary>
+    public static int GetTargetState()
+    {
+        return targetState;
+    }
+    
+    /// <summary>
+    /// STATIC METHOD: Spawn point adını döndürür
+    /// </summary>
+    public static string GetSpawnPoint()
+    {
+        return spawnPointName;
+    }
+    
+    /// <summary>
     /// STATIC METHOD: Dışarıdan scene yüklemek için
     /// Usage: LoadingManager.LoadScene("WorldMap", 5, "Dungeon1GateSpawn");
     /// </summary>
@@ -147,6 +163,10 @@ public class LoadingManager : MonoBehaviour
         Debug.Log("[LoadingManager] Phase 4: Activating scene...");
         asyncLoad.allowSceneActivation = true;
         
+        // State ve spawn point'i resetle (bir sonraki normal geçişte karışmasın)
+        targetState = -1;
+        spawnPointName = "";
+        
         float totalTime = Time.realtimeSinceStartup - startTime;
         Debug.Log($"[LoadingManager] ✅ COMPLETE! Total time: {totalTime:F2}s");
         Debug.Log($"[LoadingManager] ═══════════════════════════════");
@@ -219,5 +239,6 @@ public class LoadingManager : MonoBehaviour
         {
             StopCoroutine(textAnimationCoroutine);
         }
+        //
     }
 }

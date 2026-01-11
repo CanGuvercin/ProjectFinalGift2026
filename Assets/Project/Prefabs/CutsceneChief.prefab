@@ -54,7 +54,11 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
+    - {fileID: 0}
     playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
     ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
@@ -69,11 +73,59 @@ MonoBehaviour:
     objectsToDeactivate:
     - {fileID: 0}
     - {fileID: 0}
+    - {fileID: 0}
     playerSpawnPosition: {fileID: 0}
-    ambientMusic: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 0
+  - stateName: State2_AkSakalli
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State3_ACT_I_Field
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State4_Dungeon1Fight
+    timeline: {fileID: 0}
+    objectsToActivate: []
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 1
+    targetSceneName: Dungeon1
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  currentState: 3
   saveKey: GameState
   musicSource: {fileID: 0}
   fadeDuration: 1.5

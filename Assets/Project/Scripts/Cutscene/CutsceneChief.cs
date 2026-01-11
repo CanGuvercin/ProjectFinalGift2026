@@ -12,10 +12,18 @@ public class CutsceneChief : MonoBehaviour
         public GameObject[] objectsToDeactivate;
         public Transform playerSpawnPosition;
         
+        [Header("Scene Change")]
+        public bool changeScene = false;
+        [Tooltip("Bu state'e geçerken scene değişsin mi?")]
+        public string targetSceneName = "";
+        [Tooltip("Yüklenecek scene adı (örn: Dungeon1)")]
+        public string spawnPointName = "";
+        [Tooltip("Yeni scene'de spawn noktası (örn: DungeonEntrance)")]
+        
         [Header("Music")]
-        public AudioClip ambientMusic; // YENİ!
-        [Range(0f, 1f)] public float musicVolume = 0.5f; // YENİ!
-        public bool fadeMusic = true; // YENİ! (Smooth geçiş)
+        public AudioClip ambientMusic;
+        [Range(0f, 1f)] public float musicVolume = 0.5f;
+        public bool fadeMusic = true;
     }
     
     [Header("Cutscene States")]
@@ -48,7 +56,22 @@ public class CutsceneChief : MonoBehaviour
     
     private void Start()
     {
-        LoadState();
+        // LoadingManager'dan gelen state var mı kontrol et
+        int loadingState = LoadingManager.GetTargetState();
+        
+        if (loadingState >= 0)
+        {
+            // LoadingManager'dan state geldi, onu kullan
+            Debug.Log($"[CutsceneChief] State override from LoadingManager: {loadingState}");
+            currentState = loadingState;
+            SaveState();
+        }
+        else
+        {
+            // Normal save'den yükle
+            LoadState();
+        }
+        
         PlayCurrentState();
     }
     
@@ -97,10 +120,38 @@ public class CutsceneChief : MonoBehaviour
         
         // Player spawn
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null && state.playerSpawnPosition != null)
+        if (player != null)
         {
-            player.transform.position = state.playerSpawnPosition.position;
-            Debug.Log($"[State {currentState}] Player spawned at: {state.playerSpawnPosition.position}");
+            // Önce LoadingManager'dan gelen spawn point'i kontrol et
+            string spawnPointName = LoadingManager.GetSpawnPoint();
+            
+            if (!string.IsNullOrEmpty(spawnPointName))
+            {
+                // LoadingManager'dan spawn point gelmiş (örn: dungeon girişi)
+                GameObject spawnPoint = GameObject.Find(spawnPointName);
+                if (spawnPoint != null)
+                {
+                    player.transform.position = spawnPoint.transform.position;
+                    Debug.Log($"[State {currentState}] Player spawned at LoadingManager point: {spawnPointName} ({spawnPoint.transform.position})");
+                }
+                else
+                {
+                    Debug.LogWarning($"[State {currentState}] Spawn point '{spawnPointName}' not found! Using state spawn.");
+                    
+                    // Bulamazsa state'in spawn'ını kullan
+                    if (state.playerSpawnPosition != null)
+                    {
+                        player.transform.position = state.playerSpawnPosition.position;
+                        Debug.Log($"[State {currentState}] Fallback: Player spawned at state spawn: {state.playerSpawnPosition.position}");
+                    }
+                }
+            }
+            else if (state.playerSpawnPosition != null)
+            {
+                // Normal spawn (LoadingManager'dan gelen yok)
+                player.transform.position = state.playerSpawnPosition.position;
+                Debug.Log($"[State {currentState}] Player spawned at state position: {state.playerSpawnPosition.position}");
+            }
         }
         
         // Timeline
@@ -240,7 +291,22 @@ public class CutsceneChief : MonoBehaviour
         
         if (currentState < cutsceneStates.Length)
         {
-            PlayCurrentState();
+            CutsceneState nextState = cutsceneStates[currentState];
+            
+            // Scene değişikliği var mı?
+            if (nextState.changeScene && !string.IsNullOrEmpty(nextState.targetSceneName))
+            {
+                Debug.Log($"[CutsceneChief] 🌍 Scene change requested: {nextState.targetSceneName}");
+                Debug.Log($"[CutsceneChief] State: {currentState}, Spawn: {nextState.spawnPointName}");
+                
+                // LoadingManager ile scene yükle
+                LoadingManager.LoadScene(nextState.targetSceneName, currentState, nextState.spawnPointName);
+            }
+            else
+            {
+                // Normal state geçişi (aynı scene içinde)
+                PlayCurrentState();
+            }
         }
         else
         {
@@ -258,7 +324,23 @@ public class CutsceneChief : MonoBehaviour
         
         currentState = newState;
         SaveState();
-        PlayCurrentState();
+        
+        CutsceneState targetState = cutsceneStates[currentState];
+        
+        // Scene değişikliği var mı?
+        if (targetState.changeScene && !string.IsNullOrEmpty(targetState.targetSceneName))
+        {
+            Debug.Log($"[CutsceneChief] 🌍 Scene change requested: {targetState.targetSceneName}");
+            Debug.Log($"[CutsceneChief] State: {currentState}, Spawn: {targetState.spawnPointName}");
+            
+            // LoadingManager ile scene yükle
+            LoadingManager.LoadScene(targetState.targetSceneName, currentState, targetState.spawnPointName);
+        }
+        else
+        {
+            // Normal state geçişi (aynı scene içinde)
+            PlayCurrentState();
+        }
     }
     
     private void SaveState()
@@ -324,4 +406,5 @@ public class CutsceneChief : MonoBehaviour
             }
         }
     }
+    //
 }

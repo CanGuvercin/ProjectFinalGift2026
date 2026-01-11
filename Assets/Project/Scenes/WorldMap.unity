@@ -505,9 +505,9 @@ GameObject:
   - component: {fileID: 246515673}
   - component: {fileID: 246515675}
   - component: {fileID: 246515674}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Dungeon1EnterArea
-  m_TagString: Untagged
+  m_TagString: gate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -584,15 +584,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e736675ee10391540847faae6a6f2724, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dungeonID: Dungeon1
-  dungeonSceneName: Dungeon1
-  targetState: 4
+  interactionRadius: 1.5
+  interactKey: 101
   promptUI: {fileID: 1672044948}
   promptText: {fileID: 0}
   enterMessage: Press E to Enter Dungeon
-  messageDisplayDuration: 2
   enterSfx: {fileID: 8300000, guid: 11a3989c6dd4a8648beb2ea77cbb00cf, type: 3}
-  audioSource: {fileID: 261605107}
+  soundVolume: 1
 --- !u!82 &261605107 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 6919709539321117686, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
@@ -137205,14 +137203,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: currentState
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].timeline
       value: 
       objectReference: {fileID: 361106727}
@@ -137225,41 +137215,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 560879648}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].fadeMusic
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].stateName
-      value: State2_AkSakalli
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[3].fadeMusic
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[3].stateName
-      value: State3_ACT_I_Field
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].musicVolume
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[3].musicVolume
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[1].ambientMusic
+      propertyPath: cutsceneStates.Array.data[4].timeline
       value: 
-      objectReference: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].ambientMusic
-      value: 
-      objectReference: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[3].ambientMusic
-      value: 
-      objectReference: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
+      objectReference: {fileID: 560879648}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].playerSpawnPosition
       value: 
@@ -137268,34 +137226,6 @@ PrefabInstance:
       propertyPath: cutsceneStates.Array.data[1].playerSpawnPosition
       value: 
       objectReference: {fileID: 2138274028}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].playerSpawnPosition
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].objectsToActivate.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[3].objectsToActivate.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[0].objectsToDeactivate.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[1].objectsToDeactivate.Array.size
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].objectsToDeactivate.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[3].objectsToDeactivate.Array.size
-      value: 3
-      objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].objectsToActivate.Array.data[0]
       value: 
@@ -137328,22 +137258,6 @@ PrefabInstance:
       propertyPath: cutsceneStates.Array.data[2].objectsToActivate.Array.data[0]
       value: 
       objectReference: {fileID: 560879646}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].objectsToActivate.Array.data[1]
-      value: 
-      objectReference: {fileID: 1603027724}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].objectsToActivate.Array.data[2]
-      value: 
-      objectReference: {fileID: 301609593}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].objectsToActivate.Array.data[3]
-      value: 
-      objectReference: {fileID: 42964126}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[2].objectsToActivate.Array.data[4]
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[3].objectsToActivate.Array.data[0]
       value: 
@@ -137396,6 +137310,22 @@ PrefabInstance:
       propertyPath: cutsceneStates.Array.data[3].objectsToDeactivate.Array.data[2]
       value: 
       objectReference: {fileID: 560879646}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[4].objectsToDeactivate.Array.data[0]
+      value: 
+      objectReference: {fileID: 453324504}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[4].objectsToDeactivate.Array.data[1]
+      value: 
+      objectReference: {fileID: 469740707}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[4].objectsToDeactivate.Array.data[2]
+      value: 
+      objectReference: {fileID: 560879646}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[4].objectsToDeactivate.Array.data[3]
+      value: 
+      objectReference: {fileID: 67465710}
     - target: {fileID: 5539606185718919222, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: m_Name
       value: CutsceneChief
