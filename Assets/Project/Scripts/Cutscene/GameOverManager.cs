@@ -4,6 +4,24 @@ using UnityEngine.SceneManagement;
 
 public class GameOverManager : MonoBehaviour
 {
+    [Header("Death Sequence")]
+    [SerializeField] private float deathRotationDuration = 0.5f;
+    [Tooltip("Ali'nin -90° dönme süresi")]
+    [SerializeField] private AnimationCurve deathRotationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [Tooltip("Ease-in-out curve")]
+    [SerializeField] private AudioClip deathSfx;
+    [Tooltip("Ölüm anında çalacak ses (örn: 'ugh', düşme sesi)")]
+    [SerializeField] private float deathSequenceDelay = 0.5f;
+    [Tooltip("Ölüm animasyonundan sonra bekleme süresi")]
+    
+    [Header("Red Screen Effect")]
+    [SerializeField] private Image redScreenOverlay;
+    [Tooltip("Tam ekran kırmızı Image (CanvasGroup içinde olmalı)")]
+    [SerializeField] private float redScreenFadeInDuration = 0.25f;
+    [SerializeField] private float redScreenFadeOutDuration = 0.25f;
+    [SerializeField] private Color redScreenColor = new Color(1f, 0f, 0f, 0.6f);
+    [Tooltip("Kırmızı ekran rengi (alpha ile transparanlık)")]
+    
     [Header("UI Elements")]
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private Button retryButton;
@@ -51,6 +69,19 @@ public class GameOverManager : MonoBehaviour
             gameOverPanel.SetActive(false);
         }
         
+        // Red screen overlay başlangıçta şeffaf
+        if (redScreenOverlay != null)
+        {
+            redScreenOverlay.gameObject.SetActive(true);
+            Color col = redScreenOverlay.color;
+            col.a = 0f;
+            redScreenOverlay.color = col;
+        }
+        else
+        {
+            Debug.LogWarning("[GameOver] ⚠️ Red Screen Overlay is not assigned!");
+        }
+        
         // Button listener'lar
         if (retryButton != null)
         {
@@ -85,8 +116,136 @@ public class GameOverManager : MonoBehaviour
             return;
         }
         
-        Debug.Log($"[GameOver] ☠️ Showing Game Over screen! Current state: {currentState}");
+        Debug.Log($"[GameOver] ☠️ Death sequence starting! Current state: {currentState}");
         
+        // DEATH SEQUENCE başlat (coroutine)
+        StartCoroutine(DeathSequence());
+    }
+    
+    /// <summary>
+    /// Ölüm sekansı: Animasyon → Düşme → Kırmızı ekran → Game Over
+    /// </summary>
+    private System.Collections.IEnumerator DeathSequence()
+    {
+        // Player'ı bul
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj == null)
+        {
+            Debug.LogError("[GameOver] ❌ Player not found! Skipping death sequence.");
+            ShowGameOverPanel();
+            yield break;
+        }
+        
+        Animator playerAnimator = playerObj.GetComponent<Animator>();
+        Transform playerTransform = playerObj.transform;
+        
+        Debug.Log("[GameOver] 💀 Phase 1: Death animation & rotation");
+        
+        // PHASE 1: isDead trigger + Rotasyon
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTrigger("isDead");
+            Debug.Log("[GameOver] 🎬 isDead trigger sent");
+        }
+        
+        // Death SFX çal
+        if (audioSource != null && deathSfx != null)
+        {
+            audioSource.PlayOneShot(deathSfx);
+            Debug.Log("[GameOver] 🔊 Death SFX playing");
+        }
+        
+        // Ali'yi -90° döndür (yere düşme)
+        float elapsed = 0f;
+        Vector3 startRotation = playerTransform.eulerAngles;
+        float startZ = startRotation.z;
+        float targetZ = startZ - 90f; // Sadece Z ekseninde -90°
+        
+        while (elapsed < deathRotationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / deathRotationDuration;
+            float curveT = deathRotationCurve.Evaluate(t);
+            
+            // Sadece Z eksenini değiştir
+            float newZ = Mathf.Lerp(startZ, targetZ, curveT);
+            playerTransform.eulerAngles = new Vector3(startRotation.x, startRotation.y, newZ);
+            
+            yield return null;
+        }
+        
+        // Final rotation
+        playerTransform.eulerAngles = new Vector3(startRotation.x, startRotation.y, targetZ);
+        Debug.Log($"[GameOver] ⚰️ Player rotated from Z={startZ:F1}° to Z={targetZ:F1}°");
+        
+        // PHASE 2: Death sequence delay
+        yield return new WaitForSeconds(deathSequenceDelay);
+        
+        // PHASE 3: Kırmızı ekran fade-in
+        Debug.Log("[GameOver] 🔴 Phase 2: Red screen fade-in");
+        yield return StartCoroutine(RedScreenFadeIn());
+        
+        // PHASE 4: Kırmızı ekran fade-out
+        Debug.Log("[GameOver] ⚪ Phase 3: Red screen fade-out");
+        yield return StartCoroutine(RedScreenFadeOut());
+        
+        // PHASE 5: Game Over panel göster
+        Debug.Log("[GameOver] 💀 Phase 4: Showing Game Over panel");
+        ShowGameOverPanel();
+    }
+    
+    private System.Collections.IEnumerator RedScreenFadeIn()
+    {
+        if (redScreenOverlay == null)
+        {
+            Debug.LogWarning("[GameOver] ⚠️ Red screen overlay is null!");
+            yield break;
+        }
+        
+        float elapsed = 0f;
+        Color startColor = redScreenOverlay.color;
+        Color targetColor = redScreenColor;
+        
+        while (elapsed < redScreenFadeInDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / redScreenFadeInDuration;
+            
+            redScreenOverlay.color = Color.Lerp(startColor, targetColor, t);
+            
+            yield return null;
+        }
+        
+        redScreenOverlay.color = targetColor;
+    }
+    
+    private System.Collections.IEnumerator RedScreenFadeOut()
+    {
+        if (redScreenOverlay == null)
+        {
+            yield break;
+        }
+        
+        float elapsed = 0f;
+        Color startColor = redScreenOverlay.color;
+        Color targetColor = redScreenColor;
+        targetColor.a = 0f;
+        
+        while (elapsed < redScreenFadeOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / redScreenFadeOutDuration;
+            
+            redScreenOverlay.color = Color.Lerp(startColor, targetColor, t);
+            
+            yield return null;
+        }
+        
+        redScreenOverlay.color = targetColor;
+    }
+    
+    private void ShowGameOverPanel()
+    {
         // Time'ı durdur
         Time.timeScale = 0f;
         
@@ -96,10 +255,10 @@ public class GameOverManager : MonoBehaviour
             gameOverPanel.SetActive(true);
         }
         
-        // SFX çal
+        // Game Over SFX çal
         PlayGameOverSfx();
         
-        // Input'u devre dışı bırak (optional)
+        // Input'u devre dışı bırak
         DisablePlayerInput();
     }
     

@@ -172,6 +172,17 @@ public class CutsceneChief : MonoBehaviour
     
     private void HandleMusic(CutsceneState newState)
     {
+        // MusicSource yoksa veya destroy olmuşsa yeniden oluştur
+        if (musicSource == null)
+        {
+            Debug.LogWarning("[Music] MusicSource was null or destroyed, recreating...");
+            GameObject musicObj = new GameObject("CutsceneMusic");
+            musicObj.transform.SetParent(transform);
+            musicSource = musicObj.AddComponent<AudioSource>();
+            musicSource.loop = true;
+            musicSource.playOnAwake = false;
+        }
+        
         // Müzik slotu boş → Devam et (değişiklik yok)
         if (newState.ambientMusic == null)
         {
@@ -408,5 +419,27 @@ public class CutsceneChief : MonoBehaviour
                 }
             }
         }
+    }
+    
+    private void OnDestroy()
+    {
+        // Music fade coroutine'ini temizle
+        if (musicFadeCoroutine != null)
+        {
+            StopCoroutine(musicFadeCoroutine);
+            musicFadeCoroutine = null;
+        }
+        
+        // Timeline event'lerini temizle
+        if (currentState >= 0 && currentState < cutsceneStates.Length)
+        {
+            CutsceneState state = cutsceneStates[currentState];
+            if (state.timeline != null)
+            {
+                state.timeline.stopped -= OnTimelineStopped;
+            }
+        }
+        
+        Debug.Log("[CutsceneChief] Cleaned up on destroy");
     }
 }
