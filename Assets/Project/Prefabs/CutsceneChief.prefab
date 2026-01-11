@@ -125,6 +125,22 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
+  - stateName: State5_roadToNextAct
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
   currentState: 3
   saveKey: GameState
   musicSource: {fileID: 0}

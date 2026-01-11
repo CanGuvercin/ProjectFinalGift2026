@@ -123,6 +123,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &163968298 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8518494170421730700, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
+  m_PrefabInstance: {fileID: 843560598}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &217845550
 GameObject:
   m_ObjectHideFlags: 0
@@ -2154,6 +2159,10 @@ PrefabInstance:
     - target: {fileID: 340980590999949008, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: currentState
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[4].playerSpawnPosition
@@ -7099,6 +7108,7 @@ GameObject:
   m_Component:
   - component: {fileID: 723864388}
   - component: {fileID: 723864387}
+  - component: {fileID: 723864389}
   m_Layer: 0
   m_Name: KeyObject
   m_TagString: Untagged
@@ -7173,6 +7183,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &723864389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 723864386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61d2da1172eaf745be0c5ca7dadadd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactionRadius: 1.5
+  interactKey: 101
+  promptUI: {fileID: 163968298}
+  promptText: {fileID: 0}
+  collectMessage: Press E to Collect Key
+  floatHeight: 0.3
+  floatSpeed: 2
+  collectRiseDuration: 0.5
+  collectRiseHeight: 1.5
+  collectSpinSpeed: 360
+  collectSpinAcceleration: 720
+  collectScaleMultiplier: 1.5
+  collectShrinkDuration: 0.8
+  keyCollectVFX: {fileID: 0}
+  victoryVFX: {fileID: 0}
+  collectSound: {fileID: 0}
+  soundVolume: 1
+  victoryAnimationName: Victory
+  postVictoryDelay: 0.5
+  returnSceneName: WorldMap
+  nextState: 5
+  returnSpawnPoint: 
 --- !u!1 &742581983
 GameObject:
   m_ObjectHideFlags: 0

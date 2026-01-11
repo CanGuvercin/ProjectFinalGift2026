@@ -153,6 +153,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1991564600}
+  - {fileID: 1328983026}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &67465710
@@ -112796,6 +112797,37 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &943638026
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 943638027}
+  m_Layer: 0
+  m_Name: State5WorldObjects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &943638027
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943638026}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 16.03, y: 29.02, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1009985885
 GameObject:
   m_ObjectHideFlags: 0
@@ -135734,6 +135766,37 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &1328983025
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1328983026}
+  m_Layer: 0
+  m_Name: DungeonExitSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1328983026
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1328983025}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -26.11, y: 26.61, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 42964127}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1478051495 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
@@ -136860,11 +136923,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1199734219496511648, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.07
+      value: 6.95
       objectReference: {fileID: 0}
     - target: {fileID: 1199734219496511648, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.9
+      value: -0.76
       objectReference: {fileID: 0}
     - target: {fileID: 1199734219496511648, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
       propertyPath: m_LocalPosition.z
@@ -137220,10 +137283,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 560879648}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
-      propertyPath: cutsceneStates.Array.data[4].timeline
-      value: 
-      objectReference: {fileID: 560879648}
-    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].playerSpawnPosition
       value: 
       objectReference: {fileID: 2138274028}
@@ -137231,6 +137290,10 @@ PrefabInstance:
       propertyPath: cutsceneStates.Array.data[1].playerSpawnPosition
       value: 
       objectReference: {fileID: 2138274028}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[5].playerSpawnPosition
+      value: 
+      objectReference: {fileID: 1328983026}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].objectsToActivate.Array.data[0]
       value: 
@@ -137267,6 +137330,10 @@ PrefabInstance:
       propertyPath: cutsceneStates.Array.data[3].objectsToActivate.Array.data[0]
       value: 
       objectReference: {fileID: 67465710}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[5].objectsToActivate.Array.data[0]
+      value: 
+      objectReference: {fileID: 943638026}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].objectsToDeactivate.Array.data[0]
       value: 
@@ -137331,6 +137398,22 @@ PrefabInstance:
       propertyPath: cutsceneStates.Array.data[4].objectsToDeactivate.Array.data[3]
       value: 
       objectReference: {fileID: 67465710}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[5].objectsToDeactivate.Array.data[0]
+      value: 
+      objectReference: {fileID: 453324504}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[5].objectsToDeactivate.Array.data[1]
+      value: 
+      objectReference: {fileID: 469740707}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[5].objectsToDeactivate.Array.data[2]
+      value: 
+      objectReference: {fileID: 560879646}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: cutsceneStates.Array.data[5].objectsToDeactivate.Array.data[3]
+      value: 
+      objectReference: {fileID: 67465710}
     - target: {fileID: 5539606185718919222, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: m_Name
       value: CutsceneChief
@@ -137355,3 +137438,4 @@ SceneRoots:
   - {fileID: 469740708}
   - {fileID: 560879647}
   - {fileID: 67465711}
+  - {fileID: 943638027}
