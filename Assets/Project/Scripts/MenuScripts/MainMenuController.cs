@@ -85,7 +85,7 @@ public class MainMenuController : MonoBehaviour
         PlayerPrefs.Save();
         
         // WorldMap'i yükle (State 0'dan başlar)
-        SceneManager.LoadScene("WorldMap");
+        LoadingManager.LoadScene("WorldMap");
     }
     
     public void OnOptions()

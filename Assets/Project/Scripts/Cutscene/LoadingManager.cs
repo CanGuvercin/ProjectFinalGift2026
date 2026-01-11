@@ -43,17 +43,27 @@ public class LoadingManager : MonoBehaviour
         Debug.Log($"[LoadingManager] ═══════════════════════════════");
 
         Animator aliAnimator = GameObject.Find("AliRunning")?.GetComponent<Animator>();
-    if (aliAnimator != null)
-    {
-        aliAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
-        Debug.Log("[LoadingManager] Ali animator set to Unscaled Time");
-    }
+        if (aliAnimator != null)
+        {
+            aliAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
+            Debug.Log("[LoadingManager] Ali animator set to Unscaled Time");
+        }
         
-        // Fade overlay başta görünmez
+        // Fade overlay setup
         if (fadeOverlay != null)
         {
-            fadeOverlay.alpha = 0f;
+            // Canvas'ı aktif et (yoksa fade görünmez!)
+            fadeOverlay.gameObject.SetActive(true);
+            
+            // Başta tamamen OPAK (siyah ekran)
+            fadeOverlay.alpha = 1f;
             fadeOverlay.blocksRaycasts = true; // Input'u engelle
+            
+            Debug.Log("[LoadingManager] ✅ FadeOverlay initialized (starting BLACK)");
+        }
+        else
+        {
+            Debug.LogError("[LoadingManager] ❌ FadeOverlay is NULL! Fade effects will not work.");
         }
         
         // Loading text animation başlat
@@ -132,6 +142,14 @@ public class LoadingManager : MonoBehaviour
     {
         float startTime = Time.realtimeSinceStartup;
         
+        // Scene name kontrolü
+        if (string.IsNullOrEmpty(targetSceneName))
+        {
+            Debug.LogError("[LoadingManager] ❌ Target scene name is empty! Cannot load scene.");
+            Debug.LogError("[LoadingManager] This usually means LoadingScene was opened directly without calling LoadScene() method.");
+            yield break;
+        }
+        
         // PHASE 1: FADE IN (Loading ekranı beliriyor)
         Debug.Log("[LoadingManager] Phase 1: Fade In");
         yield return StartCoroutine(FadeIn());
@@ -190,15 +208,16 @@ public class LoadingManager : MonoBehaviour
         
         float elapsed = 0f;
         
+        // Karanlıktan aydınlığa (1 → 0)
         while (elapsed < fadeInDuration)
         {
             elapsed += Time.deltaTime;
-            fadeOverlay.alpha = Mathf.Lerp(0f, 1f, elapsed / fadeInDuration);
+            fadeOverlay.alpha = Mathf.Lerp(1f, 0f, elapsed / fadeInDuration);
             yield return null;
         }
         
-        fadeOverlay.alpha = 1f;
-        Debug.Log("[LoadingManager] Fade In complete");
+        fadeOverlay.alpha = 0f;
+        Debug.Log("[LoadingManager] Fade In complete (now BRIGHT)");
     }
     
     private IEnumerator FadeOut()
@@ -211,15 +230,16 @@ public class LoadingManager : MonoBehaviour
         
         float elapsed = 0f;
         
+        // Aydınlıktan karanlığa (0 → 1)
         while (elapsed < fadeOutDuration)
         {
             elapsed += Time.deltaTime;
-            fadeOverlay.alpha = Mathf.Lerp(1f, 0f, elapsed / fadeOutDuration);
+            fadeOverlay.alpha = Mathf.Lerp(0f, 1f, elapsed / fadeOutDuration);
             yield return null;
         }
         
-        fadeOverlay.alpha = 0f;
-        Debug.Log("[LoadingManager] Fade Out complete");
+        fadeOverlay.alpha = 1f;
+        Debug.Log("[LoadingManager] Fade Out complete (now BLACK)");
     }
     
     private IEnumerator AnimateLoadingText()
