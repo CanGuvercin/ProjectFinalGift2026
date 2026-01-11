@@ -37,6 +37,7 @@ public class GameOverManager : MonoBehaviour
     [SerializeField] private int[] allowedStates = { 2, 3, 4, 5, 6, 7, 8, 9, 10 }; // Combat state'ler
     
     private static GameOverManager instance;
+    private bool isDead = false; // Ölüm sekansı başladı mı?
     
     public static GameOverManager Instance
     {
@@ -101,6 +102,13 @@ public class GameOverManager : MonoBehaviour
     /// </summary>
     public void ShowGameOver()
     {
+        // Zaten öldü mü? (Çoklu çağrı önleme)
+        if (isDead)
+        {
+            Debug.LogWarning("[GameOver] ⚠️ Already dead! Ignoring duplicate call.");
+            return;
+        }
+        
         // Mevcut state'i kontrol et
         int currentState = PlayerPrefs.GetInt("GameState", 1);
         
@@ -115,6 +123,9 @@ public class GameOverManager : MonoBehaviour
             RetryCurrentState();
             return;
         }
+        
+        // Flag'i set et (bir kez çalışsın)
+        isDead = true;
         
         Debug.Log($"[GameOver] ☠️ Death sequence starting! Current state: {currentState}");
         
@@ -138,6 +149,26 @@ public class GameOverManager : MonoBehaviour
         
         Animator playerAnimator = playerObj.GetComponent<Animator>();
         Transform playerTransform = playerObj.transform;
+        Rigidbody2D playerRb = playerObj.GetComponent<Rigidbody2D>();
+        PlayerController playerController = playerObj.GetComponent<PlayerController>();
+        
+        // KRITIK: Hareketi ve fiziği durdur!
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+            Debug.Log("[GameOver] 🛑 PlayerController disabled");
+        }
+        
+        if (playerRb != null)
+        {
+            playerRb.velocity = Vector2.zero;
+            playerRb.angularVelocity = 0f;
+            playerRb.bodyType = RigidbodyType2D.Static; // Fizik tamamen kapat
+            Debug.Log("[GameOver] 🛑 Rigidbody2D set to Static");
+        }
+        
+        // Pozisyonu kaydet (kaymaması için)
+        Vector3 fixedPosition = playerTransform.position;
         
         Debug.Log("[GameOver] 💀 Phase 1: Death animation & rotation");
         
@@ -155,11 +186,12 @@ public class GameOverManager : MonoBehaviour
             Debug.Log("[GameOver] 🔊 Death SFX playing");
         }
         
-        // Ali'yi -90° döndür (yere düşme)
+        // Ali'yi -90° döndür (yere düşme) - SADECE Z EKSENİ
         float elapsed = 0f;
-        Vector3 startRotation = playerTransform.eulerAngles;
-        float startZ = startRotation.z;
-        float targetZ = startZ - 90f; // Sadece Z ekseninde -90°
+        float startZ = 0f; // Ali her zaman düz başlar (0°)
+        float targetZ = -90f; // Hedef: -90°
+        
+        Debug.Log($"[GameOver] 🔄 Starting rotation: Z={startZ}° → Z={targetZ}°");
         
         while (elapsed < deathRotationDuration)
         {
@@ -169,14 +201,18 @@ public class GameOverManager : MonoBehaviour
             
             // Sadece Z eksenini değiştir
             float newZ = Mathf.Lerp(startZ, targetZ, curveT);
-            playerTransform.eulerAngles = new Vector3(startRotation.x, startRotation.y, newZ);
+            playerTransform.eulerAngles = new Vector3(0, 0, newZ);
+            
+            // Pozisyonu sabitle (kaymaması için)
+            playerTransform.position = fixedPosition;
             
             yield return null;
         }
         
-        // Final rotation
-        playerTransform.eulerAngles = new Vector3(startRotation.x, startRotation.y, targetZ);
-        Debug.Log($"[GameOver] ⚰️ Player rotated from Z={startZ:F1}° to Z={targetZ:F1}°");
+        // Final rotation ve pozisyon
+        playerTransform.eulerAngles = new Vector3(0, 0, targetZ);
+        playerTransform.position = fixedPosition;
+        Debug.Log($"[GameOver] ⚰️ Rotation complete: Z={targetZ}°, Position fixed at {fixedPosition}");
         
         // PHASE 2: Death sequence delay
         yield return new WaitForSeconds(deathSequenceDelay);
@@ -283,6 +319,9 @@ public class GameOverManager : MonoBehaviour
         
         PlayButtonClickSfx();
         
+        // Flag'i resetle
+        isDead = false;
+        
         // Time'ı normale döndür
         Time.timeScale = 1f;
         
@@ -292,6 +331,8 @@ public class GameOverManager : MonoBehaviour
     
     private void RetryCurrentState()
     {
+        // Flag'i resetle
+        isDead = false;
         // Time'ı normale döndür
         Time.timeScale = 1f;
         
@@ -342,4 +383,4 @@ public class GameOverManager : MonoBehaviour
             mainMenuButton.onClick.RemoveListener(OnMainMenu);
         }
     }
-}
+} //
