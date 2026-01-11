@@ -328,6 +328,7 @@ public class SlimeEnemyV2 : MonoBehaviour
         if (shootCo != null) return;
 
         state = State.Shoot;
+        rb.velocity = Vector2.zero; // Dur! Ateş ederken hareket etme
         shootCo = StartCoroutine(ShootBurstRoutine());
     }
 

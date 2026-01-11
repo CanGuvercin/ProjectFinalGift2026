@@ -12,6 +12,14 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 1173572186, guid: ede8891876488954a88e546157646d8d, type: 3}
+    - target: {fileID: 370497038152276781, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
+      propertyPath: m_SortingLayer
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 370497038152276781, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -211806153
+      objectReference: {fileID: 0}
     - target: {fileID: 683955557842113744, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
       propertyPath: m_Name
       value: SlimePink
@@ -68,6 +76,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: ec7cee565c93d36439a0302800fd9cf4, type: 2}
+    - target: {fileID: 4901225817056385389, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6890684589858651969, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
       propertyPath: maxHealth
       value: 40
