@@ -268,18 +268,20 @@ public class CutsceneChief : MonoBehaviour
         Debug.Log($"[CutsceneChief] State saved: {currentState}");
     }
     
-    private void LoadState()
+   private void LoadState()
+{
+    if (PlayerPrefs.HasKey(saveKey))
     {
-        if (PlayerPrefs.HasKey(saveKey))
-        {
-            currentState = PlayerPrefs.GetInt(saveKey);
-            Debug.Log($"[CutsceneChief] State loaded from save: {currentState}");
-        }
-        else
-        {
-            Debug.Log($"[CutsceneChief] No saved state, starting at: {currentState}");
-        }
+        currentState = PlayerPrefs.GetInt(saveKey);
+        Debug.Log($"[CutsceneChief] State loaded from save: {currentState}");
     }
+    else
+    {
+        Debug.Log($"[CutsceneChief] No saved state, using Inspector value: {currentState}");
+        // YENI: Inspector değerini hemen kaydet!
+        SaveState(); // ← EKLE!
+    }
+}
     
     [ContextMenu("Reset State to 0")]
     public void ResetState()
