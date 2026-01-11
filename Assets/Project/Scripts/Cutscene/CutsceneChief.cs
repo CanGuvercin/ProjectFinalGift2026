@@ -65,6 +65,9 @@ public class CutsceneChief : MonoBehaviour
             Debug.Log($"[CutsceneChief] State override from LoadingManager: {loadingState}");
             currentState = loadingState;
             SaveState();
+            
+            // LoadingManager'ı temizle (okuduğumuzu bildiriyoruz)
+            LoadingManager.ClearTransitionData();
         }
         else
         {
@@ -406,5 +409,4 @@ public class CutsceneChief : MonoBehaviour
             }
         }
     }
-    //
 }
