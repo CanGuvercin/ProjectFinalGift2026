@@ -586,7 +586,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactionRadius: 1.5
   interactKey: 101
-  promptUI: {fileID: 1672044948}
+  promptUI: {fileID: 7345596234648794699}
   promptText: {fileID: 0}
   enterMessage: Press E to Enter Dungeon
   enterSfx: {fileID: 8300000, guid: 11a3989c6dd4a8648beb2ea77cbb00cf, type: 3}
@@ -137154,6 +137154,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
+--- !u!1 &7345596234648794699 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 344505928929764290, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
+  m_PrefabInstance: {fileID: 7345596234648794698}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7495243440180892263
 PrefabInstance:
   m_ObjectHideFlags: 0
