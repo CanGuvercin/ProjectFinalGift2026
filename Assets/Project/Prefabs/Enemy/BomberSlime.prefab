@@ -187,7 +187,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 30
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 0
@@ -351,17 +351,22 @@ MonoBehaviour:
   detectionRange: 4.5
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8192
   chargeDuration: 3.5
   chargeSpeed: 2
   explosionRadius: 1.25
   explosionDamage: 80
-  destroyDelay: 0.5
+  destroyDelay: 1.5
+  enablePatrol: 0
   idleSpeed: 0.6
-  patrolPointA: {x: -2, y: 0}
-  patrolPointB: {x: 2, y: 0}
+  patrolPointA: {x: -15.25, y: 35.88}
+  patrolPointB: {x: -18, y: 35.88}
   patrolWaitTime: 1.5
   patrolPointThreshold: 0.3
+  separationDistance: 1.5
+  separationForce: 2.5
+  separationDuration: 0.8
+  separationCheckInterval: 0.3
 --- !u!1 &7628336077162962817
 GameObject:
   m_ObjectHideFlags: 0

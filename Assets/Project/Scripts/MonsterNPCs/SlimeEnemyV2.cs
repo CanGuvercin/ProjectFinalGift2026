@@ -62,6 +62,12 @@ public class SlimeEnemyV2 : MonoBehaviour
     [SerializeField] private float patrolWaitTime = 1.5f;
     [SerializeField] private float patrolPointThreshold = 0.3f;
 
+    [Header("Enemy Separation")]
+    [SerializeField] private float separationDistance = 1.5f;      // bu kadar yakında başka enemy varsa uzaklaş
+    [SerializeField] private float separationForce = 2.5f;         // uzaklaşma hızı
+    [SerializeField] private float separationDuration = 0.8f;      // ne kadar süre uzaklaşsın
+    [SerializeField] private float separationCheckInterval = 0.3f; // kaç saniyede bir kontrol et
+
     [Header("Collision / LOS")]
     [SerializeField] private LayerMask obstacleLayer;
 
@@ -84,6 +90,7 @@ public class SlimeEnemyV2 : MonoBehaviour
     private float nextShootTime;
     private float nextChargeTime;
     private float lastHitTime;
+    private float nextSeparationCheckTime;
 
     // patrol
     private Vector2 spawnPos;
@@ -91,8 +98,13 @@ public class SlimeEnemyV2 : MonoBehaviour
     private bool isGoingToA = true;
     private bool isWaitingAtPatrolPoint;
 
+    // separation
+    private bool isSeparating;
+    private Vector2 separationDirection;
+    private float separationEndTime;
+
     // state
-    private enum State { Patrol, Chase, Shoot, Charge, Retreat, Investigate }
+    private enum State { Patrol, Chase, Shoot, Charge, Retreat, Investigate, Separate }
     private State state = State.Patrol;
 
     // coroutine handles
@@ -129,6 +141,19 @@ public class SlimeEnemyV2 : MonoBehaviour
     {
         if (isDead) return;
 
+        // Separation kontrolü (periyodik)
+        if (Time.time >= nextSeparationCheckTime)
+        {
+            CheckForEnemySeparation();
+            nextSeparationCheckTime = Time.time + separationCheckInterval;
+        }
+
+        // Separation aktifse süre kontrolü
+        if (isSeparating && Time.time >= separationEndTime)
+        {
+            isSeparating = false;
+        }
+
         // Knockback sırasında physics'i KnockbackRoutine yönetiyor; ama karar vermeyi tamamen kesmiyoruz.
         UpdatePerceptionAndMemory();
         UpdateDecision();
@@ -140,6 +165,45 @@ public class SlimeEnemyV2 : MonoBehaviour
         if (isKnockedBack) return;
 
         ApplyMovement();
+    }
+
+    // ================== SEPARATION SYSTEM ==================
+
+    private void CheckForEnemySeparation()
+    {
+        if (isDead || isKnockedBack) return;
+
+        // Çevredeki tüm enemy'leri bul
+        Collider2D[] nearbyEnemies = Physics2D.OverlapCircleAll(transform.position, separationDistance);
+        
+        Vector2 totalSeparationDir = Vector2.zero;
+        int enemyCount = 0;
+
+        foreach (Collider2D col in nearbyEnemies)
+        {
+            // Kendini ve player'ı atla
+            if (col.gameObject == gameObject) continue;
+            if (!col.CompareTag("Enemy")) continue;
+
+            // Bu enemy'den uzaklaş
+            Vector2 awayDir = ((Vector2)transform.position - (Vector2)col.transform.position).normalized;
+            totalSeparationDir += awayDir;
+            enemyCount++;
+        }
+
+        // Eğer yakında enemy varsa separation başlat
+        if (enemyCount > 0)
+        {
+            separationDirection = totalSeparationDir.normalized;
+            isSeparating = true;
+            separationEndTime = Time.time + separationDuration;
+
+            // Separation yüzünden mevcut saldırıları kesme, ama state'i güncelle
+            if (state != State.Charge && state != State.Retreat)
+            {
+                state = State.Separate;
+            }
+        }
     }
 
     // ================== PERCEPTION + MEMORY ==================
@@ -190,7 +254,10 @@ public class SlimeEnemyV2 : MonoBehaviour
         }
 
         float dist = Vector2.Distance(transform.position, player.position);
-        bool sees = HasLineOfSight();
+        
+        // CRITICAL FIX: Detection range kontrolü ekledim
+        bool inDetectionRange = dist <= detectionRange;
+        bool sees = inDetectionRange && HasLineOfSight();
 
         bool hitRecently = (Time.time - lastHitTime) <= hitMemoryTime;
 
@@ -201,28 +268,28 @@ public class SlimeEnemyV2 : MonoBehaviour
             return;
         }
 
-        // 2) Charge: yakın + cooldown bitti + (sees veya alerted taze)
+        // 2) Charge: yakın + cooldown bitti + (sees veya alerted taze) + detection range içinde
         bool canCharge = Time.time >= nextChargeTime;
         bool hasRecentInfo = sees || (isAlerted && (Time.time - lastSeenTime) < 1.0f);
 
-        if (dist <= chargeRange && canCharge && hasRecentInfo && state != State.Retreat)
+        if (inDetectionRange && dist <= chargeRange && canCharge && hasRecentInfo && state != State.Retreat)
         {
             StartCharge();
             return;
         }
 
-        // 3) Shoot: LoS varsa ve (normal menzil) ya da (alerted ise uzun menzil)
+        // 3) Shoot: LoS varsa ve (normal menzil) ya da (alerted ise uzun menzil) + detection range içinde
         bool canShoot = Time.time >= nextShootTime;
         bool inNormalShoot = dist <= shootRange;
         bool inAlertShoot = isAlerted && dist <= alertedShootRange;
 
-        if (sees && canShoot && (inNormalShoot || inAlertShoot) && state != State.Charge)
+        if (inDetectionRange && sees && canShoot && (inNormalShoot || inAlertShoot) && state != State.Charge)
         {
             StartShoot();
             return;
         }
 
-        // 4) Chase / Investigate:
+        // 4) Chase: sadece detection range içinde ve görüyorsa
         if (sees)
         {
             state = State.Chase;
@@ -244,6 +311,13 @@ public class SlimeEnemyV2 : MonoBehaviour
 
     private void ApplyMovement()
     {
+        // Separation önceliği en yüksek (Charge ve Retreat hariç)
+        if (isSeparating && state != State.Charge && state != State.Retreat)
+        {
+            rb.velocity = separationDirection * separationForce;
+            return;
+        }
+
         switch (state)
         {
             case State.Patrol:
@@ -251,46 +325,63 @@ public class SlimeEnemyV2 : MonoBehaviour
                 break;
 
             case State.Chase:
-                MoveToward(player.position, chaseSpeed);
+                MoveTowardWithSeparation(player.position, chaseSpeed);
                 break;
 
             case State.Investigate:
-                // lastKnownPlayerPos'a doğru
-                if (Vector2.Distance(transform.position, lastKnownPlayerPos) <= investigateStopDistance)
-                    rb.velocity = Vector2.zero;
-                else
-                    MoveToward(lastKnownPlayerPos, chaseSpeed);
+                InvestigateMove();
                 break;
 
-            case State.Shoot:
-                // shoot sırasında dur (istersen strafe ekleriz)
-                rb.velocity = Vector2.zero;
+            case State.Separate:
+                // Separation zaten yukarıda handle edildi
                 break;
 
-            case State.Charge:
-                // chargeCo rb.velocity set ediyor
-                break;
-
-            case State.Retreat:
-                // retreatCo rb.velocity set ediyor
+            default:
+                // Shoot, Charge, Retreat: kendi coroutine'leri velocity'yi halleder
                 break;
         }
     }
 
     private void MoveToward(Vector2 target, float speed)
     {
-        Vector2 dir = (target - (Vector2)transform.position).normalized;
+        Vector2 dir = ((Vector2)target - (Vector2)transform.position).normalized;
         rb.velocity = dir * speed;
     }
 
-    private void PatrolMove()
+    private void MoveTowardWithSeparation(Vector2 target, float speed)
     {
-        if (!enablePatrol)
+        Vector2 dir = ((Vector2)target - (Vector2)transform.position).normalized;
+        
+        // Eğer separation aktifse, direction'ı blend et
+        if (isSeparating)
+        {
+            // %70 target yönü, %30 separation yönü
+            dir = (dir * 0.7f + separationDirection * 0.3f).normalized;
+        }
+        
+        rb.velocity = dir * speed;
+    }
+
+    private void InvestigateMove()
+    {
+        if (!isAlerted)
         {
             rb.velocity = Vector2.zero;
             return;
         }
 
+        float d = Vector2.Distance(transform.position, lastKnownPlayerPos);
+        if (d <= investigateStopDistance)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
+
+        MoveTowardWithSeparation(lastKnownPlayerPos, patrolSpeed);
+    }
+
+    private void PatrolMove()
+    {
         if (isWaitingAtPatrolPoint)
         {
             rb.velocity = Vector2.zero;
@@ -516,6 +607,14 @@ public class SlimeEnemyV2 : MonoBehaviour
                 StartCoroutine(KnockbackRoutine(kbDir));
             }
         }
+        // Enemy ile çarpışmada separation'ı tetikle
+        else if (collision.gameObject.CompareTag("Enemy"))
+        {
+            Vector2 awayDir = ((Vector2)transform.position - (Vector2)collision.transform.position).normalized;
+            separationDirection = awayDir;
+            isSeparating = true;
+            separationEndTime = Time.time + separationDuration;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -547,5 +646,6 @@ public class SlimeEnemyV2 : MonoBehaviour
         Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, shootRange);
         Gizmos.color = new Color(1f, 0.5f, 0f); Gizmos.DrawWireSphere(transform.position, alertedShootRange);
         Gizmos.color = Color.red;    Gizmos.DrawWireSphere(transform.position, chargeRange);
+        Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, separationDistance);
     }
 }

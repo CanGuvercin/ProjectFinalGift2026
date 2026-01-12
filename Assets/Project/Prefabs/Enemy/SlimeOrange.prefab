@@ -230,7 +230,7 @@ MonoBehaviour:
   burstCount: 2
   burstDelay: 0.2
   shootCooldown: 4
-  projectileSpeed: 5
+  projectileSpeed: 4
   chargeDuration: 0.8
   chargeCooldown: 2.8
   forgetAfter: 6
