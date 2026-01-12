@@ -187,7 +187,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 30
+  m_Mass: 2
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 0
@@ -346,8 +346,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioSource: {fileID: 1347253541359335308}
-  chargeSfx: {fileID: 0}
-  explosionSfx: {fileID: 0}
+  chargeSfx: {fileID: 8300000, guid: 95c0f022574d22b45859dd2f67965f2a, type: 3}
+  explosionSfx: {fileID: 8300000, guid: 58535394141487e46ac827403a7a5064, type: 3}
   detectionRange: 4.5
   obstacleLayer:
     serializedVersion: 2
@@ -356,7 +356,7 @@ MonoBehaviour:
   chargeSpeed: 2
   explosionRadius: 1.25
   explosionDamage: 80
-  destroyDelay: 1.5
+  destroyDelay: 1.2
   enablePatrol: 0
   idleSpeed: 0.6
   patrolPointA: {x: -15.25, y: 35.88}
