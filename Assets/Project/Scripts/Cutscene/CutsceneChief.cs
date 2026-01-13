@@ -14,11 +14,8 @@ public class CutsceneChief : MonoBehaviour
         
         [Header("Scene Change")]
         public bool changeScene = false;
-        [Tooltip("Bu state'e geçerken scene değişsin mi?")]
         public string targetSceneName = "";
-        [Tooltip("Yüklenecek scene adı (örn: Dungeon1)")]
         public string spawnPointName = "";
-        [Tooltip("Yeni scene'de spawn noktası (örn: DungeonEntrance)")]
         
         [Header("Music")]
         public AudioClip ambientMusic;
@@ -39,11 +36,13 @@ public class CutsceneChief : MonoBehaviour
     [SerializeField] private AudioSource musicSource;
     [SerializeField] private float fadeDuration = 1.5f;
     
+    [Header("Save UI")]
+    [SerializeField] private GameSavedUI gameSavedUI;
+    
     private Coroutine musicFadeCoroutine;
     
     private void Awake()
     {
-        // Music AudioSource yoksa oluştur
         if (musicSource == null)
         {
             GameObject musicObj = new GameObject("CutsceneMusic");
@@ -56,22 +55,18 @@ public class CutsceneChief : MonoBehaviour
     
     private void Start()
     {
-        // LoadingManager'dan gelen state var mı kontrol et
         int loadingState = LoadingManager.GetTargetState();
         
         if (loadingState >= 0)
         {
-            // LoadingManager'dan state geldi, onu kullan
             Debug.Log($"[CutsceneChief] State override from LoadingManager: {loadingState}");
             currentState = loadingState;
             SaveState();
             
-            // LoadingManager'ı temizle (okuduğumuzu bildiriyoruz)
             LoadingManager.ClearTransitionData();
         }
         else
         {
-            // Normal save'den yükle
             LoadState();
         }
         
@@ -89,13 +84,10 @@ public class CutsceneChief : MonoBehaviour
         CutsceneState state = cutsceneStates[currentState];
         Debug.Log($"[CutsceneChief] === Playing State {currentState}: {state.stateName} ===");
         
-        // Müziği kontrol et
         HandleMusic(state);
         
-        // Kamera pozisyonunu senkronize et
         SyncCameraPositions(state);
         
-        // Deactivate
         if (state.objectsToDeactivate != null)
         {
             foreach (GameObject obj in state.objectsToDeactivate)
@@ -108,7 +100,6 @@ public class CutsceneChief : MonoBehaviour
             }
         }
         
-        // Activate
         if (state.objectsToActivate != null)
         {
             foreach (GameObject obj in state.objectsToActivate)
@@ -121,43 +112,37 @@ public class CutsceneChief : MonoBehaviour
             }
         }
         
-        // Player spawn
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
-            // Önce LoadingManager'dan gelen spawn point'i kontrol et
             string spawnPointName = LoadingManager.GetSpawnPoint();
             
             if (!string.IsNullOrEmpty(spawnPointName))
             {
-                // LoadingManager'dan spawn point gelmiş (örn: dungeon girişi)
                 GameObject spawnPoint = GameObject.Find(spawnPointName);
                 if (spawnPoint != null)
                 {
                     player.transform.position = spawnPoint.transform.position;
-                    Debug.Log($"[State {currentState}] Player spawned at LoadingManager point: {spawnPointName} ({spawnPoint.transform.position})");
+                    Debug.Log($"[State {currentState}] Player spawned at LoadingManager point: {spawnPointName}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[State {currentState}] Spawn point '{spawnPointName}' not found! Using state spawn.");
+                    Debug.LogWarning($"[State {currentState}] Spawn point '{spawnPointName}' not found!");
                     
-                    // Bulamazsa state'in spawn'ını kullan
                     if (state.playerSpawnPosition != null)
                     {
                         player.transform.position = state.playerSpawnPosition.position;
-                        Debug.Log($"[State {currentState}] Fallback: Player spawned at state spawn: {state.playerSpawnPosition.position}");
+                        Debug.Log($"[State {currentState}] Fallback: Player spawned at state spawn");
                     }
                 }
             }
             else if (state.playerSpawnPosition != null)
             {
-                // Normal spawn (LoadingManager'dan gelen yok)
                 player.transform.position = state.playerSpawnPosition.position;
-                Debug.Log($"[State {currentState}] Player spawned at state position: {state.playerSpawnPosition.position}");
+                Debug.Log($"[State {currentState}] Player spawned at state position");
             }
         }
         
-        // Timeline
         if (state.timeline != null)
         {
             state.timeline.Play();
@@ -172,7 +157,6 @@ public class CutsceneChief : MonoBehaviour
     
     private void HandleMusic(CutsceneState newState)
     {
-        // MusicSource yoksa veya destroy olmuşsa yeniden oluştur
         if (musicSource == null)
         {
             Debug.LogWarning("[Music] MusicSource was null or destroyed, recreating...");
@@ -183,24 +167,20 @@ public class CutsceneChief : MonoBehaviour
             musicSource.playOnAwake = false;
         }
         
-        // Müzik slotu boş → Devam et (değişiklik yok)
         if (newState.ambientMusic == null)
         {
             Debug.Log($"[Music] No music defined for State {currentState}, continuing current music");
             return;
         }
         
-        // Aynı müzik çalıyor → Devam et
         if (musicSource.clip == newState.ambientMusic && musicSource.isPlaying)
         {
             Debug.Log($"[Music] Same music already playing: {newState.ambientMusic.name}");
             return;
         }
         
-        // Yeni müzik çal
         if (newState.fadeMusic)
         {
-            // Fade ile geçiş
             if (musicFadeCoroutine != null)
             {
                 StopCoroutine(musicFadeCoroutine);
@@ -209,7 +189,6 @@ public class CutsceneChief : MonoBehaviour
         }
         else
         {
-            // Anında geçiş
             musicSource.clip = newState.ambientMusic;
             musicSource.volume = newState.musicVolume;
             musicSource.Play();
@@ -219,7 +198,6 @@ public class CutsceneChief : MonoBehaviour
     
     private System.Collections.IEnumerator FadeToNewMusic(AudioClip newClip, float targetVolume)
     {
-        // Fade out (mevcut müzik)
         float startVolume = musicSource.volume;
         
         if (musicSource.isPlaying)
@@ -233,13 +211,11 @@ public class CutsceneChief : MonoBehaviour
             }
         }
         
-        // Yeni müziği başlat
         musicSource.clip = newClip;
         musicSource.volume = 0f;
         musicSource.Play();
         Debug.Log($"[Music] Fading to: {newClip.name}");
         
-        // Fade in (yeni müzik)
         float elapsed2 = 0f;
         while (elapsed2 < fadeDuration / 2f)
         {
@@ -285,7 +261,7 @@ public class CutsceneChief : MonoBehaviour
         {
             nextCamera.transform.position = activeCamera.transform.position;
             nextCamera.transform.rotation = activeCamera.transform.rotation;
-            Debug.Log($"[CutsceneChief] Camera synced: {activeCamera.name} → {nextCamera.name} at {nextCamera.transform.position}");
+            Debug.Log($"[CutsceneChief] Camera synced: {activeCamera.name} -> {nextCamera.name}");
         }
     }
     
@@ -301,24 +277,23 @@ public class CutsceneChief : MonoBehaviour
         currentState++;
         SaveState();
         
+        // Show "Game Saved" UI
+        ShowGameSavedUI();
+        
         Debug.Log($"[CutsceneChief] ======= Advanced to state: {currentState} =======");
         
         if (currentState < cutsceneStates.Length)
         {
             CutsceneState nextState = cutsceneStates[currentState];
             
-            // Scene değişikliği var mı?
             if (nextState.changeScene && !string.IsNullOrEmpty(nextState.targetSceneName))
             {
-                Debug.Log($"[CutsceneChief] 🌍 Scene change requested: {nextState.targetSceneName}");
-                Debug.Log($"[CutsceneChief] State: {currentState}, Spawn: {nextState.spawnPointName}");
+                Debug.Log($"[CutsceneChief] Scene change requested: {nextState.targetSceneName}");
                 
-                // LoadingManager ile scene yükle
                 LoadingManager.LoadScene(nextState.targetSceneName, currentState, nextState.spawnPointName);
             }
             else
             {
-                // Normal state geçişi (aynı scene içinde)
                 PlayCurrentState();
             }
         }
@@ -339,20 +314,19 @@ public class CutsceneChief : MonoBehaviour
         currentState = newState;
         SaveState();
         
+        // Show "Game Saved" UI
+        ShowGameSavedUI();
+        
         CutsceneState targetState = cutsceneStates[currentState];
         
-        // Scene değişikliği var mı?
         if (targetState.changeScene && !string.IsNullOrEmpty(targetState.targetSceneName))
         {
-            Debug.Log($"[CutsceneChief] 🌍 Scene change requested: {targetState.targetSceneName}");
-            Debug.Log($"[CutsceneChief] State: {currentState}, Spawn: {targetState.spawnPointName}");
+            Debug.Log($"[CutsceneChief] Scene change requested: {targetState.targetSceneName}");
             
-            // LoadingManager ile scene yükle
             LoadingManager.LoadScene(targetState.targetSceneName, currentState, targetState.spawnPointName);
         }
         else
         {
-            // Normal state geçişi (aynı scene içinde)
             PlayCurrentState();
         }
     }
@@ -364,20 +338,27 @@ public class CutsceneChief : MonoBehaviour
         Debug.Log($"[CutsceneChief] State saved: {currentState}");
     }
     
-   private void LoadState()
-{
-    if (PlayerPrefs.HasKey(saveKey))
+    private void LoadState()
     {
-        currentState = PlayerPrefs.GetInt(saveKey);
-        Debug.Log($"[CutsceneChief] State loaded from save: {currentState}");
+        if (PlayerPrefs.HasKey(saveKey))
+        {
+            currentState = PlayerPrefs.GetInt(saveKey);
+            Debug.Log($"[CutsceneChief] State loaded from save: {currentState}");
+        }
+        else
+        {
+            Debug.Log($"[CutsceneChief] No saved state, using Inspector value: {currentState}");
+            SaveState();
+        }
     }
-    else
+    
+    private void ShowGameSavedUI()
     {
-        Debug.Log($"[CutsceneChief] No saved state, using Inspector value: {currentState}");
-        // YENI: Inspector değerini hemen kaydet!
-        SaveState(); // ← EKLE!
+        if (gameSavedUI != null)
+        {
+            gameSavedUI.ShowGameSaved();
+        }
     }
-}
     
     [ContextMenu("Reset State to 0")]
     public void ResetState()
@@ -423,14 +404,12 @@ public class CutsceneChief : MonoBehaviour
     
     private void OnDestroy()
     {
-        // Music fade coroutine'ini temizle
         if (musicFadeCoroutine != null)
         {
             StopCoroutine(musicFadeCoroutine);
             musicFadeCoroutine = null;
         }
         
-        // Timeline event'lerini temizle
         if (currentState >= 0 && currentState < cutsceneStates.Length)
         {
             CutsceneState state = cutsceneStates[currentState];

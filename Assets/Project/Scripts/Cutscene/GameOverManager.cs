@@ -6,21 +6,15 @@ public class GameOverManager : MonoBehaviour
 {
     [Header("Death Sequence")]
     [SerializeField] private float deathRotationDuration = 0.5f;
-    [Tooltip("Ali'nin -90° dönme süresi")]
     [SerializeField] private AnimationCurve deathRotationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-    [Tooltip("Ease-in-out curve")]
     [SerializeField] private AudioClip deathSfx;
-    [Tooltip("Ölüm anında çalacak ses (örn: 'ugh', düşme sesi)")]
     [SerializeField] private float deathSequenceDelay = 0.5f;
-    [Tooltip("Ölüm animasyonundan sonra bekleme süresi")]
     
     [Header("Red Screen Effect")]
     [SerializeField] private Image redScreenOverlay;
-    [Tooltip("Tam ekran kırmızı Image (CanvasGroup içinde olmalı)")]
     [SerializeField] private float redScreenFadeInDuration = 0.25f;
     [SerializeField] private float redScreenFadeOutDuration = 0.25f;
     [SerializeField] private Color redScreenColor = new Color(1f, 0f, 0f, 0.6f);
-    [Tooltip("Kırmızı ekran rengi (alpha ile transparanlık)")]
     
     [Header("UI Elements")]
     [SerializeField] private GameObject gameOverPanel;
@@ -33,11 +27,10 @@ public class GameOverManager : MonoBehaviour
     [SerializeField] private AudioClip buttonClickSfx;
     
     [Header("State Control")]
-    [Tooltip("Bu state'lerde Game Over gösterilebilir")]
-    [SerializeField] private int[] allowedStates = { 2, 3, 4, 5, 6, 7, 8, 9, 10 }; // Combat state'ler
+    [SerializeField] private int[] allowedStates = { 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     
     private static GameOverManager instance;
-    private bool isDead = false; // Ölüm sekansı başladı mı?
+    private bool isDead = false;
     
     public static GameOverManager Instance
     {
@@ -53,7 +46,6 @@ public class GameOverManager : MonoBehaviour
     
     private void Awake()
     {
-        // Singleton pattern
         if (instance == null)
         {
             instance = this;
@@ -64,13 +56,11 @@ public class GameOverManager : MonoBehaviour
             return;
         }
         
-        // Panel başlangıçta kapalı
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(false);
         }
         
-        // Red screen overlay başlangıçta şeffaf
         if (redScreenOverlay != null)
         {
             redScreenOverlay.gameObject.SetActive(true);
@@ -78,12 +68,7 @@ public class GameOverManager : MonoBehaviour
             col.a = 0f;
             redScreenOverlay.color = col;
         }
-        else
-        {
-            Debug.LogWarning("[GameOver] ⚠️ Red Screen Overlay is not assigned!");
-        }
         
-        // Button listener'lar
         if (retryButton != null)
         {
             retryButton.onClick.AddListener(OnRetry);
@@ -97,52 +82,38 @@ public class GameOverManager : MonoBehaviour
         Debug.Log("[GameOver] Manager initialized");
     }
     
-    /// <summary>
-    /// Game Over ekranını göster (PlayerController'dan çağrılır)
-    /// </summary>
     public void ShowGameOver()
     {
-        // Zaten öldü mü? (Çoklu çağrı önleme)
         if (isDead)
         {
-            Debug.LogWarning("[GameOver] ⚠️ Already dead! Ignoring duplicate call.");
+            Debug.LogWarning("[GameOver] Already dead! Ignoring duplicate call.");
             return;
         }
         
-        // Mevcut state'i kontrol et
         int currentState = PlayerPrefs.GetInt("GameState", 1);
         
-        // State izin verilen listede mi?
         bool isAllowedState = System.Array.Exists(allowedStates, state => state == currentState);
         
         if (!isAllowedState)
         {
             Debug.LogWarning($"[GameOver] State {currentState} is not allowed for Game Over! Skipping...");
-            
-            // Tutorial/cutscene state'lerinde direkt retry
             RetryCurrentState();
             return;
         }
         
-        // Flag'i set et (bir kez çalışsın)
         isDead = true;
         
-        Debug.Log($"[GameOver] ☠️ Death sequence starting! Current state: {currentState}");
+        Debug.Log($"[GameOver] Death sequence starting! Current state: {currentState}");
         
-        // DEATH SEQUENCE başlat (coroutine)
         StartCoroutine(DeathSequence());
     }
     
-    /// <summary>
-    /// Ölüm sekansı: Animasyon → Düşme → Kırmızı ekran → Game Over
-    /// </summary>
     private System.Collections.IEnumerator DeathSequence()
     {
-        // Player'ı bul
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj == null)
         {
-            Debug.LogError("[GameOver] ❌ Player not found! Skipping death sequence.");
+            Debug.LogError("[GameOver] Player not found! Skipping death sequence.");
             ShowGameOverPanel();
             yield break;
         }
@@ -152,46 +123,33 @@ public class GameOverManager : MonoBehaviour
         Rigidbody2D playerRb = playerObj.GetComponent<Rigidbody2D>();
         PlayerController playerController = playerObj.GetComponent<PlayerController>();
         
-        // KRITIK: Hareketi ve fiziği durdur!
         if (playerController != null)
         {
             playerController.enabled = false;
-            Debug.Log("[GameOver] 🛑 PlayerController disabled");
         }
         
         if (playerRb != null)
         {
             playerRb.velocity = Vector2.zero;
             playerRb.angularVelocity = 0f;
-            playerRb.bodyType = RigidbodyType2D.Static; // Fizik tamamen kapat
-            Debug.Log("[GameOver] 🛑 Rigidbody2D set to Static");
+            playerRb.bodyType = RigidbodyType2D.Static;
         }
         
-        // Pozisyonu kaydet (kaymaması için)
         Vector3 fixedPosition = playerTransform.position;
         
-        Debug.Log("[GameOver] 💀 Phase 1: Death animation & rotation");
-        
-        // PHASE 1: isDead trigger + Rotasyon
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger("isDead");
-            Debug.Log("[GameOver] 🎬 isDead trigger sent");
         }
         
-        // Death SFX çal
         if (audioSource != null && deathSfx != null)
         {
             audioSource.PlayOneShot(deathSfx);
-            Debug.Log("[GameOver] 🔊 Death SFX playing");
         }
         
-        // Ali'yi -90° döndür (yere düşme) - SADECE Z EKSENİ
         float elapsed = 0f;
-        float startZ = 0f; // Ali her zaman düz başlar (0°)
-        float targetZ = -90f; // Hedef: -90°
-        
-        Debug.Log($"[GameOver] 🔄 Starting rotation: Z={startZ}° → Z={targetZ}°");
+        float startZ = 0f;
+        float targetZ = -90f;
         
         while (elapsed < deathRotationDuration)
         {
@@ -199,34 +157,22 @@ public class GameOverManager : MonoBehaviour
             float t = elapsed / deathRotationDuration;
             float curveT = deathRotationCurve.Evaluate(t);
             
-            // Sadece Z eksenini değiştir
             float newZ = Mathf.Lerp(startZ, targetZ, curveT);
             playerTransform.eulerAngles = new Vector3(0, 0, newZ);
-            
-            // Pozisyonu sabitle (kaymaması için)
             playerTransform.position = fixedPosition;
             
             yield return null;
         }
         
-        // Final rotation ve pozisyon
         playerTransform.eulerAngles = new Vector3(0, 0, targetZ);
         playerTransform.position = fixedPosition;
-        Debug.Log($"[GameOver] ⚰️ Rotation complete: Z={targetZ}°, Position fixed at {fixedPosition}");
         
-        // PHASE 2: Death sequence delay
         yield return new WaitForSeconds(deathSequenceDelay);
         
-        // PHASE 3: Kırmızı ekran fade-in
-        Debug.Log("[GameOver] 🔴 Phase 2: Red screen fade-in");
         yield return StartCoroutine(RedScreenFadeIn());
         
-        // PHASE 4: Kırmızı ekran fade-out
-        Debug.Log("[GameOver] ⚪ Phase 3: Red screen fade-out");
         yield return StartCoroutine(RedScreenFadeOut());
         
-        // PHASE 5: Game Over panel göster
-        Debug.Log("[GameOver] 💀 Phase 4: Showing Game Over panel");
         ShowGameOverPanel();
     }
     
@@ -234,7 +180,6 @@ public class GameOverManager : MonoBehaviour
     {
         if (redScreenOverlay == null)
         {
-            Debug.LogWarning("[GameOver] ⚠️ Red screen overlay is null!");
             yield break;
         }
         
@@ -282,72 +227,90 @@ public class GameOverManager : MonoBehaviour
     
     private void ShowGameOverPanel()
     {
-        // Time'ı durdur
         Time.timeScale = 0f;
         
-        // Panel'i aç
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
         }
         
-        // Game Over SFX çal
         PlayGameOverSfx();
         
-        // Input'u devre dışı bırak
         DisablePlayerInput();
     }
     
-    /// <summary>
-    /// Retry - Mevcut state'in başından devam et
-    /// </summary>
     public void OnRetry()
     {
-        Debug.Log("[GameOver] 🔄 Retry clicked - Reloading current state...");
+        Debug.Log("[GameOver] Retry clicked - Reloading current state...");
         
         PlayButtonClickSfx();
         
         RetryCurrentState();
     }
     
-    /// <summary>
-    /// Main Menu - Ana menüye dön (state korunur)
-    /// </summary>
     public void OnMainMenu()
     {
-        Debug.Log("[GameOver] 🏠 Main Menu clicked - Returning to menu...");
+        Debug.Log("[GameOver] Main Menu clicked - Returning to menu...");
         
         PlayButtonClickSfx();
         
-        // Flag'i resetle
         isDead = false;
         
-        // Time'ı normale döndür
         Time.timeScale = 1f;
         
-        // Ana menüye dön (state PlayerPrefs'te zaten kayıtlı)
         SceneManager.LoadScene("MainMenu");
     }
     
     private void RetryCurrentState()
     {
-        // Flag'i resetle
         isDead = false;
-        // Time'ı normale döndür
         Time.timeScale = 1f;
         
-        // Mevcut state PlayerPrefs'te zaten kayıtlı
-        // WorldMap scene'i reload et → CutsceneChief otomatik state'i yükler
-        SceneManager.LoadScene("WorldMap");
+        int currentState = PlayerPrefs.GetInt("GameState", 1);
+        
+        string targetScene = GetSceneForState(currentState);
+        
+        Debug.Log($"[GameOver] Retrying state {currentState} in scene: {targetScene}");
+        
+        LoadingManager.LoadScene(targetScene, currentState, "");
+    }
+    
+    private string GetSceneForState(int state)
+    {
+        switch (state)
+        {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                return "WorldMap";
+                
+            case 4:
+            case 5:
+                return "Dungeon1";
+                
+            case 6:
+            case 7:
+                return "WorldMap";
+                
+            case 8:
+            case 9:
+                return "Dungeon2";
+                
+            case 10:
+                return "WorldMap";
+                
+            default:
+                Debug.LogWarning($"[GameOver] Unknown state {state}, defaulting to WorldMap");
+                return "WorldMap";
+        }
     }
     
     private void PlayGameOverSfx()
     {
         if (audioSource != null && gameOverSfx != null)
         {
-            // Time.timeScale = 0 olduğu için unscaled audio kullan
             audioSource.PlayOneShot(gameOverSfx);
-            Debug.Log("[GameOver] 🔊 Playing Game Over SFX");
         }
     }
     
@@ -361,18 +324,15 @@ public class GameOverManager : MonoBehaviour
     
     private void DisablePlayerInput()
     {
-        // Player input'u kapat (optional)
         PlayerController player = FindObjectOfType<PlayerController>();
         if (player != null)
         {
             player.enabled = false;
-            Debug.Log("[GameOver] Player input disabled");
         }
     }
     
     private void OnDestroy()
     {
-        // Button listener'ları temizle
         if (retryButton != null)
         {
             retryButton.onClick.RemoveListener(OnRetry);
@@ -383,4 +343,4 @@ public class GameOverManager : MonoBehaviour
             mainMenuButton.onClick.RemoveListener(OnMainMenu);
         }
     }
-} //
+}
