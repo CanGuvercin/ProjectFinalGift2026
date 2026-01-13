@@ -141,7 +141,8 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 3
+  currentState: 0
   saveKey: GameState
   musicSource: {fileID: 0}
   fadeDuration: 1.5
+  gameSavedCanvas: {fileID: 0}

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Playables;
+using System.Collections;
 
 public class CutsceneChief : MonoBehaviour
 {
@@ -37,9 +38,10 @@ public class CutsceneChief : MonoBehaviour
     [SerializeField] private float fadeDuration = 1.5f;
     
     [Header("Save UI")]
-    [SerializeField] private GameSavedUI gameSavedUI;
+    [SerializeField] private GameObject gameSavedCanvas;
     
     private Coroutine musicFadeCoroutine;
+    private Coroutine saveUICoroutine;
     
     private void Awake()
     {
@@ -50,6 +52,12 @@ public class CutsceneChief : MonoBehaviour
             musicSource = musicObj.AddComponent<AudioSource>();
             musicSource.loop = true;
             musicSource.playOnAwake = false;
+        }
+        
+        // Game Saved UI başlangıçta kapalı
+        if (gameSavedCanvas != null)
+        {
+            gameSavedCanvas.SetActive(false);
         }
     }
     
@@ -277,9 +285,6 @@ public class CutsceneChief : MonoBehaviour
         currentState++;
         SaveState();
         
-        // Show "Game Saved" UI
-        ShowGameSavedUI();
-        
         Debug.Log($"[CutsceneChief] ======= Advanced to state: {currentState} =======");
         
         if (currentState < cutsceneStates.Length)
@@ -290,10 +295,15 @@ public class CutsceneChief : MonoBehaviour
             {
                 Debug.Log($"[CutsceneChief] Scene change requested: {nextState.targetSceneName}");
                 
+                // Loading screen geçecek, sonra Save UI göster
+                ShowGameSavedUI();
+                
                 LoadingManager.LoadScene(nextState.targetSceneName, currentState, nextState.spawnPointName);
             }
             else
             {
+                // Aynı scene içinde state geçişi, Save UI göster
+                ShowGameSavedUI();
                 PlayCurrentState();
             }
         }
@@ -314,19 +324,19 @@ public class CutsceneChief : MonoBehaviour
         currentState = newState;
         SaveState();
         
-        // Show "Game Saved" UI
-        ShowGameSavedUI();
-        
         CutsceneState targetState = cutsceneStates[currentState];
         
         if (targetState.changeScene && !string.IsNullOrEmpty(targetState.targetSceneName))
         {
             Debug.Log($"[CutsceneChief] Scene change requested: {targetState.targetSceneName}");
             
+            ShowGameSavedUI();
+            
             LoadingManager.LoadScene(targetState.targetSceneName, currentState, targetState.spawnPointName);
         }
         else
         {
+            ShowGameSavedUI();
             PlayCurrentState();
         }
     }
@@ -335,7 +345,7 @@ public class CutsceneChief : MonoBehaviour
     {
         PlayerPrefs.SetInt(saveKey, currentState);
         PlayerPrefs.Save();
-        Debug.Log($"[CutsceneChief] State saved: {currentState}");
+        Debug.Log($"[CutsceneChief] 💾 State saved: {currentState}");
     }
     
     private void LoadState()
@@ -354,10 +364,37 @@ public class CutsceneChief : MonoBehaviour
     
     private void ShowGameSavedUI()
     {
-        if (gameSavedUI != null)
+        if (gameSavedCanvas == null)
         {
-            gameSavedUI.ShowGameSaved();
+            return;
         }
+        
+        // Önceki coroutine varsa durdur
+        if (saveUICoroutine != null)
+        {
+            StopCoroutine(saveUICoroutine);
+        }
+        
+        saveUICoroutine = StartCoroutine(GameSavedUISequence());
+    }
+    
+    private IEnumerator GameSavedUISequence()
+    {
+        // 1 saniye bekle
+        yield return new WaitForSeconds(1f);
+        
+        // Aç
+        gameSavedCanvas.SetActive(true);
+        Debug.Log("[CutsceneChief] 💾 Game Saved UI shown");
+        
+        // 2 saniye bekle
+        yield return new WaitForSeconds(2f);
+        
+        // Kapat
+        gameSavedCanvas.SetActive(false);
+        Debug.Log("[CutsceneChief] 💾 Game Saved UI hidden");
+        
+        saveUICoroutine = null;
     }
     
     [ContextMenu("Reset State to 0")]
@@ -408,6 +445,12 @@ public class CutsceneChief : MonoBehaviour
         {
             StopCoroutine(musicFadeCoroutine);
             musicFadeCoroutine = null;
+        }
+        
+        if (saveUICoroutine != null)
+        {
+            StopCoroutine(saveUICoroutine);
+            saveUICoroutine = null;
         }
         
         if (currentState >= 0 && currentState < cutsceneStates.Length)
