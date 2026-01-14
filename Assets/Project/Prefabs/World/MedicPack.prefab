@@ -99,7 +99,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healAmount: 30
   fullHeal: 1
-  pickupRadius: 0.8
+  pickupRadius: 1
   interactPrompt: {fileID: 0}
   pickupSound: {fileID: 8300000, guid: 92687cd0eb6504049987e174bd617c99, type: 3}
   enableFloating: 1

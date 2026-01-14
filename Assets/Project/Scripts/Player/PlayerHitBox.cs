@@ -10,34 +10,32 @@ public class PlayerHitBox : MonoBehaviour
     {
         playerController = GetComponentInParent<PlayerController>();
         cameraController = Camera.main?.GetComponent<PixelPerfectCameraController>();
-        
-        
     }
     
     public void ResetHitFlag()
     {
         hasHitThisSwing = false;
-        
+        Debug.Log("[PlayerHitBox] ✅ ResetHitFlag called");
     }
     
     private void OnEnable()
     {
         hasHitThisSwing = false;
-        
+        Debug.Log("[PlayerHitBox] ⚡ OnEnable - hasHitThisSwing RESET to false");
     }
     
     private void OnDisable()
     {
-        
+        Debug.Log($"[PlayerHitBox] 💤 OnDisable - hasHitThisSwing was: {hasHitThisSwing}");
     }
     
     private void OnTriggerEnter2D(Collider2D other)
     {
-        
+        Debug.Log($"[PlayerHitBox] 🎯 OnTriggerEnter2D: {other.gameObject.name}, hasHitThisSwing: {hasHitThisSwing}");
         
         if (hasHitThisSwing)
         {
-            
+            Debug.Log("[PlayerHitBox] ⏭️ Already hit this swing, skipping");
             return;
         }
         
@@ -52,13 +50,11 @@ public class PlayerHitBox : MonoBehaviour
         if (isEnemy)
         {
             hasHitThisSwing = true;
-            
-            
+            Debug.Log("[PlayerHitBox] ✅ Enemy detected! Setting hasHitThisSwing = true");
             
             if (playerController != null)
             {
                 playerController.OnSwordHit();
-                //playerController.PlaySlashVFX();
             }
             
             if (cameraController != null)
@@ -68,7 +64,7 @@ public class PlayerHitBox : MonoBehaviour
         }
         else
         {
-            
+            Debug.Log($"[PlayerHitBox] ❌ Not an enemy: {other.gameObject.name}");
         }
     }
 }

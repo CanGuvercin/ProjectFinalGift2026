@@ -36,13 +36,15 @@ public class DummyNPC : MonoBehaviour
         }
         
         currentHealth = maxHealth;
+        
+        Debug.Log($"[DummyNPC] 🎯 Initialized! HP: {currentHealth}/{maxHealth}, Tag: {tag}, Layer: {LayerMask.LayerToName(gameObject.layer)}");
     }
 
     // Player'a hasar vermek için
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (showDebugLogs)
-            
+            Debug.Log($"[DummyNPC] 💥 OnCollisionEnter2D with: {collision.gameObject.name}, Tag: {collision.gameObject.tag}");
 
         if (!collision.gameObject.CompareTag("Player")) return;
 
@@ -54,7 +56,7 @@ public class DummyNPC : MonoBehaviour
         if (player != null)
         {
             if (showDebugLogs)
-                
+                Debug.Log($"[DummyNPC] 🗡️ Damaging player for {damage} HP");
             
             player.TakeDamage(damage, transform.position);
         }
@@ -64,13 +66,23 @@ public class DummyNPC : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (showDebugLogs)
-            
+            Debug.Log($"[DummyNPC] ⚡ OnTriggerEnter2D with: {other.gameObject.name}, Layer: {LayerMask.LayerToName(other.gameObject.layer)}");
 
         // PlayerAttack layer veya HitBox isimli objelerden hasar al
-        if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAttack") || 
-            other.gameObject.name.Contains("HitBox"))
+        bool isPlayerAttack = other.gameObject.layer == LayerMask.NameToLayer("PlayerAttack");
+        bool isHitBox = other.gameObject.name.Contains("HitBox");
+        
+        if (showDebugLogs)
+            Debug.Log($"[DummyNPC] 🔍 Check - isPlayerAttack: {isPlayerAttack}, isHitBox: {isHitBox}");
+        
+        if (isPlayerAttack || isHitBox)
         {
             TakeHit();
+        }
+        else
+        {
+            if (showDebugLogs)
+                Debug.Log($"[DummyNPC] ❌ Ignored trigger from: {other.gameObject.name}");
         }
     }
 
@@ -78,8 +90,7 @@ public class DummyNPC : MonoBehaviour
     {
         if (showDebugLogs)
         {
-            
-            
+            Debug.Log($"[DummyNPC] 💥 TakeHit called! Current HP: {currentHealth}");
         }
 
         // Visual feedback
@@ -92,8 +103,14 @@ public class DummyNPC : MonoBehaviour
 
         // Damage
         currentHealth -= 10;
+        
+        if (showDebugLogs)
+            Debug.Log($"[DummyNPC] 💔 HP: {currentHealth}/{maxHealth}");
+        
         if (currentHealth <= 0)
         {
+            if (showDebugLogs)
+                Debug.Log($"[DummyNPC] ☠️ DEAD! Destroying...");
             
             Destroy(gameObject);
         }

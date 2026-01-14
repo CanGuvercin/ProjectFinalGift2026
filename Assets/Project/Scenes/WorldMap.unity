@@ -137998,11 +137998,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4864609980641263158, guid: 451fd35f7027abe4eabf6c5326c08316, type: 3}
   m_PrefabInstance: {fileID: 954777429}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1788031263 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2958262461343352690, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
-  m_PrefabInstance: {fileID: 7345596234648794698}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1805329741
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -138904,7 +138899,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1199734219496511648, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.95
+      value: 7.05
       objectReference: {fileID: 0}
     - target: {fileID: 1199734219496511648, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
       propertyPath: m_LocalPosition.y
@@ -138941,6 +138936,10 @@ PrefabInstance:
     - target: {fileID: 1199734219496511648, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2781813835863723482, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5967422581046026023, guid: f15ce3095a7eab441a54b732cd56ae83, type: 3}
       propertyPath: m_Name
@@ -139207,6 +139206,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 344505928929764290, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
   m_PrefabInstance: {fileID: 7345596234648794698}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7345596234648794700 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1433978256742316000, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
+  m_PrefabInstance: {fileID: 7345596234648794698}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7495243440180892263
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -139258,7 +139262,7 @@ PrefabInstance:
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: gameSavedCanvas
       value: 
-      objectReference: {fileID: 1788031263}
+      objectReference: {fileID: 7345596234648794700}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[0].timeline
       value: 

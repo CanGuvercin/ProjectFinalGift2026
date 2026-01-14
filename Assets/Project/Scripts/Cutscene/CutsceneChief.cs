@@ -380,21 +380,34 @@ public class CutsceneChief : MonoBehaviour
     
     private IEnumerator GameSavedUISequence()
     {
+        Debug.Log("[CutsceneChief] 🔄 Coroutine STARTED");
+        
         // 1 saniye bekle
         yield return new WaitForSeconds(1f);
         
+        Debug.Log($"[CutsceneChief] 🔍 gameSavedCanvas null? {gameSavedCanvas == null}");
+        
         // Aç
-        gameSavedCanvas.SetActive(true);
-        Debug.Log("[CutsceneChief] 💾 Game Saved UI shown");
+        if (gameSavedCanvas != null)
+        {
+            gameSavedCanvas.SetActive(true);
+            Debug.Log($"[CutsceneChief] 💾 Game Saved UI shown - Active: {gameSavedCanvas.activeSelf}");
+        }
         
         // 2 saniye bekle
         yield return new WaitForSeconds(2f);
         
+        Debug.Log("[CutsceneChief] ⏰ 2 seconds passed, closing now...");
+        
         // Kapat
-        gameSavedCanvas.SetActive(false);
-        Debug.Log("[CutsceneChief] 💾 Game Saved UI hidden");
+        if (gameSavedCanvas != null)
+        {
+            gameSavedCanvas.SetActive(false);
+            Debug.Log($"[CutsceneChief] 💾 Game Saved UI hidden - Active: {gameSavedCanvas.activeSelf}");
+        }
         
         saveUICoroutine = null;
+        Debug.Log("[CutsceneChief] ✅ Coroutine FINISHED");
     }
     
     [ContextMenu("Reset State to 0")]
@@ -463,5 +476,5 @@ public class CutsceneChief : MonoBehaviour
         }
         
         Debug.Log("[CutsceneChief] Cleaned up on destroy");
-    }
+    }//
 }

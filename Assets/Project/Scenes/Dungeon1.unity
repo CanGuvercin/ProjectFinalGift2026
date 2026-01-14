@@ -2336,6 +2336,10 @@ PrefabInstance:
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: gameSavedCanvas
+      value: 
+      objectReference: {fileID: 843560599}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: cutsceneStates.Array.data[4].playerSpawnPosition
       value: 
       objectReference: {fileID: 742581984}
@@ -14158,6 +14162,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
+--- !u!1 &843560599 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1433978256742316000, guid: 5b3762bf7a2058542a16d60a4ca47b4a, type: 3}
+  m_PrefabInstance: {fileID: 843560598}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &883894974
 GameObject:
   m_ObjectHideFlags: 0
