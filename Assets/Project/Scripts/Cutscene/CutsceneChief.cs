@@ -436,20 +436,82 @@ public class CutsceneChief : MonoBehaviour
     
     private void Update()
     {
-        if (currentState >= 0 && currentState < cutsceneStates.Length)
+        // ============================================
+        // DEBUG ONLY: State navigation for testing
+        // Comment out these sections for final build
+        // ============================================
+        #if UNITY_EDITOR
+        
+        // 1 tuşu: Sonraki state'e geç
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            CutsceneState state = cutsceneStates[currentState];
+            Debug.Log($"[CutsceneChief] [DEBUG] Key 1: Advancing to next state");
             
-            if (state.timeline != null && state.timeline.state == PlayState.Playing)
+            // Eğer timeline çalışıyorsa durdur
+            if (currentState >= 0 && currentState < cutsceneStates.Length)
             {
-                if (Input.GetKeyDown(KeyCode.Escape))
+                CutsceneState state = cutsceneStates[currentState];
+                if (state.timeline != null && state.timeline.state == PlayState.Playing)
                 {
-                    Debug.Log($"[CutsceneChief] Skipping State {currentState} with ESC");
                     state.timeline.Stop();
-                    OnTimelineStopped(state.timeline);
+                    state.timeline.stopped -= OnTimelineStopped;
                 }
             }
+            
+            AdvanceState();
         }
+        
+        // 2 tuşu: Önceki state'e geç
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            if (currentState > 0)
+            {
+                Debug.Log($"[CutsceneChief] [DEBUG] Key 2: Going to previous state");
+                
+                // Mevcut timeline varsa durdur
+                if (currentState >= 0 && currentState < cutsceneStates.Length)
+                {
+                    CutsceneState currentStateObj = cutsceneStates[currentState];
+                    if (currentStateObj.timeline != null && currentStateObj.timeline.state == PlayState.Playing)
+                    {
+                        currentStateObj.timeline.Stop();
+                        currentStateObj.timeline.stopped -= OnTimelineStopped;
+                    }
+                }
+                
+                // State'i azalt
+                currentState--;
+                SaveState();
+                
+                Debug.Log($"[CutsceneChief] Now at state: {currentState}");
+                
+                // ÖNCEKİ state'e git - scene değişikliği kontrolü
+                CutsceneState targetState = cutsceneStates[currentState];
+                
+                if (targetState.changeScene && !string.IsNullOrEmpty(targetState.targetSceneName))
+                {
+                    Debug.Log($"[CutsceneChief] Previous state requires scene: {targetState.targetSceneName}");
+                    LoadingManager.LoadScene(targetState.targetSceneName, currentState, targetState.spawnPointName);
+                }
+                else
+                {
+                    // Aynı scene içinde - state'i oynat
+                    PlayCurrentState();
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[CutsceneChief] [DEBUG] Already at state 0, cannot go back");
+            }
+        }
+        
+        #endif
+        // ============================================
+        // End of DEBUG code
+        // ============================================
+        
+        // ESC tuşu artık SADECE PauseMenuManager tarafından dinleniyor!
+        // Timeline skip özelliği KALDIRILDI
     }
     
     private void OnDestroy()
@@ -476,5 +538,5 @@ public class CutsceneChief : MonoBehaviour
         }
         
         Debug.Log("[CutsceneChief] Cleaned up on destroy");
-    }//
+    }
 }

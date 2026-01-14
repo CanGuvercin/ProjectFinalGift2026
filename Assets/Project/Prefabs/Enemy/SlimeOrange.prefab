@@ -109,7 +109,7 @@ AudioSource:
   m_GameObject: {fileID: 683955557842113744}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -2604164363667562940, guid: 99810f251002193478eec17a9c47249f, type: 2}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 0.6
@@ -244,6 +244,10 @@ MonoBehaviour:
   patrolPointB: {x: 0, y: -2}
   patrolWaitTime: 1.5
   patrolPointThreshold: 0.3
+  separationDistance: 1.5
+  separationForce: 2.5
+  separationDuration: 0.8
+  separationCheckInterval: 0.3
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 8192

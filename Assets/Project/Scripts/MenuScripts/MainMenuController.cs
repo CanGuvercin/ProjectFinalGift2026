@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class MainMenuController : MonoBehaviour
 {
@@ -12,14 +11,25 @@ public class MainMenuController : MonoBehaviour
     
     [Header("Panels")]
     [SerializeField] private GameObject mainMenuPanel;
-    [SerializeField] private GameObject optionsPanel;
     [SerializeField] private GameObject exitConfirmPanel;
+    
+    [Header("Settings Manager")]
+    [SerializeField] private SettingsManager settingsManager;
+    
+    [Header("Settings Back Button")]
+    [SerializeField] private Button settingsBackButton; // Settings içindeki Back button
     
     private void Start()
     {
-        // Options ve Exit confirm panelleri başta kapalı
-        if (optionsPanel != null) optionsPanel.SetActive(false);
-        if (exitConfirmPanel != null) exitConfirmPanel.SetActive(false);
+        // Exit confirm paneli başta kapalı
+        if (exitConfirmPanel != null) 
+            exitConfirmPanel.SetActive(false);
+        
+        // Settings Back button listener
+        if (settingsBackButton != null)
+        {
+            settingsBackButton.onClick.AddListener(OnBackFromSettings);
+        }
         
         // Save var mı kontrol et
         CheckSaveData();
@@ -33,38 +43,23 @@ public class MainMenuController : MonoBehaviour
     
     private void CheckSaveData()
     {
-        // PlayerPrefs'te GameState var mı?
         bool hasSave = PlayerPrefs.HasKey("GameState");
         
         if (hasSave)
         {
-            // Save var - Continue aktif
             continueButton.interactable = true;
-            
-            // Optional: Buton rengini normal yap
-            ColorBlock colors = continueButton.colors;
-            colors.normalColor = Color.white;
-            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            continueButton.colors = colors;
-            
             Debug.Log("[MainMenu] Save found! Continue button enabled.");
         }
         else
         {
-            // Save yok - Continue inactive
             continueButton.interactable = false;
-            
             Debug.Log("[MainMenu] No save found. Continue button disabled.");
         }
     }
     
-    // === BUTTON CALLBACKS ===
-    
     public void OnContinue()
     {
-        Debug.Log("Seni şimdi loading ekranının o siyah sularına bırakıyorum hehehe");
-        
-        // WorldMap scene'i yükle (CutsceneChief otomatik state'i yükler)
+        Debug.Log("[MainMenu] Continue clicked - Loading saved game...");
         LoadingManager.LoadScene("WorldMap");
     }
     
@@ -72,19 +67,10 @@ public class MainMenuController : MonoBehaviour
     {
         Debug.Log("[MainMenu] New Game clicked - Resetting save...");
         
-        // Confirmation popup göster (opsiyonel)
-        if (PlayerPrefs.HasKey("GameState"))
-        {
-            // TODO: "Mevcut kayıt silinecek, emin misin?" popup
-            // Şimdilik direkt reset
-        }
-        
-        // Save'i sıfırla
         PlayerPrefs.DeleteKey("GameState");
         PlayerPrefs.SetInt("GameState", 0);
         PlayerPrefs.Save();
         
-        // WorldMap'i yükle (State 0'dan başlar)
         LoadingManager.LoadScene("WorldMap");
     }
     
@@ -92,44 +78,62 @@ public class MainMenuController : MonoBehaviour
     {
         Debug.Log("[MainMenu] Options clicked");
         
-        // Main menu'yü gizle, options'ı göster
-        mainMenuPanel.SetActive(false);
-        optionsPanel.SetActive(true);
+        // Main menu'yü gizle
+        if (mainMenuPanel != null)
+        {
+            mainMenuPanel.SetActive(false);
+        }
+        
+        // Settings'i aç
+        if (settingsManager != null)
+        {
+            settingsManager.OpenSettings();
+        }
+    }
+    
+    // Settings'den geri dön
+    public void OnBackFromSettings()
+    {
+        Debug.Log("[MainMenu] Back from settings clicked");
+        
+        // Settings'i kapat
+        if (settingsManager != null)
+        {
+            settingsManager.CloseSettings();
+        }
+        
+        // Main menu'yü göster
+        if (mainMenuPanel != null)
+        {
+            mainMenuPanel.SetActive(true);
+        }
     }
     
     public void OnExit()
     {
         Debug.Log("[MainMenu] Exit clicked - Showing confirmation");
         
-        // Confirmation popup göster
         if (exitConfirmPanel != null)
         {
             exitConfirmPanel.SetActive(true);
         }
         else
         {
-            // Popup yoksa direkt çık
             QuitGame();
         }
     }
     
-    // Options'dan geri dön
-    public void OnBackFromOptions()
-    {
-        optionsPanel.SetActive(false);
-        mainMenuPanel.SetActive(true);
-    }
-    
-    // Exit confirmation - Yes
     public void OnExitConfirm()
     {
         QuitGame();
     }
     
-    // Exit confirmation - No
     public void OnExitCancel()
     {
-        exitConfirmPanel.SetActive(false);
+        if (exitConfirmPanel != null)
+        {
+            exitConfirmPanel.SetActive(false);
+        }
     }
     
     private void QuitGame()
@@ -141,6 +145,5 @@ public class MainMenuController : MonoBehaviour
         #else
         Application.Quit();
         #endif
-        //end
     }
 }

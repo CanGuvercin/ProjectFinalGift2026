@@ -140,15 +140,12 @@ public class PlayerController : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            Debug.Log("[Player] HP = 0!");
-            
             int currentState = PlayerPrefs.GetInt("GameState", 1);
             
             bool isImmortal = System.Array.Exists(immortalStates, state => state == currentState);
             
             if (isImmortal)
             {
-                Debug.Log($"[Player] State {currentState} is immortal - HP clamped to 1!");
                 currentHealth = 1;
                 
                 animator.SetFloat("moveX", hitDir.x);
@@ -166,8 +163,6 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(DamageRoutine());
                 return;
             }
-            
-            Debug.Log("[Player] Triggering Game Over...");
             OnPlayerDeath();
             return;
         }
@@ -189,8 +184,6 @@ public class PlayerController : MonoBehaviour
     
     private void OnPlayerDeath()
     {
-        Debug.Log("[Player] Player died!");
-        
         enabled = false;
         
         if (animator != null)
@@ -204,7 +197,6 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[Player] GameOverManager not found!");
         }
     }
 
@@ -287,9 +279,6 @@ public class PlayerController : MonoBehaviour
     {
         // Reset hit tracking
         attackHitSomething = false;
-        
-        Debug.Log("[PlayerController] 🎯 EnableHitBox - attackHitSomething RESET to false");
-        
         DisableAllHitBoxes();
         
         if (Mathf.Abs(lastMoveDir.x) > Mathf.Abs(lastMoveDir.y))
@@ -331,18 +320,13 @@ public class PlayerController : MonoBehaviour
     public void DisableHitBox()
     {
         DisableAllHitBoxes();
-        
-        Debug.Log($"[PlayerController] 🔍 DisableHitBox - attackHitSomething: {attackHitSomething}");
-        
         // Hitbox kapanırken hiçbir şeye değmediyse miss SFX çal
         if (!attackHitSomething && cameraController != null)
         {
-            Debug.Log("[PlayerController] ❌ Playing MISS SFX (no hit detected)");
             cameraController.OnAttackMiss();
         }
         else
         {
-            Debug.Log("[PlayerController] ✅ Skipping MISS SFX (hit something!)");
         }
     }
     
@@ -431,13 +415,9 @@ public class PlayerController : MonoBehaviour
     private IEnumerator AttackHitboxSequence()
 {
     yield return new WaitForSeconds(0.1f);
-    
-    Debug.Log("[PlayerController] 🗡️ Manually enabling hitbox");
     EnableHitBox();
     
     yield return new WaitForSeconds(0.2f);
-    
-    Debug.Log("[PlayerController] 🛡️ Manually disabling hitbox");
     DisableHitBox();
     
     // ATOMIK İTME SİSTEMİ - Mustafa Can'ın gizli silahı! 🚀
@@ -457,29 +437,23 @@ private void ApplyAtomicNudge()
     if (attackCounter % 4 == 1)
     {
         nudgeDirection = Vector2.right; // 1. vuruş: sağa
-        Debug.Log("[PlayerController] ⚛️ Atomic nudge: RIGHT");
     }
     else if (attackCounter % 4 == 2)
     {
         nudgeDirection = Vector2.left; // 2. vuruş: sola
-        Debug.Log("[PlayerController] ⚛️ Atomic nudge: LEFT");
     }
     else if (attackCounter % 4 == 3)
     {
         nudgeDirection = Vector2.right; // 3. vuruş: sağa
-        Debug.Log("[PlayerController] ⚛️ Atomic nudge: RIGHT");
     }
     else
     {
         nudgeDirection = Vector2.left; // 4. vuruş: sola
-        Debug.Log("[PlayerController] ⚛️ Atomic nudge: LEFT");
     }
     
     // Atomik hareket uygula
     Vector3 newPos = transform.position + (Vector3)(nudgeDirection * nudgeAmount);
     transform.position = newPos;
-    
-    Debug.Log($"[PlayerController] 🔬 Atomic nudge applied: {nudgeDirection * nudgeAmount}, Counter: {attackCounter}");
 }
 
 
@@ -510,7 +484,6 @@ private void ApplyAtomicNudge()
 
     public void OnSwordHit()
     {
-        Debug.Log("[PlayerController] ⚔️ OnSwordHit called! Setting attackHitSomething = true");
         // HitBox bir şeye değdi!
         attackHitSomething = true;
         PlaySwordHitSfx();
