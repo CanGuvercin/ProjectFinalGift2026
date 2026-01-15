@@ -709,6 +709,7 @@ MonoBehaviour:
   mainMenuPanel: {fileID: 1078691789}
   exitConfirmPanel: {fileID: 2038227772}
   settingsManager: {fileID: 2012174314}
+  settingsBackButton: {fileID: 991717506}
 --- !u!4 &351387506
 Transform:
   m_ObjectHideFlags: 0
@@ -1457,6 +1458,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 849949241}
   m_CullTransparentMesh: 1
+--- !u!114 &991717506 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7576425545600150011, guid: 88eda8b92d5043546aa7ac39250f3c19, type: 3}
+  m_PrefabInstance: {fileID: 1831822217075810168}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1078691789
 GameObject:
   m_ObjectHideFlags: 0
