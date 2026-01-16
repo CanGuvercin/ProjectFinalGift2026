@@ -127,60 +127,66 @@ public class PlayerController : MonoBehaviour
     }
 
     // ================= DAMAGE SYSTEM =================
+public void TakeDamage(int damage, Vector2 damageSourcePos)
+{
+    if (isInvulnerable) return;
 
-    public void TakeDamage(int damage, Vector2 damageSourcePos)
+    // Zorluk çarpanını uygula
+    float difficultyMultiplier = GameplayManager.Instance != null 
+        ? GameplayManager.Instance.GetIncomingDamageMultiplier() 
+        : 1.0f;
+    
+    int finalDamage = Mathf.RoundToInt(damage * difficultyMultiplier);
+
+        currentHealth -= finalDamage;
+    if (currentHealth < 0) currentHealth = 0;
+
+    Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
+    lastMoveDir = hitDir;
+
+    if (currentHealth <= 0)
     {
-        if (isInvulnerable) return;
-
-        currentHealth -= damage;
-        if (currentHealth < 0) currentHealth = 0;
-
-        Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
-        lastMoveDir = hitDir;
-
-        if (currentHealth <= 0)
+        int currentState = PlayerPrefs.GetInt("GameState", 1);
+        
+        bool isImmortal = System.Array.Exists(immortalStates, state => state == currentState);
+        
+        if (isImmortal)
         {
-            int currentState = PlayerPrefs.GetInt("GameState", 1);
+            currentHealth = 1;
             
-            bool isImmortal = System.Array.Exists(immortalStates, state => state == currentState);
+            animator.SetFloat("moveX", hitDir.x);
+            animator.SetFloat("moveY", hitDir.y);
+            animator.SetBool("isDamaged", true);
             
-            if (isImmortal)
-            {
-                currentHealth = 1;
-                
-                animator.SetFloat("moveX", hitDir.x);
-                animator.SetFloat("moveY", hitDir.y);
-                animator.SetBool("isDamaged", true);
-                
-                if (cameraController != null)
-                    cameraController.OnPlayerHurt(damage);
-                
-                PlayHurtSfx();
-                
-                rb.velocity = Vector2.zero;
-                rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
-                
-                StartCoroutine(DamageRoutine());
-                return;
-            }
-            OnPlayerDeath();
+            if (cameraController != null)
+                cameraController.OnPlayerHurt(finalDamage);
+            
+            PlayHurtSfx();
+            
+            rb.velocity = Vector2.zero;
+            rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+            
+            StartCoroutine(DamageRoutine());
             return;
         }
-
-        animator.SetFloat("moveX", hitDir.x);
-        animator.SetFloat("moveY", hitDir.y);
-        animator.SetBool("isDamaged", true);
-
-        if (cameraController != null)
-            cameraController.OnPlayerHurt(damage);
-
-        PlayHurtSfx();
-
-        rb.velocity = Vector2.zero;
-        rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
-
-        StartCoroutine(DamageRoutine());
+        OnPlayerDeath();
+        return;
     }
+
+    animator.SetFloat("moveX", hitDir.x);
+    animator.SetFloat("moveY", hitDir.y);
+    animator.SetBool("isDamaged", true);
+
+    if (cameraController != null)
+        cameraController.OnPlayerHurt(finalDamage);
+
+    PlayHurtSfx();
+
+    rb.velocity = Vector2.zero;
+    rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+
+    StartCoroutine(DamageRoutine());
+}
     
     private void OnPlayerDeath()
     {

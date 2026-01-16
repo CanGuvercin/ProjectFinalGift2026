@@ -13,7 +13,7 @@ public class PixelPerfectCameraController : MonoBehaviour
     
     [Header("Pixel Perfect")]
     [SerializeField] private int pixelsPerUnit = 16;
-    [SerializeField] private int referenceResolutionY = 180; // 180p retro feel
+    [SerializeField] private int referenceResolutionY = 180;
     
     [Header("Zoom")]
     [SerializeField] private float baseZoom = 1f;
@@ -22,19 +22,13 @@ public class PixelPerfectCameraController : MonoBehaviour
     [SerializeField] private float hitZoomStep = 0.05f;
     [SerializeField] private int maxHitCombo = 3;
     
-    [Header("Shake")]
-    [SerializeField] private float missShake = 0.05f;
-    [SerializeField] private float hitShake = 0.15f;
-    [SerializeField] private float hurtShake = 0.25f;
-    [SerializeField] private float shakeDuration = 0.1f;
+    [Header("Shake Reference (Parent)")]
+    [SerializeField] private CameraShake cameraShake;
     
     private Camera cam;
     private float targetZoom = 1f;
     private int currentCombo = 0;
-    private Vector3 shakeOffset;
-    private Coroutine shakeRoutine;
     
-    // Pixel perfect hesaplamaları
     private int screenHeight;
     private float unitsPerPixel;
     private float baseOrthographicSize;
@@ -49,6 +43,12 @@ public class PixelPerfectCameraController : MonoBehaviour
             if (player != null) target = player.transform;
         }
         
+        // Parent'tan CameraShake bul
+        if (cameraShake == null)
+        {
+            cameraShake = GetComponentInParent<CameraShake>();
+        }
+        
         CalculatePixelPerfectSize();
         targetZoom = baseZoom;
     }
@@ -56,15 +56,11 @@ public class PixelPerfectCameraController : MonoBehaviour
     private void CalculatePixelPerfectSize()
     {
         screenHeight = Screen.height;
-        
-        // Pixel perfect orthographic size hesapla
         unitsPerPixel = 1f / pixelsPerUnit;
         baseOrthographicSize = (referenceResolutionY / 2f) * unitsPerPixel;
-        
         cam.orthographicSize = baseOrthographicSize * baseZoom;
         
-        Debug.Log($"[CAMERA] Pixel Perfect - Size: {cam.orthographicSize:F2}, PPU: {pixelsPerUnit}");
-    }
+            }
 
     private void LateUpdate()
     {
@@ -81,18 +77,15 @@ public class PixelPerfectCameraController : MonoBehaviour
         // 3. Pixel snap position
         Vector3 snappedPos = SnapToPixelGrid(smoothPos);
         
-        // 4. Shake ekle (pixel-aligned)
-        transform.position = snappedPos + shakeOffset;
+        // 4. Pozisyonu ayarla (shake parent'ta yapılıyor)
+        transform.position = snappedPos;
     }
     
     private Vector3 SnapToPixelGrid(Vector3 position)
     {
-        // Kamera pozisyonunu pixel grid'e hizala
         float pixelSize = unitsPerPixel;
-        
         float snappedX = Mathf.Round(position.x / pixelSize) * pixelSize;
         float snappedY = Mathf.Round(position.y / pixelSize) * pixelSize;
-        
         return new Vector3(snappedX, snappedY, position.z);
     }
 
@@ -101,7 +94,7 @@ public class PixelPerfectCameraController : MonoBehaviour
     public void OnAttackMiss()
     {
         targetZoom = baseZoom * attackZoomOut;
-        TriggerShake(missShake);
+        if (cameraShake != null) cameraShake.TriggerMissShake();
         StartCoroutine(ResetZoom(0.15f));
     }
     
@@ -112,14 +105,13 @@ public class PixelPerfectCameraController : MonoBehaviour
         float zoomMultiplier = 1f - (hitZoomStep * currentCombo);
         targetZoom = baseZoom * zoomMultiplier;
         
-        TriggerShake(hitShake * currentCombo);
+        if (cameraShake != null) cameraShake.TriggerHitShake(currentCombo);
         StartCoroutine(ResetZoom(0.5f));
     }
     
     public void OnPlayerHurt(float damage = 10f, bool isProjectile = false)
     {
-        float intensity = isProjectile ? hurtShake * 0.5f : hurtShake;
-        TriggerShake(intensity);
+        if (cameraShake != null) cameraShake.TriggerHurtShake(isProjectile);
     }
     
     public void ResetZoom()
@@ -135,35 +127,6 @@ public class PixelPerfectCameraController : MonoBehaviour
         currentCombo = 0;
     }
     
-    private void TriggerShake(float intensity)
-    {
-        if (shakeRoutine != null) StopCoroutine(shakeRoutine);
-        shakeRoutine = StartCoroutine(ShakeRoutine(intensity));
-    }
-    
-    private IEnumerator ShakeRoutine(float intensity)
-    {
-        float elapsed = 0f;
-        float pixelSize = unitsPerPixel;
-        
-        while (elapsed < shakeDuration)
-        {
-            // Pixel-aligned shake
-            int xPixels = Random.Range(-Mathf.RoundToInt(intensity * pixelsPerUnit), 
-                                        Mathf.RoundToInt(intensity * pixelsPerUnit));
-            int yPixels = Random.Range(-Mathf.RoundToInt(intensity * pixelsPerUnit), 
-                                        Mathf.RoundToInt(intensity * pixelsPerUnit));
-            
-            shakeOffset = new Vector3(xPixels * pixelSize, yPixels * pixelSize, 0);
-            
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        
-        shakeOffset = Vector3.zero;
-    }
-    
-    // Screen resize handling
     private void OnPreCull()
     {
         if (screenHeight != Screen.height)
