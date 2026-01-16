@@ -65,19 +65,21 @@ public class AudioSettingsManager : MonoBehaviour
     }
     
     private void SetVolume(string parameter, float sliderValue)
+{
+    float dB = sliderValue > 0.0001f ? Mathf.Log10(sliderValue) * 20f : -80f;
+    
+    Debug.Log($"[AudioSettings] Setting {parameter} to {dB} dB (slider: {sliderValue})");
+    
+    if (audioMixer != null)
     {
-        // Slider value: 0-1
-        // AudioMixer dB: -80 to 0
-        // 0.0001 → -80 dB (silence)
-        // 1.0 → 0 dB (max)
-        
-        float dB = sliderValue > 0.0001f ? Mathf.Log10(sliderValue) * 20f : -80f;
-        
-        if (audioMixer != null)
-        {
-            audioMixer.SetFloat(parameter, dB);
-        }
+        bool success = audioMixer.SetFloat(parameter, dB);
+        Debug.Log($"[AudioSettings] SetFloat success: {success}");
     }
+    else
+    {
+        Debug.LogError("[AudioSettings] AudioMixer is NULL!");
+    }
+}
     
     private void UpdateLabel(TextMeshProUGUI label, float value)
     {
