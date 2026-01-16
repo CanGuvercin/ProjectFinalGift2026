@@ -9,6 +9,10 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Camera Shake Reference")]
     [SerializeField] private CameraShake cameraShake;
+    
+    [Header("Graphics Settings")]
+    [SerializeField] private bool vSyncEnabled = true;
+    [SerializeField] private bool fullscreenEnabled = true;
 
     public enum DifficultyLevel
     {
@@ -29,6 +33,7 @@ public class GameplayManager : MonoBehaviour
 
         InitializeCameraShake();
         LoadSettings();
+        ApplyGraphicsSettings();
     }
 
     private void InitializeCameraShake()
@@ -36,13 +41,6 @@ public class GameplayManager : MonoBehaviour
         if (cameraShake == null)
         {
             cameraShake = FindObjectOfType<CameraShake>();
-            if (cameraShake != null)
-            {
-                            }
-            else
-            {
-                Debug.LogWarning("GameplayManager: CameraShake not found!");
-            }
         }
     }
 
@@ -50,14 +48,9 @@ public class GameplayManager : MonoBehaviour
 
     public void SetScreenShakeMode(CameraShake.ShakeMode mode)
     {
-        if (cameraShake == null)
-        {
-            Debug.LogWarning("GameplayManager: CameraShake not found!");
-            return;
-        }
-        
+        if (cameraShake == null) return;
         cameraShake.SetShakeMode(mode);
-            }
+    }
 
     public CameraShake.ShakeMode GetScreenShakeMode()
     {
@@ -88,7 +81,7 @@ public class GameplayManager : MonoBehaviour
     {
         currentDifficulty = difficulty;
         SaveSettings();
-            }
+    }
 
     public DifficultyLevel GetDifficulty()
     {
@@ -130,24 +123,81 @@ public class GameplayManager : MonoBehaviour
 
     #endregion
 
+    #region Graphics Management
+
+    public void SetVSync(bool enabled)
+    {
+        vSyncEnabled = enabled;
+        QualitySettings.vSyncCount = enabled ? 1 : 0;
+        SaveSettings();
+    }
+
+    public bool GetVSyncEnabled()
+    {
+        return vSyncEnabled;
+    }
+
+    public void SetFullscreen(bool enabled)
+    {
+        fullscreenEnabled = enabled;
+        Screen.fullScreen = enabled;
+        SaveSettings();
+    }
+
+    public bool GetFullscreenEnabled()
+    {
+        return fullscreenEnabled;
+    }
+
+    private void ApplyGraphicsSettings()
+    {
+        // VSync
+        QualitySettings.vSyncCount = vSyncEnabled ? 1 : 0;
+        
+        // Fullscreen
+        Screen.fullScreen = fullscreenEnabled;
+    }
+
+    #endregion
+
     #region Settings Persistence
 
     private void SaveSettings()
     {
+        // Difficulty
         PlayerPrefs.SetInt("Difficulty", (int)currentDifficulty);
+        
+        // Graphics
+        PlayerPrefs.SetInt("VSync", vSyncEnabled ? 1 : 0);
+        PlayerPrefs.SetInt("Fullscreen", fullscreenEnabled ? 1 : 0);
+        
         PlayerPrefs.Save();
     }
 
     private void LoadSettings()
     {
+        // Difficulty
         currentDifficulty = (DifficultyLevel)PlayerPrefs.GetInt("Difficulty", (int)DifficultyLevel.Normal);
-            }
+        
+        // Graphics
+        vSyncEnabled = PlayerPrefs.GetInt("VSync", 1) == 1; // Default: ON
+        fullscreenEnabled = PlayerPrefs.GetInt("Fullscreen", 1) == 1; // Default: ON
+    }
 
     public void ResetAllToDefaults()
     {
+        // Difficulty
         currentDifficulty = DifficultyLevel.Normal;
+        
+        // Shake
         SetScreenShakeMode(CameraShake.ShakeMode.Normal);
+        
+        // Graphics
+        vSyncEnabled = true;
+        fullscreenEnabled = true;
+        
         SaveSettings();
+        ApplyGraphicsSettings();
     }
 
     #endregion
@@ -156,6 +206,12 @@ public class GameplayManager : MonoBehaviour
 
     [ContextMenu("Test - Toggle Shake")]
     private void TestToggleShake() => ToggleScreenShake();
+
+    [ContextMenu("Test - Toggle VSync")]
+    private void TestToggleVSync() => SetVSync(!vSyncEnabled);
+
+    [ContextMenu("Test - Toggle Fullscreen")]
+    private void TestToggleFullscreen() => SetFullscreen(!fullscreenEnabled);
 
     [ContextMenu("Test - Difficulty: Easy")]
     private void TestEasy() => SetDifficulty(DifficultyLevel.Easy);
