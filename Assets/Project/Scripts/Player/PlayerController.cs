@@ -537,4 +537,17 @@ private void ApplyAtomicNudge()
         
         slashVFXAnimator.SetTrigger("PlaySlash");
     }
+
+    public void FreezePlayer()
+    {
+        enabled = false;
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+        moveInput = Vector2.zero;
+    }
+    public void UnfreezePlayer()
+    {
+        enabled = true;
+    }
+
 }

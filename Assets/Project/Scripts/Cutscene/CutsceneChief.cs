@@ -43,6 +43,9 @@ public class CutsceneChief : MonoBehaviour
     private Coroutine musicFadeCoroutine;
     private Coroutine saveUICoroutine;
     
+    // 👇 YENİ: Timeline bitince otomatik state atlama kontrolü
+    private bool shouldAutoAdvanceOnTimelineStop = true;
+    
     private void Awake()
     {
         if (musicSource == null)
@@ -54,7 +57,6 @@ public class CutsceneChief : MonoBehaviour
             musicSource.playOnAwake = false;
         }
         
-        // Game Saved UI başlangıçta kapalı
         if (gameSavedCanvas != null)
         {
             gameSavedCanvas.SetActive(false);
@@ -273,11 +275,35 @@ public class CutsceneChief : MonoBehaviour
         }
     }
     
+    // 👇 DEĞİŞTİ: Otomatik atlama kontrolü eklendi
     private void OnTimelineStopped(PlayableDirector director)
     {
         Debug.Log($"[CutsceneChief] Timeline finished: {director.name}");
         director.stopped -= OnTimelineStopped;
-        AdvanceState();
+        
+        // SADECE flag true ise otomatik state ilerlet
+        if (shouldAutoAdvanceOnTimelineStop)
+        {
+            Debug.Log("[CutsceneChief] Auto-advancing state after timeline");
+            AdvanceState();
+        }
+        else
+        {
+            Debug.Log("[CutsceneChief] Auto-advance disabled, skipping state change");
+        }
+    }
+    
+    // 👇 YENİ: Otomatik atlama kontrolü
+    public void DisableAutoAdvance()
+    {
+        shouldAutoAdvanceOnTimelineStop = false;
+        Debug.Log("[CutsceneChief] ⛔ Auto-advance DISABLED");
+    }
+    
+    public void EnableAutoAdvance()
+    {
+        shouldAutoAdvanceOnTimelineStop = true;
+        Debug.Log("[CutsceneChief] ✅ Auto-advance ENABLED");
     }
     
     public void AdvanceState()
@@ -295,14 +321,12 @@ public class CutsceneChief : MonoBehaviour
             {
                 Debug.Log($"[CutsceneChief] Scene change requested: {nextState.targetSceneName}");
                 
-                // Loading screen geçecek, sonra Save UI göster
                 ShowGameSavedUI();
                 
                 LoadingManager.LoadScene(nextState.targetSceneName, currentState, nextState.spawnPointName);
             }
             else
             {
-                // Aynı scene içinde state geçişi, Save UI göster
                 ShowGameSavedUI();
                 PlayCurrentState();
             }
@@ -369,7 +393,6 @@ public class CutsceneChief : MonoBehaviour
             return;
         }
         
-        // Önceki coroutine varsa durdur
         if (saveUICoroutine != null)
         {
             StopCoroutine(saveUICoroutine);
@@ -382,24 +405,20 @@ public class CutsceneChief : MonoBehaviour
     {
         Debug.Log("[CutsceneChief] 🔄 Coroutine STARTED");
         
-        // 1 saniye bekle
         yield return new WaitForSeconds(1f);
         
         Debug.Log($"[CutsceneChief] 🔍 gameSavedCanvas null? {gameSavedCanvas == null}");
         
-        // Aç
         if (gameSavedCanvas != null)
         {
             gameSavedCanvas.SetActive(true);
             Debug.Log($"[CutsceneChief] 💾 Game Saved UI shown - Active: {gameSavedCanvas.activeSelf}");
         }
         
-        // 2 saniye bekle
         yield return new WaitForSeconds(2f);
         
         Debug.Log("[CutsceneChief] ⏰ 2 seconds passed, closing now...");
         
-        // Kapat
         if (gameSavedCanvas != null)
         {
             gameSavedCanvas.SetActive(false);
@@ -436,18 +455,12 @@ public class CutsceneChief : MonoBehaviour
     
     private void Update()
     {
-        // ============================================
-        // DEBUG ONLY: State navigation for testing
-        // Comment out these sections for final build
-        // ============================================
         #if UNITY_EDITOR
         
-        // 1 tuşu: Sonraki state'e geç
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Debug.Log($"[CutsceneChief] [DEBUG] Key 1: Advancing to next state");
             
-            // Eğer timeline çalışıyorsa durdur
             if (currentState >= 0 && currentState < cutsceneStates.Length)
             {
                 CutsceneState state = cutsceneStates[currentState];
@@ -461,14 +474,12 @@ public class CutsceneChief : MonoBehaviour
             AdvanceState();
         }
         
-        // 2 tuşu: Önceki state'e geç
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             if (currentState > 0)
             {
                 Debug.Log($"[CutsceneChief] [DEBUG] Key 2: Going to previous state");
                 
-                // Mevcut timeline varsa durdur
                 if (currentState >= 0 && currentState < cutsceneStates.Length)
                 {
                     CutsceneState currentStateObj = cutsceneStates[currentState];
@@ -479,13 +490,11 @@ public class CutsceneChief : MonoBehaviour
                     }
                 }
                 
-                // State'i azalt
                 currentState--;
                 SaveState();
                 
                 Debug.Log($"[CutsceneChief] Now at state: {currentState}");
                 
-                // ÖNCEKİ state'e git - scene değişikliği kontrolü
                 CutsceneState targetState = cutsceneStates[currentState];
                 
                 if (targetState.changeScene && !string.IsNullOrEmpty(targetState.targetSceneName))
@@ -495,7 +504,6 @@ public class CutsceneChief : MonoBehaviour
                 }
                 else
                 {
-                    // Aynı scene içinde - state'i oynat
                     PlayCurrentState();
                 }
             }
@@ -506,12 +514,6 @@ public class CutsceneChief : MonoBehaviour
         }
         
         #endif
-        // ============================================
-        // End of DEBUG code
-        // ============================================
-        
-        // ESC tuşu artık SADECE PauseMenuManager tarafından dinleniyor!
-        // Timeline skip özelliği KALDIRILDI
     }
     
     private void OnDestroy()
