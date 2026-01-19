@@ -387,19 +387,34 @@ public class CutsceneChief : MonoBehaviour
     }
     
     private void ShowGameSavedUI()
+{
+    Debug.Log($"[CutsceneChief] ShowGameSavedUI called - Canvas null? {gameSavedCanvas == null}");
+    
+    if (gameSavedCanvas == null)
     {
-        if (gameSavedCanvas == null)
+        Debug.LogWarning("[CutsceneChief] ⚠️ GameSaved Canvas is NULL! Trying to find it...");
+        
+        // Sahnede varsa bul
+        GameObject foundCanvas = GameObject.Find("GameSaved");
+        if (foundCanvas != null)
         {
+            gameSavedCanvas = foundCanvas;
+            Debug.Log("[CutsceneChief] ✅ Found GameSaved Canvas in scene!");
+        }
+        else
+        {
+            Debug.LogError("[CutsceneChief] ❌ GameSaved Canvas not found anywhere!");
             return;
         }
-        
-        if (saveUICoroutine != null)
-        {
-            StopCoroutine(saveUICoroutine);
-        }
-        
-        saveUICoroutine = StartCoroutine(GameSavedUISequence());
     }
+    
+    if (saveUICoroutine != null)
+    {
+        StopCoroutine(saveUICoroutine);
+    }
+    
+    saveUICoroutine = StartCoroutine(GameSavedUISequence());
+}
     
     private IEnumerator GameSavedUISequence()
     {

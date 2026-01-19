@@ -2546,6 +2546,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: OptionsMenu
       objectReference: {fileID: 0}
+    - target: {fileID: 6555593425868006357, guid: 88eda8b92d5043546aa7ac39250f3c19, type: 3}
+      propertyPath: audioMixer
+      value: 
+      objectReference: {fileID: 24100000, guid: 99810f251002193478eec17a9c47249f, type: 2}
     - target: {fileID: 7164500837596986247, guid: 88eda8b92d5043546aa7ac39250f3c19, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

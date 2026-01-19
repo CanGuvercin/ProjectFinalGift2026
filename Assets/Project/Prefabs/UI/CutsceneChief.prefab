@@ -198,6 +198,24 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
+  - stateName: State9_roadToActII
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
   currentState: 7
   saveKey: GameState
   musicSource: {fileID: 752455669889845466}
