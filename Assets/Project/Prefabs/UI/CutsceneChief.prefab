@@ -56,6 +56,7 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
+    - {fileID: 0}
     playerSpawnPosition: {fileID: 0}
     changeScene: 0
     targetSceneName: 
@@ -75,6 +76,7 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
+    - {fileID: 0}
     playerSpawnPosition: {fileID: 0}
     changeScene: 0
     targetSceneName: 
@@ -89,6 +91,7 @@ MonoBehaviour:
     objectsToDeactivate:
     - {fileID: 0}
     - {fileID: 0}
+    - {fileID: 0}
     playerSpawnPosition: {fileID: 0}
     changeScene: 0
     targetSceneName: 
@@ -101,6 +104,7 @@ MonoBehaviour:
     objectsToActivate:
     - {fileID: 0}
     objectsToDeactivate:
+    - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
@@ -142,7 +146,59 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 3
+  - stateName: State6_ACTII_Cutscene
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State7_ACT_II_Field
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State8_Dungeon2Fight
+    timeline: {fileID: 0}
+    objectsToActivate: []
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 1
+    targetSceneName: Dungeon2
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  currentState: 7
   saveKey: GameState
   musicSource: {fileID: 752455669889845466}
   fadeDuration: 1.5
