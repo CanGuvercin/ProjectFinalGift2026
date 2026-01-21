@@ -148,93 +148,117 @@ public class ActGate : MonoBehaviour
 
     private IEnumerator GateSequence()
 {
+    Debug.Log("[ActGate] ========== SEQUENCE START ==========");
+
     // 1. Player'ı dondur
     if (playerController != null)
     {
         playerController.FreezePlayer();
-        Debug.Log("[ActGate] Player frozen");
+        Debug.Log("[ActGate] ✅ Step 1: Player frozen");
     }
-    
-    // 2. State ilerlet (5 → 6) VE otomatik atlama KAPAT
+
+    // 2. State ilerlet
     if (cutsceneChief != null)
     {
-        Debug.Log("[ActGate] Advancing to cutscene state...");
-        cutsceneChief.DisableAutoAdvance(); // 👈 ÖNEMLİ!
+        Debug.Log("[ActGate] ⏩ Step 2: Advancing state...");
+        cutsceneChief.DisableAutoAdvance();
         cutsceneChief.AdvanceState();
+        Debug.Log("[ActGate] ✅ Step 2: State advanced");
     }
-    
-    // 3. Timeline oynat
+
+    // 3. Timeline
+    Debug.Log("[ActGate] ⏸️ Step 3: About to play timeline...");
+
     if (playableDirector != null)
     {
-        Debug.Log("[ActGate] 🎬 Playing Timeline...");
+        Debug.Log($"[ActGate] Timeline state BEFORE play: {playableDirector.state}");
+        Debug.Log($"[ActGate] Timeline time BEFORE play: {playableDirector.time}");
+
         playableDirector.Play();
-        
+
+        Debug.Log($"[ActGate] ✅ Timeline.Play() called!");
+        Debug.Log($"[ActGate] Timeline state AFTER play: {playableDirector.state}");
+
+        float waitTime = 0f;
         while (playableDirector.state == PlayState.Playing)
         {
+            waitTime += Time.deltaTime;
             yield return null;
         }
-        
-        Debug.Log("[ActGate] ✅ Timeline finished");
+
+        Debug.Log($"[ActGate] ✅ Timeline finished after {waitTime:F2} seconds");
     }
-    
-    // 4. NPC dialogu göster
+    else
+    {
+        Debug.LogWarning("[ActGate] ⚠️ No PlayableDirector assigned!");
+    }
+
+    // 4. Dialog
+    Debug.Log("[ActGate] ⏸️ Step 4: About to show dialog...");
+
     ShowDialog(npcDialogue);
-    
+
     if (audioSource != null && dialogSfx != null)
     {
         audioSource.PlayOneShot(dialogSfx);
     }
-    
-    Debug.Log($"[ActGate] 💬 Showing dialogue for {dialogueDuration}s...");
+
+    Debug.Log($"[ActGate] ✅ Dialog shown, waiting {dialogueDuration}s...");
     yield return new WaitForSeconds(dialogueDuration);
-    
+
     HideDialog();
-    
-    // 5. Ekranı HEMEN karart
-    Debug.Log("[ActGate] ⚫ Black screen ON");
+    Debug.Log("[ActGate] ✅ Dialog hidden");
+
+    // 5. Black screen
+    Debug.Log("[ActGate] ⏸️ Step 5: Showing black screen...");
     ShowBlackScreen();
-    
-    // 6. Karanlıkta 2 saniye bekle
+
     Debug.Log("[ActGate] ⏱️ Waiting 2 seconds in darkness...");
     yield return new WaitForSeconds(2f);
-    
-    // 7. Kapı sesi çal
+
+    // 6. Kapı sesi çal
     if (doorSound != null && audioSource != null)
     {
         Debug.Log("[ActGate] 🔊 Playing door sound");
         audioSource.PlayOneShot(doorSound);
     }
-    
-    // 8. Kapı sesi + delay
+
+    // 7. Kapı sesi + delay
+    Debug.Log($"[ActGate] ⏱️ Waiting {doorSoundDuration + blackScreenDelay}s for door sound...");
     yield return new WaitForSeconds(doorSoundDuration + blackScreenDelay);
-    
-    // 9. Player'ı teleport et
+
+    // 8. Player'ı teleport et
     if (player != null && spawnPoint != null)
     {
         Debug.Log($"[ActGate] 📍 Teleporting player to: {spawnPoint.position}");
         player.position = spawnPoint.position;
     }
-    
-    // 10. ŞİMDİ gameplay state'ine geç (6 → 7)
+    else
+    {
+        Debug.LogWarning("[ActGate] ⚠️ Cannot teleport - player or spawnPoint is null!");
+    }
+
+    // 9. ŞİMDİ gameplay state'ine geç (10 → 11)
     if (cutsceneChief != null)
     {
-        Debug.Log("[ActGate] Advancing to gameplay state...");
-        cutsceneChief.EnableAutoAdvance(); // 👈 Tekrar aç
+        Debug.Log("[ActGate] ⏩ Step 6: Advancing to gameplay state...");
+        cutsceneChief.EnableAutoAdvance();
         cutsceneChief.AdvanceState();
+        Debug.Log("[ActGate] ✅ Step 6: State advanced to gameplay");
     }
-    
-    // 11. Ekranı aç - BAM!
+
+    // 10. Ekranı aç - BAM!
     Debug.Log("[ActGate] ⚪ Black screen OFF - BAM!");
     HideBlackScreen();
-    
-    // 12. Player'ı çöz
+
+    // 11. Player'ı çöz
     if (playerController != null)
     {
         playerController.UnfreezePlayer();
-        Debug.Log("[ActGate] Player unfrozen");
+        Debug.Log("[ActGate] ✅ Step 7: Player unfrozen");
     }
-    
-    Debug.Log("[ActGate] ✅ Gate sequence complete!");
+
+    Debug.Log("[ActGate] ========== SEQUENCE END ==========");
 }
     #region Dialog System
 
