@@ -134,6 +134,7 @@ MonoBehaviour:
     timeline: {fileID: 0}
     objectsToActivate:
     - {fileID: 0}
+    - {fileID: 0}
     objectsToDeactivate:
     - {fileID: 0}
     - {fileID: 0}
@@ -198,9 +199,10 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  - stateName: State9_roadToActII
+  - stateName: State9_roadToActIII
     timeline: {fileID: 0}
     objectsToActivate:
+    - {fileID: 0}
     - {fileID: 0}
     objectsToDeactivate:
     - {fileID: 0}
@@ -216,7 +218,83 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 7
+  - stateName: State10_ACTIII_Cutscene
+    timeline: {fileID: 0}
+    objectsToActivate: []
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State11_ACTIII_Field
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State12_Dungeon3
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 1
+    targetSceneName: Dungeon3
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State13_RoadToActIV
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  currentState: 11
   saveKey: GameState
   musicSource: {fileID: 752455669889845466}
   fadeDuration: 1.5

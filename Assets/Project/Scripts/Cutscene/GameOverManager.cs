@@ -276,35 +276,69 @@ public class GameOverManager : MonoBehaviour
     }
     
     private string GetSceneForState(int state)
+{
+    switch (state)
     {
-        switch (state)
-        {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-                return "WorldMap";
-                
-            case 4:
-            case 5:
-                return "Dungeon1";
-                
-            case 6:
-            case 7:
-                return "WorldMap";
-                
-            case 8:
-            case 9:
-                return "Dungeon2";
-                
-            case 10:
-                return "WorldMap";
-                
-            default:
-                Debug.LogWarning($"[GameOver] Unknown state {state}, defaulting to WorldMap");
-                return "WorldMap";
-        }
+        // Intro & Tutorial
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            return "WorldMap";
+            
+        // Dungeon 1
+        case 4:
+        case 5:
+            return "Dungeon1";
+            
+        // Act 2 Cutscene & Field
+        case 6:
+        case 7:
+            return "WorldMap";
+            
+        // Dungeon 2
+        case 8:
+        case 9:
+            return "Dungeon2";
+            
+        // Act 3 Cutscene & Field
+        case 10:
+        case 11:
+            return "WorldMap";
+            
+        // Dungeon 3
+        case 12:
+        case 13:
+            return "Dungeon3";  // 👈 BU EKSİKTİ!
+            
+        // Act 4 Cutscene & Field
+        case 14:
+        case 15:
+            return "WorldMap";
+            
+        // School Inside 1 (Dungeon 4 Final)
+        case 16:
+        case 17:
+            return "School";  // veya "Dungeon4Final" sahne adınız neyse
+            
+        // School Inside 2
+        case 18:
+            return "School2";  // veya sahne adınız neyse
+            
+        // Boss Fight
+        case 19:
+        case 20:
+            return "WorldMap";  // Boss arena WorldMap'te
+            
+        // Ending
+        case 21:
+            return "WorldMap";  // veya ayrı bir "Ending" sahnesi varsa
+            
+        default:
+            Debug.LogWarning($"[GameOver] Unknown state {state}, defaulting to WorldMap");
+            return "WorldMap";
     }
+}
     
     private void PlayGameOverSfx()
     {

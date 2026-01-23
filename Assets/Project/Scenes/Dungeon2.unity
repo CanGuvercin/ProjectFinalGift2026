@@ -295,6 +295,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3485883935216503362, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
+      propertyPath: currentState
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 5539606185718919222, guid: d2f37b9cea51deb489bb901ce863fb75, type: 3}
       propertyPath: m_Name
       value: CutsceneChief
