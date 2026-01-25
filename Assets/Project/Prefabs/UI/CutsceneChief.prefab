@@ -294,7 +294,47 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 11
+  - stateName: State14_ActIVField
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: 
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State15_SchoolDungeon1
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 1
+    targetSceneName: School
+    spawnPointName: 
+    ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  currentState: 13
   saveKey: GameState
   musicSource: {fileID: 752455669889845466}
   fadeDuration: 1.5
