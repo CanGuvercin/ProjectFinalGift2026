@@ -7,36 +7,34 @@ public class ZeilScene1 : MonoBehaviour
     [SerializeField] private PlayableDirector playableDirector;
     [SerializeField] private bool playOnStart = true;
     [SerializeField] private bool teleportPlayerAfterCutscene = false;
-    [SerializeField] private Transform playerSpawnPoint; // Opsiyonel
+    [SerializeField] private Transform playerSpawnPoint;
     
     [Header("State Management")]
     [SerializeField] private CutsceneChief cutsceneChief;
-    [SerializeField] private bool advanceStateOnComplete = true;
+    [SerializeField] private bool advanceStateOnCutsceneEnd = false; // ❌ FALSE yap
     
-    [Header("Trigger Settings (Optional)")]
-    [SerializeField] private bool useAreaTrigger = false;
-    [SerializeField] private float triggerRadius = 3f;
-    [SerializeField] private Transform triggerCenter;
+    [Header("Area Trigger for State Advance")]
+    [SerializeField] private bool useAreaTriggerForState = true; // ✅ TRUE
+    [SerializeField] private float triggerRadius = 2f;
+    [SerializeField] private Transform triggerCenter; // Kapının pozisyonu
     [SerializeField] private bool onlyTriggerOnce = true;
     
     private Transform player;
     private PlayerController playerController;
     private Rigidbody2D playerRb;
-    private bool hasTriggered = false;
+    private bool hasTriggeredState = false;
     private bool cutscenePlaying = false;
+    private bool cutsceneCompleted = false; // Cutscene bitti mi?
     
     private void Start()
     {
-        // Player'ı bul
         FindPlayer();
         
-        // PlayableDirector eventi
         if (playableDirector != null)
         {
             playableDirector.stopped += OnCutsceneComplete;
         }
         
-        // Sahne başında otomatik başlat
         if (playOnStart)
         {
             PlayCutscene();
@@ -45,16 +43,23 @@ public class ZeilScene1 : MonoBehaviour
     
     private void Update()
     {
-        // Area trigger kontrolü
-        if (useAreaTrigger && !hasTriggered && !cutscenePlaying && player != null && triggerCenter != null)
+        // Area trigger - SADECE cutscene bittikten sonra kontrol et
+        if (useAreaTriggerForState && 
+            cutsceneCompleted && 
+            !hasTriggeredState && 
+            player != null && 
+            triggerCenter != null)
         {
             float distance = Vector3.Distance(player.position, triggerCenter.position);
+            
             if (distance <= triggerRadius)
             {
-                if (onlyTriggerOnce)
-                    hasTriggered = true;
+                Debug.Log($"Player entered trigger area! Distance: {distance}");
                 
-                PlayCutscene();
+                if (onlyTriggerOnce)
+                    hasTriggeredState = true;
+                
+                AdvanceState();
             }
         }
     }
@@ -69,13 +74,11 @@ public class ZeilScene1 : MonoBehaviour
         }
         
         cutscenePlaying = true;
+        cutsceneCompleted = false;
         
         Debug.Log("=== CUTSCENE STARTED ===");
         
-        // Player kontrolünü devre dışı bırak
         DisablePlayerControl();
-        
-        // Cutscene'i oynat
         playableDirector.Play();
     }
     
@@ -86,6 +89,7 @@ public class ZeilScene1 : MonoBehaviour
         Debug.Log("=== CUTSCENE COMPLETED ===");
         
         cutscenePlaying = false;
+        cutsceneCompleted = true; // Cutscene bitti flag'i
         
         // Player'ı spawn noktasına ışınla (eğer gerekiyorsa)
         if (teleportPlayerAfterCutscene && playerSpawnPoint != null && player != null)
@@ -97,11 +101,25 @@ public class ZeilScene1 : MonoBehaviour
         // Player kontrolünü geri ver
         EnablePlayerControl();
         
-        // State'i ilerlet
-        if (advanceStateOnComplete && cutsceneChief != null)
+        // Cutscene bitince hemen state ilerletme (eskiden buradaydı)
+        if (advanceStateOnCutsceneEnd && cutsceneChief != null)
+        {
+            AdvanceState();
+        }
+        
+        Debug.Log("Player control restored. Waiting for area trigger...");
+    }
+    
+    private void AdvanceState()
+    {
+        if (cutsceneChief != null)
         {
             cutsceneChief.AdvanceState();
-            Debug.Log("State advanced in CutsceneChief");
+            Debug.Log("=== STATE ADVANCED ===");
+        }
+        else
+        {
+            Debug.LogWarning("CutsceneChief is not assigned!");
         }
     }
     
@@ -116,7 +134,7 @@ public class ZeilScene1 : MonoBehaviour
         if (playerRb != null)
         {
             playerRb.velocity = Vector2.zero;
-            playerRb.isKinematic = true; // Fizik etkileşimini durdur
+            playerRb.isKinematic = true;
         }
     }
     
@@ -160,9 +178,12 @@ public class ZeilScene1 : MonoBehaviour
     // Gizmos - Trigger alanını göster
     private void OnDrawGizmosSelected()
     {
-        if (useAreaTrigger && triggerCenter != null)
+        if (useAreaTriggerForState && triggerCenter != null)
         {
-            Gizmos.color = Color.yellow;
+            Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f); // Turuncu
+            Gizmos.DrawSphere(triggerCenter.position, triggerRadius);
+            
+            Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(triggerCenter.position, triggerRadius);
         }
         

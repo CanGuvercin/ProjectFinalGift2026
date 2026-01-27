@@ -36737,7 +36737,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1493034153
 Transform:
   m_ObjectHideFlags: 0
@@ -36860,9 +36860,9 @@ MonoBehaviour:
   teleportPlayerAfterCutscene: 0
   playerSpawnPoint: {fileID: 0}
   cutsceneChief: {fileID: 531407815}
-  advanceStateOnComplete: 1
-  useAreaTrigger: 1
-  triggerRadius: 2
+  advanceStateOnCutsceneEnd: 0
+  useAreaTriggerForState: 1
+  triggerRadius: 1
   triggerCenter: {fileID: 1224927640}
   onlyTriggerOnce: 1
 --- !u!4 &1582660406
