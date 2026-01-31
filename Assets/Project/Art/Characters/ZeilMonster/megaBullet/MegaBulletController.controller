@@ -63,7 +63,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: IsPlayerNear
+    m_ConditionEvent: isPlayerNear
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -6289214572535452738}
@@ -87,7 +87,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Explosion
-  m_Speed: 1
+  m_Speed: 3
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 8110661055139169710}
@@ -142,13 +142,13 @@ AnimatorController:
   m_Name: MegaBulletController
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: IsPlayerNear
+  - m_Name: Explode
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
-  - m_Name: Explode
+  - m_Name: isPlayerNear
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0

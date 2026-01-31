@@ -9,17 +9,18 @@ public class MegaBullet : MonoBehaviour
     [SerializeField] private CircleCollider2D bulletCollider;
     
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 3f;
-    [SerializeField] private float lagDelay = 0.3f; // Lagged tracking
+    [SerializeField] private float moveSpeed = 6.5f;
+    [SerializeField] private float lagDelay = 0.35f;
+    [SerializeField] private float trackingDuration = 10f; // 10 saniye takip et, sonra self-destruct
     
     [Header("Explosion Settings")]
-    [SerializeField] private float detectionRadius = 2f; // Player bu radius'a girince yanıp sönme başlar
-    [SerializeField] private float countdownDuration = 2f; // Yanıp sönme süresi
-    [SerializeField] private int explosionDamage = 1; // int olmalı (PlayerController int alıyor)
-    [SerializeField] private float explosionRadius = 1.5f; // Patlama hasar radius'u
+    [SerializeField] private float detectionRadius = 1f;
+    [SerializeField] private float countdownDuration = 0.1f;
+    [SerializeField] private int explosionDamage = 1;
+    [SerializeField] private float explosionRadius = 1.3f;
     
     [Header("Lifetime")]
-    [SerializeField] private float maxLifetime = 15f; // Eğer hiç patlamazsa self-destruct
+    [SerializeField] private float maxLifetime = 15f;
     
     [Header("Audio")]
     [SerializeField] private AudioClip blinkSound;
@@ -35,6 +36,7 @@ public class MegaBullet : MonoBehaviour
     private bool hasExploded = false;
     
     private float lifetimeTimer = 0f;
+    private float trackingTimer = 0f;
 
     void Awake()
     {
@@ -49,7 +51,11 @@ public class MegaBullet : MonoBehaviour
         player = playerTransform;
         bossController = FindObjectOfType<ZeilBossController>();
         
-        // Lagged tracking başlat
+        if (player != null)
+        {
+            laggedTargetPosition = player.position;
+        }
+        
         StartCoroutine(UpdateLaggedPosition());
     }
 
@@ -57,14 +63,13 @@ public class MegaBullet : MonoBehaviour
     {
         if (hasExploded) return;
         
-        // Player yoksa destroy
         if (player == null)
         {
             DestroyBullet();
             return;
         }
         
-        // Lifetime kontrolü
+        // Lifetime check
         lifetimeTimer += Time.deltaTime;
         if (lifetimeTimer >= maxLifetime)
         {
@@ -72,7 +77,19 @@ public class MegaBullet : MonoBehaviour
             return;
         }
         
-        // Hareket (lagged position'a doğru)
+        // Tracking duration check - 10 saniye sonra takibi bırak ve self-destruct
+        if (isTracking)
+        {
+            trackingTimer += Time.deltaTime;
+            if (trackingTimer >= trackingDuration)
+            {
+                isTracking = false;
+                StartCoroutine(SelfDestruct());
+                return;
+            }
+        }
+        
+        // Hareket
         if (isTracking)
         {
             transform.position = Vector2.MoveTowards(
@@ -98,28 +115,29 @@ public class MegaBullet : MonoBehaviour
             laggedTargetPosition = player.position;
             yield return new WaitForSeconds(lagDelay);
         }
+    }//
+
+    IEnumerator SelfDestruct()
+    {
+        // Takip sona erdi, 2 saniye bekle ve patlat
+        yield return new WaitForSeconds(2f);
+        Explode();
     }
 
     void StartBlinking()
     {
         isBlinking = true;
-        isTracking = false; // Yanıp sönerken hareket etme
+        isTracking = false;
         
-        // Animator'a trigger gönder
         animator.SetTrigger("isPlayerNear");
-        
-        // Ses efekti
         PlaySound(blinkSound);
         
-        // Countdown başlat
         StartCoroutine(CountdownToExplosion());
     }
 
     IEnumerator CountdownToExplosion()
     {
         yield return new WaitForSeconds(countdownDuration);
-        
-        // Countdown bitti, patlama!
         Explode();
     }
 
@@ -128,29 +146,22 @@ public class MegaBullet : MonoBehaviour
         if (hasExploded) return;
         hasExploded = true;
         
-        // Animator'a trigger gönder
         animator.SetTrigger("Explode");
-        
-        // Ses efekti
         PlaySound(explosionSound);
         
-        // Hareket durdur
         isTracking = false;
         if (rb != null)
         {
             rb.velocity = Vector2.zero;
         }
         
-        // Collider'ı kapat (tekrar collision olmasın)
         if (bulletCollider != null)
         {
             bulletCollider.enabled = false;
         }
         
-        // Explosion damage kontrolü
         ApplyExplosionDamage();
         
-        // Animasyon bitince destroy
         StartCoroutine(DestroyAfterExplosion());
     }
 
@@ -160,13 +171,11 @@ public class MegaBullet : MonoBehaviour
         
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
         
-        // Player explosion radius içindeyse hasar ver
         if (distanceToPlayer <= explosionRadius)
         {
             PlayerController playerController = player.GetComponent<PlayerController>();
             if (playerController != null)
             {
-                // TakeDamage(int damage, Vector2 damageSourcePos) çağrısı
                 playerController.TakeDamage(explosionDamage, transform.position);
             }
         }
@@ -174,15 +183,12 @@ public class MegaBullet : MonoBehaviour
 
     IEnumerator DestroyAfterExplosion()
     {
-        // BulletExplosion animasyon süresini bekle
-        yield return new WaitForSeconds(0.5f); // Animasyon süresine göre ayarla
-        
+        yield return new WaitForSeconds(0.6f);
         DestroyBullet();
     }
 
     void DestroyBullet()
     {
-        // Boss controller'a bildir
         if (bossController != null)
         {
             bossController.OnMegaBulletDestroyed();
@@ -203,29 +209,23 @@ public class MegaBullet : MonoBehaviour
     {
         if (hasExploded) return;
         
-        // Player'a direkt temas
         if (other.CompareTag("Player"))
         {
-            // Yanıp sönme safhasında olsa bile direkt patlat
-            StopAllCoroutines(); // Countdown'u durdur
+            StopAllCoroutines();
             Explode();
         }
         
-        // Duvara çarparsa da patlat
         if (other.CompareTag("Wall") || other.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             Explode();
         }
     }
 
-    // Debug için Gizmos
     void OnDrawGizmosSelected()
     {
-        // Detection radius (sarı)
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
         
-        // Explosion radius (kırmızı)
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, explosionRadius);
     }

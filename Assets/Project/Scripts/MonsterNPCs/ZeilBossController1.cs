@@ -17,9 +17,13 @@ public class ZeilBossController : MonoBehaviour
     [SerializeField] private GameObject megaBulletPrefab;
     [SerializeField] private Transform bulletSpawnPoint;
     [SerializeField] private float normalBulletSpeed = 5f;
-    [SerializeField] private float spiralInterval = 0.2f;
+    [SerializeField] private float spiralInterval = 0.15f;
     [SerializeField] private int spiralWaveCount = 6;
-    [SerializeField] private int bulletsPerWave = 5; // 72° için 5 bullet
+    [SerializeField] private int bulletsPerWave = 5;
+    
+    [Header("Slime Movement")]
+    [SerializeField] private float slimeIdleMoveSpeed = 1f;
+    [SerializeField] private float slimeShootingMoveSpeed = 0.5f;
     
     [Header("MegaBullet Settings")]
     [SerializeField] private float megaBulletInterval = 3f;
@@ -27,13 +31,14 @@ public class ZeilBossController : MonoBehaviour
     private int currentMegaBullets = 0;
     
     [Header("Ball Charge")]
-    [SerializeField] private float chargeSpeed = 20f;
+    [SerializeField] private float chargeSpeed = 25f;
+    [SerializeField] private float chargeDistance = 8f;
     [SerializeField] private int chargesPerCycle = 2;
-    [SerializeField] private int chargeDamage = 2; // int olmalı
+    [SerializeField] private int chargeDamage = 2;
     [SerializeField] private float telegraphDuration = 0.3f;
-    [SerializeField] private float chargeDuration = 0.1f;
     private int currentChargeCount = 0;
     private Vector2 chargeTarget;
+    private bool chargeHitWall = false; // Duvara çarpma flag'i
     
     [Header("Colliders")]
     [SerializeField] private GameObject slimeCollider;
@@ -48,7 +53,7 @@ public class ZeilBossController : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     
     [Header("Attack Pattern")]
-    [SerializeField] private int slimeAttacksBeforeBall = 4; // 3-4 dalga mermi
+    [SerializeField] private int slimeAttacksBeforeBall = 4;
     private int currentSlimeAttacks = 0;
     
     private enum BossState
@@ -69,22 +74,19 @@ public class ZeilBossController : MonoBehaviour
         currentHealth = maxHealth;
         currentState = BossState.SlimeIdle;
         
-        // Player referansı yoksa bul
         if (player == null)
         {
             player = GameObject.FindGameObjectWithTag("Player")?.transform;
         }
         
-        // Başlangıçta slime collider aktif
         SetColliderMode(true);
         
-        // Boss pattern başlat
         StartCoroutine(BossAI());
+        StartCoroutine(SlimeIdleMovement());
     }
 
     void Update()
     {
-        // Death check
         if (currentHealth <= 0 && !isDead)
         {
             Die();
@@ -95,30 +97,43 @@ public class ZeilBossController : MonoBehaviour
     
     IEnumerator BossAI()
     {
-        yield return new WaitForSeconds(1f); // Başlangıç bekleme
+        yield return new WaitForSeconds(1f);
         
         while (!isDead)
         {
-            // Slime Mode Attacks
             currentSlimeAttacks = 0;
             while (currentSlimeAttacks < slimeAttacksBeforeBall)
             {
                 yield return StartCoroutine(SlimeAttackSequence());
                 currentSlimeAttacks++;
-                yield return new WaitForSeconds(1f); // Saldırılar arası bekleme
+                yield return new WaitForSeconds(1f);
             }
             
-            // Ball Mode Attacks
             yield return StartCoroutine(BallAttackSequence());
             
-            yield return new WaitForSeconds(1.5f); // Cycle arası bekleme
+            yield return new WaitForSeconds(1.5f);
+        }
+    }
+    
+    IEnumerator SlimeIdleMovement()
+    {
+        while (!isDead)
+        {
+            if (player != null && (currentState == BossState.SlimeIdle || currentState == BossState.SlimeShooting))
+            {
+                float moveSpeed = currentState == BossState.SlimeShooting ? slimeShootingMoveSpeed : slimeIdleMoveSpeed;
+                
+                Vector2 direction = (player.position - transform.position).normalized;
+                transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
+            }
+            
+            yield return null;
         }
     }
     
     IEnumerator SlimeAttackSequence()
     {
-        // Random: Spiral ya da MegaBullet
-        bool useSpiral = Random.value > 0.3f; // %70 spiral, %30 mega
+        bool useSpiral = Random.value > 0.3f;
         
         if (useSpiral)
         {
@@ -137,12 +152,13 @@ public class ZeilBossController : MonoBehaviour
         
         PlaySound(shootSound);
         
-        // Spiral waves
+        bool clockwise = Random.value > 0.5f;
+        float rotationDirection = clockwise ? 1f : -1f;
+        
         for (int wave = 0; wave < spiralWaveCount; wave++)
         {
-            float angleOffset = wave * 15f; // Her dalga 15° dönecek
+            float angleOffset = wave * 15f * rotationDirection;
             
-            // 5 bullet, 72° arayla
             for (int i = 0; i < bulletsPerWave; i++)
             {
                 float angle = (i * 72f) + angleOffset;
@@ -160,7 +176,6 @@ public class ZeilBossController : MonoBehaviour
     
     IEnumerator MegaBulletAttack()
     {
-        // Max 2 megabullet kontrolü
         if (currentMegaBullets >= maxActiveMegaBullets)
         {
             yield break;
@@ -171,12 +186,10 @@ public class ZeilBossController : MonoBehaviour
         
         PlaySound(shootSound);
         
-        // İlk megabullet
         FireMegaBullet();
         
         yield return new WaitForSeconds(megaBulletInterval);
         
-        // İkinci megabullet
         if (currentMegaBullets < maxActiveMegaBullets)
         {
             FireMegaBullet();
@@ -190,59 +203,77 @@ public class ZeilBossController : MonoBehaviour
     
     IEnumerator BallAttackSequence()
     {
-        // Ball form'a geçiş
         currentState = BossState.BallTransition;
         animator.SetTrigger("ToTopForm");
         PlaySound(rollSound);
         
-        yield return new WaitForSeconds(0.8f); // BallUp animasyon süresi
+        yield return new WaitForSeconds(1.2f);
         
         currentState = BossState.BallStand;
-        SetColliderMode(false); // Ball collider aktif
+        SetColliderMode(false);
         
-        // Charge saldırıları
         currentChargeCount = 0;
         while (currentChargeCount < chargesPerCycle)
         {
             yield return StartCoroutine(ChargeAttack());
             currentChargeCount++;
-            yield return new WaitForSeconds(0.8f); // Charge'lar arası bekleme
+            
+            if (currentChargeCount < chargesPerCycle)
+            {
+                yield return new WaitForSeconds(1f);
+            }
         }
         
-        // Slime form'a dönüş
         animator.SetTrigger("BackToSlime");
-        yield return new WaitForSeconds(0.8f); // BallDown animasyon süresi
         
-        SetColliderMode(true); // Slime collider aktif
+        yield return new WaitForSeconds(1.2f);
+        
+        SetColliderMode(true);
         currentState = BossState.SlimeIdle;
     }
     
     IEnumerator ChargeAttack()
     {
-        // Player pozisyonunu kaydet
-        chargeTarget = player.position;
+        if (player == null) yield break;
         
-        // Telegraph (kırmızılaşma)
+        chargeHitWall = false; // Reset flag
+        
+        Vector2 direction = (player.position - transform.position).normalized;
+        chargeTarget = (Vector2)player.position + (direction * chargeDistance);
+        
+        // Telegraph
         currentState = BossState.BallCharging;
         animator.SetTrigger("Charge");
         
-        yield return new WaitForSeconds(telegraphDuration); // 0.3s uyarı
+        yield return new WaitForSeconds(telegraphDuration);
         
-        // CHARGE! (ultra hızlı돌진)
-        Vector2 direction = (chargeTarget - (Vector2)transform.position).normalized;
+        // CHARGE! - Rigidbody velocity ile gerçek fizik
         rb.velocity = direction * chargeSpeed;
         
         PlaySound(crushSound);
         
-        yield return new WaitForSeconds(chargeDuration); // 0.1s돌진
+        // Maksimum süre veya duvara çarpana kadar
+        float maxChargeTime = chargeDistance / chargeSpeed;
+        float elapsed = 0f;
+        
+        while (elapsed < maxChargeTime && !chargeHitWall)
+        {
+            // Hız kontrolü (duvara çarptıysa hız düşer)
+            if (rb.velocity.magnitude < chargeSpeed * 0.2f)
+            {
+                break;
+            }
+            
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
         
         // Dur
         rb.velocity = Vector2.zero;
         
-        // StandBall'a dön (Has Exit Time ile otomatik dönecek)
         currentState = BossState.BallStand;
         
-        yield return new WaitForSeconds(0.3f); // Kısa dinlenme
+        yield return new WaitForSeconds(0.3f);
     }
     
     #endregion
@@ -253,11 +284,9 @@ public class ZeilBossController : MonoBehaviour
     {
         GameObject bullet = Instantiate(normalBulletPrefab, bulletSpawnPoint.position, Quaternion.identity);
         
-        // Açıya göre yön hesapla
         float radians = angle * Mathf.Deg2Rad;
         Vector2 direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
         
-        // Bullet'a hız ver (Rigidbody2D veya custom hareket)
         Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
         if (bulletRb != null)
         {
@@ -269,7 +298,6 @@ public class ZeilBossController : MonoBehaviour
     {
         GameObject megaBullet = Instantiate(megaBulletPrefab, bulletSpawnPoint.position, Quaternion.identity);
         
-        // MegaBullet script'ine player referansı ver
         MegaBullet megaScript = megaBullet.GetComponent<MegaBullet>();
         if (megaScript != null)
         {
@@ -278,10 +306,10 @@ public class ZeilBossController : MonoBehaviour
         }
     }
     
-    // MegaBullet destroy olduğunda call edilecek
     public void OnMegaBulletDestroyed()
     {
         currentMegaBullets--;
+        if (currentMegaBullets < 0) currentMegaBullets = 0;
     }
     
     #endregion
@@ -292,13 +320,10 @@ public class ZeilBossController : MonoBehaviour
     {
         if (isDead) return;
         
-        // Sadece Slime modunda hasar al
         if (currentState == BossState.SlimeIdle || currentState == BossState.SlimeShooting)
         {
             currentHealth -= damage;
             PlaySound(hurtSound);
-            
-            // Hit flash effect eklenebilir
         }
     }
     
@@ -311,23 +336,16 @@ public class ZeilBossController : MonoBehaviour
         
         rb.velocity = Vector2.zero;
         
-        // Collider'ları kapat
         slimeCollider.SetActive(false);
         ballCollider.SetActive(false);
         
-        // Death sonrası logic (cutscene trigger, etc.)
         StartCoroutine(HandleDeath());
     }
     
     IEnumerator HandleDeath()
     {
-        yield return new WaitForSeconds(2f); // Death animasyon süresi
-        
-        // Burada cutscene trigger, game state değişikliği vs. yapabilirsin
+        yield return new WaitForSeconds(2f);
         Debug.Log("Boss defeated!");
-        
-        // Destroy veya deaktif et
-        // Destroy(gameObject);
     }
     
     #endregion
@@ -361,12 +379,27 @@ public class ZeilBossController : MonoBehaviour
         // Ball modunda player'a temas
         if (currentState == BossState.BallCharging && other.CompareTag("Player"))
         {
-            // Player'a hasar ver - PlayerController.TakeDamage(int damage, Vector2 damageSourcePos)
             PlayerController playerController = other.GetComponent<PlayerController>();
             if (playerController != null)
             {
                 playerController.TakeDamage(chargeDamage, transform.position);
                 PlaySound(crushSound);
+            }
+        }
+    }
+    
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        // Ball modunda duvara çarpma
+        if (currentState == BossState.BallCharging)
+        {
+            if (collision.gameObject.CompareTag("Obstacle") || 
+                collision.gameObject.layer == LayerMask.NameToLayer("Obstacle") ||
+                collision.gameObject.CompareTag("Wall"))
+            {
+                chargeHitWall = true;
+                rb.velocity = Vector2.zero;
+                Debug.Log("[Boss] Hit wall during charge!");
             }
         }
     }
