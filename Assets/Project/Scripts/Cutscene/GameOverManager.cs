@@ -27,7 +27,7 @@ public class GameOverManager : MonoBehaviour
     [SerializeField] private AudioClip buttonClickSfx;
     
     [Header("State Control")]
-    [SerializeField] private int[] allowedStates = { 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    [SerializeField] private int[] unallowedStates = { 0, 1, 2 }; // Tutorial states - GameOver yok
     
     private static GameOverManager instance;
     private bool isDead = false;
@@ -92,11 +92,12 @@ public class GameOverManager : MonoBehaviour
         
         int currentState = PlayerPrefs.GetInt("GameState", 1);
         
-        bool isAllowedState = System.Array.Exists(allowedStates, state => state == currentState);
+        // UNALLOWED check - eğer tutorial state'indeyse GameOver gösterme
+        bool isUnallowedState = System.Array.Exists(unallowedStates, state => state == currentState);
         
-        if (!isAllowedState)
+        if (isUnallowedState)
         {
-            Debug.LogWarning($"[GameOver] State {currentState} is not allowed for Game Over! Skipping...");
+            Debug.LogWarning($"[GameOver] State {currentState} is UNALLOWED for Game Over! Skipping death sequence...");
             RetryCurrentState();
             return;
         }
@@ -276,69 +277,69 @@ public class GameOverManager : MonoBehaviour
     }
     
     private string GetSceneForState(int state)
-{
-    switch (state)
     {
-        // Intro & Tutorial
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-            return "WorldMap";
-            
-        // Dungeon 1
-        case 4:
-        case 5:
-            return "Dungeon1";
-            
-        // Act 2 Cutscene & Field
-        case 6:
-        case 7:
-            return "WorldMap";
-            
-        // Dungeon 2
-        case 8:
-        case 9:
-            return "Dungeon2";
-            
-        // Act 3 Cutscene & Field
-        case 10:
-        case 11:
-            return "WorldMap";
-            
-        // Dungeon 3
-        case 12:
-        case 13:
-            return "Dungeon3";  // 👈 BU EKSİKTİ!
-            
-        // Act 4 Cutscene & Field
-        case 14:
-        case 15:
-            return "WorldMap";
-            
-        // School Inside 1 (Dungeon 4 Final)
-        case 16:
-        case 17:
-            return "School";  // veya "Dungeon4Final" sahne adınız neyse
-            
-        // School Inside 2
-        case 18:
-            return "School2";  // veya sahne adınız neyse
-            
-        // Boss Fight
-        case 19:
-        case 20:
-            return "WorldMap";  // Boss arena WorldMap'te
-            
-        // Ending
-        case 21:
-            return "WorldMap";  // veya ayrı bir "Ending" sahnesi varsa
-            
-        default:
-            Debug.LogWarning($"[GameOver] Unknown state {state}, defaulting to WorldMap");
-            return "WorldMap";
+        switch (state)
+        {
+            // Intro & Tutorial
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                return "WorldMap";
+                
+            // Dungeon 1
+            case 4:
+            case 5:
+                return "Dungeon1";
+                
+            // Act 2 Cutscene & Field
+            case 6:
+            case 7:
+                return "WorldMap";
+                
+            // Dungeon 2
+            case 8:
+            case 9:
+                return "Dungeon2";
+                
+            // Act 3 Cutscene & Field
+            case 10:
+            case 11:
+                return "WorldMap";
+                
+            // Dungeon 3
+            case 12:
+            case 13:
+                return "Dungeon3";
+                
+            // Act 4 Cutscene & Field
+            case 14:
+            case 15:
+                return "WorldMap";
+                
+            // School Inside 1 (Dungeon 4 Final)
+            case 16:
+            case 17:
+                return "School";
+                
+            // School Inside 2
+            case 18:
+                return "School2";
+                
+            // Boss Fight
+            case 19:
+            case 20:
+                return "WorldMap";
+                
+            // Ending
+            case 21:
+                return "WorldMap";
+                
+            default:
+                Debug.LogWarning($"[GameOver] Unknown state {state}, defaulting to WorldMap");
+                return "WorldMap";
+        }
     }
-}
     
     private void PlayGameOverSfx()
     {

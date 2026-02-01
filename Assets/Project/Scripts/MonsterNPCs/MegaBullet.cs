@@ -10,17 +10,22 @@ public class MegaBullet : MonoBehaviour
     
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6.5f;
+    [SerializeField] private float boostedSpeedMultiplier = 1.25f;
     [SerializeField] private float lagDelay = 0.35f;
-    [SerializeField] private float trackingDuration = 10f; // 10 saniye takip et, sonra self-destruct
+    [SerializeField] private float trackingDuration = 10f;
     
     [Header("Explosion Settings")]
     [SerializeField] private float detectionRadius = 1f;
-    [SerializeField] private float countdownDuration = 0.1f;
+    [SerializeField] private float countdownDuration = 2f;
+    [SerializeField] private int contactDamage = 1;
     [SerializeField] private int explosionDamage = 1;
     [SerializeField] private float explosionRadius = 1.3f;
     
     [Header("Lifetime")]
     [SerializeField] private float maxLifetime = 15f;
+    
+    [Header("Animation")]
+    [SerializeField] private float explosionAnimDuration = 0.6f; // Patlama animasyon süresi
     
     [Header("Audio")]
     [SerializeField] private AudioClip blinkSound;
@@ -34,7 +39,10 @@ public class MegaBullet : MonoBehaviour
     private bool isTracking = true;
     private bool isBlinking = false;
     private bool hasExploded = false;
+    private bool isBoosted = false;
+    private bool hasDealtContactDamage = false;
     
+    private float currentMoveSpeed;
     private float lifetimeTimer = 0f;
     private float trackingTimer = 0f;
 
@@ -44,6 +52,8 @@ public class MegaBullet : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (bulletCollider == null) bulletCollider = GetComponent<CircleCollider2D>();
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
+        
+        currentMoveSpeed = moveSpeed;
     }
 
     public void Initialize(Transform playerTransform)
@@ -69,23 +79,30 @@ public class MegaBullet : MonoBehaviour
             return;
         }
         
-        // Lifetime check
+        // Lifetime check - Max lifetime bitince explode
         lifetimeTimer += Time.deltaTime;
+        
         if (lifetimeTimer >= maxLifetime)
         {
-            Explode();
+            // Hareketi durdur ve patlat
+            isTracking = false;
+            
+            // Eğer henüz yanıp sönme başlamamışsa, başlat
+            if (!isBlinking)
+            {
+                StartBlinking();
+            }
+            
             return;
         }
         
-        // Tracking duration check - 10 saniye sonra takibi bırak ve self-destruct
+        // Tracking duration check - 10 saniye sonra takibi bırak (ama patlatma)
         if (isTracking)
         {
             trackingTimer += Time.deltaTime;
             if (trackingTimer >= trackingDuration)
             {
-                isTracking = false;
-                StartCoroutine(SelfDestruct());
-                return;
+                isTracking = false; // Sadece hareketi durdur
             }
         }
         
@@ -95,7 +112,7 @@ public class MegaBullet : MonoBehaviour
             transform.position = Vector2.MoveTowards(
                 transform.position, 
                 laggedTargetPosition, 
-                moveSpeed * Time.deltaTime
+                currentMoveSpeed * Time.deltaTime
             );
         }
         
@@ -115,13 +132,6 @@ public class MegaBullet : MonoBehaviour
             laggedTargetPosition = player.position;
             yield return new WaitForSeconds(lagDelay);
         }
-    }//
-
-    IEnumerator SelfDestruct()
-    {
-        // Takip sona erdi, 2 saniye bekle ve patlat
-        yield return new WaitForSeconds(2f);
-        Explode();
     }
 
     void StartBlinking()
@@ -129,10 +139,41 @@ public class MegaBullet : MonoBehaviour
         isBlinking = true;
         isTracking = false;
         
+        // Hız artışı
+        if (!isBoosted)
+        {
+            currentMoveSpeed = moveSpeed * boostedSpeedMultiplier;
+            isBoosted = true;
+        }
+        
+        // HEMEN HASAR VER
+        DealContactDamage();
+        
+        // Animator trigger
         animator.SetTrigger("isPlayerNear");
         PlaySound(blinkSound);
         
+        // Countdown başlat
         StartCoroutine(CountdownToExplosion());
+    }
+
+    void DealContactDamage()
+    {
+        if (hasDealtContactDamage) return;
+        if (player == null) return;
+        
+        hasDealtContactDamage = true;
+        
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        
+        if (distanceToPlayer <= detectionRadius)
+        {
+            PlayerController playerController = player.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.TakeDamage(contactDamage, transform.position);
+            }
+        }
     }
 
     IEnumerator CountdownToExplosion()
@@ -144,24 +185,32 @@ public class MegaBullet : MonoBehaviour
     void Explode()
     {
         if (hasExploded) return;
+        
         hasExploded = true;
         
+        // Hareketi tamamen durdur
+        isTracking = false;
+        
+        // Animator trigger - Patlama animasyonu
         animator.SetTrigger("Explode");
         PlaySound(explosionSound);
         
-        isTracking = false;
+        // Physics durdur
         if (rb != null)
         {
             rb.velocity = Vector2.zero;
         }
         
+        // Collider kapat (tekrar collision olmasın)
         if (bulletCollider != null)
         {
             bulletCollider.enabled = false;
         }
         
+        // Hasar uygula
         ApplyExplosionDamage();
         
+        // Animasyon bitince destroy
         StartCoroutine(DestroyAfterExplosion());
     }
 
@@ -183,7 +232,9 @@ public class MegaBullet : MonoBehaviour
 
     IEnumerator DestroyAfterExplosion()
     {
-        yield return new WaitForSeconds(0.6f);
+        // Patlama animasyonunun bitmesini bekle
+        yield return new WaitForSeconds(explosionAnimDuration);
+        
         DestroyBullet();
     }
 
@@ -211,11 +262,17 @@ public class MegaBullet : MonoBehaviour
         
         if (other.CompareTag("Player"))
         {
+            // Eğer henüz hasar vermediyse ver
+            if (!hasDealtContactDamage)
+            {
+                DealContactDamage();
+            }
+            
             StopAllCoroutines();
             Explode();
         }
         
-        if (other.CompareTag("Wall") || other.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        if (other.CompareTag("Wall") || other.CompareTag("Obstacle") || other.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             Explode();
         }
@@ -223,10 +280,20 @@ public class MegaBullet : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
+        // Detection radius (sarı)
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
         
+        // Explosion radius (kırmızı)
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, explosionRadius);
+        
+        // Lifetime indicator (cyan)
+        if (Application.isPlaying)
+        {
+            Gizmos.color = Color.cyan;
+            float lifetimeRatio = lifetimeTimer / maxLifetime;
+            Gizmos.DrawWireSphere(transform.position, 0.5f + lifetimeRatio);
+        }
     }
 }
