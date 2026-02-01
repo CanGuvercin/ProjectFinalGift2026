@@ -61,7 +61,6 @@ public class PlayerController : MonoBehaviour
     private float lastInteractTime;
     private bool isInteracting;
     
-    // Attack hit tracking
     private bool attackHitSomething;
 
     private Rigidbody2D rb;
@@ -72,7 +71,6 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput;
     private Vector2 lastMoveDir = Vector2.down;
 
-    //for our disaster solution "atomic movement"
     private int attackCounter = 0;
 
     private void Awake()
@@ -84,7 +82,8 @@ public class PlayerController : MonoBehaviour
         
         DisableAllHitBoxes();
         
-        currentHealth = 50;
+        // HP'yi PlayerPrefs'ten yükle
+        LoadHealth();
 
         if (cameraController == null)
             cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
@@ -126,67 +125,99 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // ================= DAMAGE SYSTEM =================
-public void TakeDamage(int damage, Vector2 damageSourcePos)
-{
-    if (isInvulnerable) return;
-
-    // Zorluk çarpanını uygula
-    float difficultyMultiplier = GameplayManager.Instance != null 
-        ? GameplayManager.Instance.GetIncomingDamageMultiplier() 
-        : 1.0f;
+    // ================= HEALTH SAVE/LOAD SYSTEM =================
     
-    int finalDamage = Mathf.RoundToInt(damage * difficultyMultiplier);
-
-        currentHealth -= finalDamage;
-    if (currentHealth < 0) currentHealth = 0;
-
-    Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
-    lastMoveDir = hitDir;
-
-    if (currentHealth <= 0)
+    private void LoadHealth()
     {
-        int currentState = PlayerPrefs.GetInt("GameState", 1);
-        
-        bool isImmortal = System.Array.Exists(immortalStates, state => state == currentState);
-        
-        if (isImmortal)
+        if (PlayerPrefs.HasKey("PlayerCurrentHP"))
         {
-            currentHealth = 1;
-            
-            animator.SetFloat("moveX", hitDir.x);
-            animator.SetFloat("moveY", hitDir.y);
-            animator.SetBool("isDamaged", true);
-            
-            if (cameraController != null)
-                cameraController.OnPlayerHurt(finalDamage);
-            
-            PlayHurtSfx();
-            
-            rb.velocity = Vector2.zero;
-            rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
-            
-            StartCoroutine(DamageRoutine());
-            return;
+            currentHealth = PlayerPrefs.GetInt("PlayerCurrentHP");
         }
-        OnPlayerDeath();
-        return;
+        else
+        {
+            currentHealth = maxHealth;
+            SaveHealth();
+        }
+        
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+    }
+    
+    private void SaveHealth()
+    {
+        PlayerPrefs.SetInt("PlayerCurrentHP", currentHealth);
+        PlayerPrefs.Save();
+    }
+    
+    public void ResetHealthToMax()
+    {
+        currentHealth = maxHealth;
+        SaveHealth();
     }
 
-    animator.SetFloat("moveX", hitDir.x);
-    animator.SetFloat("moveY", hitDir.y);
-    animator.SetBool("isDamaged", true);
+    // ================= DAMAGE SYSTEM =================
+    
+    public void TakeDamage(int damage, Vector2 damageSourcePos)
+    {
+        if (isInvulnerable) return;
 
-    if (cameraController != null)
-        cameraController.OnPlayerHurt(finalDamage);
+        float difficultyMultiplier = GameplayManager.Instance != null 
+            ? GameplayManager.Instance.GetIncomingDamageMultiplier() 
+            : 1.0f;
+        
+        int finalDamage = Mathf.RoundToInt(damage * difficultyMultiplier);
 
-    PlayHurtSfx();
+        currentHealth -= finalDamage;
+        if (currentHealth < 0) currentHealth = 0;
+        
+        SaveHealth();
 
-    rb.velocity = Vector2.zero;
-    rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+        Vector2 hitDir = (transform.position - (Vector3)damageSourcePos).normalized;
+        lastMoveDir = hitDir;
 
-    StartCoroutine(DamageRoutine());
-}
+        if (currentHealth <= 0)
+        {
+            int currentState = PlayerPrefs.GetInt("GameState", 1);
+            
+            bool isImmortal = System.Array.Exists(immortalStates, state => state == currentState);
+            
+            if (isImmortal)
+            {
+                currentHealth = 1;
+                SaveHealth();
+                
+                animator.SetFloat("moveX", hitDir.x);
+                animator.SetFloat("moveY", hitDir.y);
+                animator.SetBool("isDamaged", true);
+                
+                if (cameraController != null)
+                    cameraController.OnPlayerHurt(finalDamage);
+                
+                PlayHurtSfx();
+                
+                rb.velocity = Vector2.zero;
+                rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+                
+                StartCoroutine(DamageRoutine());
+                return;
+            }
+            OnPlayerDeath();
+            return;
+        }
+
+        animator.SetFloat("moveX", hitDir.x);
+        animator.SetFloat("moveY", hitDir.y);
+        animator.SetBool("isDamaged", true);
+
+        if (cameraController != null)
+            cameraController.OnPlayerHurt(finalDamage);
+
+        PlayHurtSfx();
+
+        rb.velocity = Vector2.zero;
+        rb.AddForce(hitDir * knockbackForce, ForceMode2D.Impulse);
+
+        StartCoroutine(DamageRoutine());
+    }
     
     private void OnPlayerDeath()
     {
@@ -197,12 +228,11 @@ public void TakeDamage(int damage, Vector2 damageSourcePos)
             animator.SetTrigger("Death");
         }
         
+        ResetHealthToMax();
+        
         if (GameOverManager.Instance != null)
         {
             GameOverManager.Instance.ShowGameOver();
-        }
-        else
-        {
         }
     }
 
@@ -283,7 +313,6 @@ public void TakeDamage(int damage, Vector2 damageSourcePos)
 
     public void EnableHitBox()
     {
-        // Reset hit tracking
         attackHitSomething = false;
         DisableAllHitBoxes();
         
@@ -326,13 +355,9 @@ public void TakeDamage(int damage, Vector2 damageSourcePos)
     public void DisableHitBox()
     {
         DisableAllHitBoxes();
-        // Hitbox kapanırken hiçbir şeye değmediyse miss SFX çal
         if (!attackHitSomething && cameraController != null)
         {
             cameraController.OnAttackMiss();
-        }
-        else
-        {
         }
     }
     
@@ -395,73 +420,68 @@ public void TakeDamage(int damage, Vector2 damageSourcePos)
     // ================= ATTACK =================
 
     private void TryAttack()
-{
-    if (isInteracting || isDashing) return;
-    if (Time.time - lastAttackTime < attackCooldown) return;
-
-    lastAttackTime = Time.time;
-    rb.velocity = Vector2.zero;
-
-    animator.SetFloat("moveX", lastMoveDir.x);
-    animator.SetFloat("moveY", lastMoveDir.y);
-
-    if (slashVFXAnimator != null)
     {
-        slashVFXAnimator.SetFloat("moveX", lastMoveDir.x);
-        slashVFXAnimator.SetFloat("moveY", lastMoveDir.y);
+        if (isInteracting || isDashing) return;
+        if (Time.time - lastAttackTime < attackCooldown) return;
+
+        lastAttackTime = Time.time;
+        rb.velocity = Vector2.zero;
+
+        animator.SetFloat("moveX", lastMoveDir.x);
+        animator.SetFloat("moveY", lastMoveDir.y);
+
+        if (slashVFXAnimator != null)
+        {
+            slashVFXAnimator.SetFloat("moveX", lastMoveDir.x);
+            slashVFXAnimator.SetFloat("moveY", lastMoveDir.y);
+        }
+
+        animator.SetTrigger("attack");
+        
+        StartCoroutine(AttackHitboxSequence());
+
+        PlaySlashVFX();
     }
-
-    animator.SetTrigger("attack");
-    
-    StartCoroutine(AttackHitboxSequence());
-
-    PlaySlashVFX();
-}
     
     private IEnumerator AttackHitboxSequence()
-{
-    yield return new WaitForSeconds(0.1f);
-    EnableHitBox();
-    
-    yield return new WaitForSeconds(0.2f);
-    DisableHitBox();
-    
-    // ATOMIK İTME SİSTEMİ - Mustafa Can'ın gizli silahı! 🚀
-    yield return new WaitForSeconds(0.05f);
-    ApplyAtomicNudge();
-}
+    {
+        yield return new WaitForSeconds(0.1f);
+        EnableHitBox();
+        
+        yield return new WaitForSeconds(0.2f);
+        DisableHitBox();
+        
+        yield return new WaitForSeconds(0.05f);
+        ApplyAtomicNudge();
+    }
 
-//disaster solution - atomic movement for sec hit box problem
-private void ApplyAtomicNudge()
-{
-    // Vitesli sistem: sağ-sol-sağ-sol
-    attackCounter++;
-    
-    float nudgeAmount = 0.0001f; // Atomik seviye
-    Vector2 nudgeDirection;
-    
-    if (attackCounter % 4 == 1)
+    private void ApplyAtomicNudge()
     {
-        nudgeDirection = Vector2.right; // 1. vuruş: sağa
+        attackCounter++;
+        
+        float nudgeAmount = 0.0001f;
+        Vector2 nudgeDirection;
+        
+        if (attackCounter % 4 == 1)
+        {
+            nudgeDirection = Vector2.right;
+        }
+        else if (attackCounter % 4 == 2)
+        {
+            nudgeDirection = Vector2.left;
+        }
+        else if (attackCounter % 4 == 3)
+        {
+            nudgeDirection = Vector2.right;
+        }
+        else
+        {
+            nudgeDirection = Vector2.left;
+        }
+        
+        Vector3 newPos = transform.position + (Vector3)(nudgeDirection * nudgeAmount);
+        transform.position = newPos;
     }
-    else if (attackCounter % 4 == 2)
-    {
-        nudgeDirection = Vector2.left; // 2. vuruş: sola
-    }
-    else if (attackCounter % 4 == 3)
-    {
-        nudgeDirection = Vector2.right; // 3. vuruş: sağa
-    }
-    else
-    {
-        nudgeDirection = Vector2.left; // 4. vuruş: sola
-    }
-    
-    // Atomik hareket uygula
-    Vector3 newPos = transform.position + (Vector3)(nudgeDirection * nudgeAmount);
-    transform.position = newPos;
-}
-
 
     // ================= INTERACT =================
 
@@ -490,12 +510,10 @@ private void ApplyAtomicNudge()
 
     public void OnSwordHit()
     {
-        // HitBox bir şeye değdi!
         attackHitSomething = true;
         PlaySwordHitSfx();
     }
     
-    // PlayerHitBox'tan da erişilebilir olması için
     public void MarkAttackHit()
     {
         attackHitSomething = true;
@@ -505,6 +523,7 @@ private void ApplyAtomicNudge()
     {
         currentHealth += amount;
         currentHealth = Mathf.Min(maxHealth, currentHealth);
+        SaveHealth();
     }
 
     public int GetMaxHealth()
@@ -545,9 +564,9 @@ private void ApplyAtomicNudge()
         rb.angularVelocity = 0f;
         moveInput = Vector2.zero;
     }
+    
     public void UnfreezePlayer()
     {
         enabled = true;
     }
-
 }

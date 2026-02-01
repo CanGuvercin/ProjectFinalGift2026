@@ -4,18 +4,20 @@ using UnityEngine.UI;
 public class HPBarUI : MonoBehaviour
 {
     [Header("Heart Sprites")]
-    [SerializeField] private Sprite heartFull;   // ❤️
-    [SerializeField] private Sprite heartHalf;   // 💔
-    [SerializeField] private Sprite heartEmpty;  // 🖤
+    [SerializeField] private Sprite heartFull;
+    [SerializeField] private Sprite heartHalf;
+    [SerializeField] private Sprite heartEmpty;
     
     [Header("Heart Images")]
-    [SerializeField] private Image[] heartImages; // 5 tane (Heart_1 to Heart_5)
+    [SerializeField] private Image[] heartImages;
     
     [Header("Player Reference")]
     [SerializeField] private PlayerController player;
     
     [Header("Settings")]
-    [SerializeField] private int hpPerHeart = 20; // 1 kalp = 20 HP
+    [SerializeField] private int hpPerHeart = 20;
+    
+    private bool playerIsDead = false;
     
     private void Start()
     {
@@ -29,6 +31,16 @@ public class HPBarUI : MonoBehaviour
     
     private void Update()
     {
+        // Eğer player öldüyse HP bar'ı güncelleme (son durum kalsın)
+        if (playerIsDead) return;
+        
+        // Player'ın HP'si 0 ise, artık güncelleme
+        if (player != null && player.GetCurrentHealth() <= 0)
+        {
+            playerIsDead = true;
+            return;
+        }
+        
         UpdateHearts();
     }
     
@@ -39,43 +51,33 @@ public class HPBarUI : MonoBehaviour
         int currentHP = player.GetCurrentHealth();
         int maxHP = player.GetMaxHealth();
         
-        // Kaç kalp göstermemiz lazım?
         int totalHearts = Mathf.CeilToInt((float)maxHP / hpPerHeart);
         
-        // Her kalbi güncelle
         for (int i = 0; i < heartImages.Length; i++)
         {
             if (i < totalHearts)
             {
-                // Bu kalp kullanımda
                 heartImages[i].enabled = true;
                 
-                // Bu kalpte kaç HP olmalı?
                 int hpForThisHeart = currentHP - (i * hpPerHeart);
                 
                 if (hpForThisHeart >= hpPerHeart)
                 {
-                    // Tam kalp ❤️
                     heartImages[i].sprite = heartFull;
                 }
                 else if (hpForThisHeart > 0)
                 {
-                    // Yarım kalp 💔
                     heartImages[i].sprite = heartHalf;
                 }
                 else
                 {
-                    // Boş kalp 🖤
                     heartImages[i].sprite = heartEmpty;
                 }
             }
             else
             {
-                // Bu kalp kullanımda değil (max HP düşükse)
                 heartImages[i].enabled = false;
             }
         }
-
-        
     }
 }
