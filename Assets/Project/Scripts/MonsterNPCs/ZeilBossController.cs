@@ -500,48 +500,55 @@ public class ZeilBossController : MonoBehaviour
     }
 
     void Die()
-    {
-        if (isDead) return;
+{
+    if (isDead) return;
 
-        isDead = true;
-        currentState = BossState.Death;
+    isDead = true;
+    currentState = BossState.Death;
 
-        StopAllCoroutines();
+    // ❌ StopAllCoroutines() KALDIR
+    // StopAllCoroutines();
 
-        animator.ResetTrigger("isDeath");
-        animator.SetTrigger("isDeath");
+    rb.velocity = Vector2.zero;
 
-        rb.velocity = Vector2.zero;
-        rb.bodyType = RigidbodyType2D.Static;
+    // ❌ Static yapma – Animator kilitleniyor
+    // rb.bodyType = RigidbodyType2D.Static;
 
-        slimeCollider.SetActive(false);
-        ballCollider.SetActive(false);
+    // ✅ Fizik kapalı, animator açık
+    rb.simulated = false;
 
-        HideHealthBar();
+    slimeCollider.SetActive(false);
+    ballCollider.SetActive(false);
 
-        StartCoroutine(HandleDeath());
-    }
+    // ❌ Trigger karmaşası yok
+    // animator.ResetTrigger("isDeath");
+    // animator.SetTrigger("isDeath");
+
+    // ✅ Direkt state
+    animator.Play("Death", 0, 0f);
+
+    HideHealthBar();
+
+    StartCoroutine(HandleDeath());
+}
 
     IEnumerator HandleDeath()
-    {
-        yield return new WaitForSeconds(0.2f);
+{
+    yield return null; // Animator state yerleşsin
 
-        float animDuration = 2f;
+    AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+    float duration = info.length / animator.speed;
 
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.IsName("Death"))
-            animDuration = stateInfo.length / animator.speed;
+    yield return new WaitForSeconds(duration);
 
-        yield return new WaitForSeconds(animDuration);
+    Debug.Log("[Boss] Zeil defeated!");
 
-        Debug.Log("[Boss] Zeil defeated! Advancing state...");
+    CutsceneChief chief = FindObjectOfType<CutsceneChief>();
+    if (chief != null)
+        chief.AdvanceState();
 
-        CutsceneChief chief = FindObjectOfType<CutsceneChief>();
-        if (chief != null)
-            chief.AdvanceState();
-
-        Destroy(gameObject);
-    }
+    Destroy(gameObject);
+}
 
     #endregion
 
