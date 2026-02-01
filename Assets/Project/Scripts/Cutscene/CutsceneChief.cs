@@ -83,7 +83,7 @@ public class CutsceneChief : MonoBehaviour
         PlayCurrentState();
     }
     
-    private void PlayCurrentState()
+    public void PlayCurrentState()
     {
         if (currentState < 0 || currentState >= cutsceneStates.Length)
         {
@@ -372,7 +372,7 @@ public class CutsceneChief : MonoBehaviour
         Debug.Log($"[CutsceneChief] 💾 State saved: {currentState}");
     }
     
-    private void LoadState()
+    public void LoadState()
     {
         if (PlayerPrefs.HasKey(saveKey))
         {

@@ -14,10 +14,10 @@ public class ZeilBossController : MonoBehaviour
     private float currentHealth;
     
     [Header("Boss Health Bar UI")]
-    [SerializeField] private GameObject bossHealthBarRoot; // BossFightUI GameObject
-    [SerializeField] private Image healthBarBG; // Arka plan (koyu)
-    [SerializeField] private Image healthBarFill; // Kırmızı bar
-    [SerializeField] private float healthBarFadeInDuration = 2f; // Fade in süresi
+    [SerializeField] private GameObject bossHealthBarRoot;
+    [SerializeField] private Image healthBarBG;
+    [SerializeField] private Image healthBarFill;
+    [SerializeField] private float healthBarFadeInDuration = 2f;
     [SerializeField] private AnimationCurve fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     
     [Header("Bullet Patterns")]
@@ -38,15 +38,18 @@ public class ZeilBossController : MonoBehaviour
     [SerializeField] private int maxActiveMegaBullets = 2;
     private int currentMegaBullets = 0;
     
-    [Header("Ball Charge")]
-    [SerializeField] private float chargeSpeed = 25f;
-    [SerializeField] private float chargeDistance = 8f;
+    [Header("Ball Charge - Rolling Attack")]
+    [SerializeField] private float chargeSpeed = 12f;
+    [SerializeField] private float chargeMaxDuration = 3f;
+    [SerializeField] private float chargeTelegraphDelay = 0.15f;
+    [SerializeField] private float chargeRotationSpeed = 720f; // Derece/saniye
+    [SerializeField] private float rotationResetSpeed = 5f; // Smooth reset hızı
     [SerializeField] private int chargesPerCycle = 2;
     [SerializeField] private int chargeDamage = 2;
     [SerializeField] private float telegraphDuration = 0.3f;
     private int currentChargeCount = 0;
-    private Vector2 chargeTarget;
     private bool chargeHitWall = false;
+    private bool isRolling = false;
     
     [Header("Animation Timings")]
     [SerializeField] private float ballUpDuration = 1.2f;
@@ -96,7 +99,9 @@ public class ZeilBossController : MonoBehaviour
         
         SetColliderMode(true);
         
-        // Health bar başlangıç ayarı
+        // Rotation freeze
+        rb.freezeRotation = true;
+        
         InitializeHealthBar();
         
         StartCoroutine(BossAI());
@@ -110,8 +115,7 @@ public class ZeilBossController : MonoBehaviour
             Die();
         }
         
-        // Smooth health bar update
-        if (healthBarFill != null)
+        if (healthBarFill != null && !isDead)
         {
             healthBarFill.fillAmount = Mathf.Lerp(
                 healthBarFill.fillAmount, 
@@ -131,25 +135,21 @@ public class ZeilBossController : MonoBehaviour
             return;
         }
         
-        // CanvasGroup ekle veya bul (fade için)
         healthBarCanvasGroup = bossHealthBarRoot.GetComponent<CanvasGroup>();
         if (healthBarCanvasGroup == null)
         {
             healthBarCanvasGroup = bossHealthBarRoot.AddComponent<CanvasGroup>();
         }
         
-        // Başlangıçta invisible
         healthBarCanvasGroup.alpha = 0f;
         bossHealthBarRoot.SetActive(true);
         
-        // Health bar'ı full yap
         if (healthBarFill != null)
         {
             healthBarFill.fillAmount = 1f;
         }
         targetHealthFillAmount = 1f;
         
-        // Fade in başlat
         StartCoroutine(FadeInHealthBar());
     }
     
@@ -361,37 +361,85 @@ public class ZeilBossController : MonoBehaviour
         
         chargeHitWall = false;
         
-        Vector2 direction = (player.position - transform.position).normalized;
-        chargeTarget = (Vector2)player.position + (direction * chargeDistance);
+        // Player'ın şu anki pozisyonu
+        Vector2 targetPosition = player.position;
         
+        // Telegraph
         currentState = BossState.BallCharging;
         animator.SetTrigger("Charge");
         
         yield return new WaitForSeconds(telegraphDuration);
         
-        rb.velocity = direction * chargeSpeed;
+        // 0.15s bekle
+        yield return new WaitForSeconds(chargeTelegraphDelay);
+        
+        // Charge yönü
+        Vector2 chargeDirection = (targetPosition - (Vector2)transform.position).normalized;
+        
+        // ROLLING BAŞLAT
+        isRolling = true;
+        rb.freezeRotation = false; // Rotation aktif
+        
+        // Rotation yönü (Y'ye göre)
+        float rotationDir = chargeDirection.y > 0 ? -1f : 1f; // Y>0: Saat yönü, Y<0: Ters
         
         PlaySound(crushSound);
         
-        float maxChargeTime = chargeDistance / chargeSpeed;
-        float elapsed = 0f;
+        // Charge başla
+        rb.velocity = chargeDirection * chargeSpeed;
         
-        while (elapsed < maxChargeTime && !chargeHitWall)
+        float chargeElapsed = 0f;
+        
+        while (chargeElapsed < chargeMaxDuration && !chargeHitWall && isRolling)
         {
-            if (rb.velocity.magnitude < chargeSpeed * 0.2f)
-            {
-                break;
-            }
+            // Dönme animasyonu
+            float rotationAmount = chargeRotationSpeed * rotationDir * Time.deltaTime;
+            rb.MoveRotation(rb.rotation + rotationAmount);
             
-            elapsed += Time.deltaTime;
+            chargeElapsed += Time.deltaTime;
             yield return null;
         }
         
+        // Charge bitti - DUR VE ROTATION RESETLE
+        isRolling = false;
         rb.velocity = Vector2.zero;
+        
+        // Smooth rotation reset (Z → 0)
+        yield return StartCoroutine(ResetRotation());
+        
+        rb.freezeRotation = true; // Rotation freeze
         
         currentState = BossState.BallStand;
         
         yield return new WaitForSeconds(0.3f);
+    }
+    
+    IEnumerator ResetRotation()
+    {
+        float currentRotation = transform.eulerAngles.z;
+        
+        // -180 ile 180 arası normalize et
+        if (currentRotation > 180f)
+        {
+            currentRotation -= 360f;
+        }
+        
+        float elapsed = 0f;
+        float duration = Mathf.Abs(currentRotation) / (rotationResetSpeed * 90f); // Dinamik süre
+        
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            
+            float newRotation = Mathf.Lerp(currentRotation, 0f, t);
+            transform.rotation = Quaternion.Euler(0f, 0f, newRotation);
+            
+            yield return null;
+        }
+        
+        // Kesin 0'a çek
+        transform.rotation = Quaternion.identity;
     }
     
     #endregion
@@ -434,40 +482,37 @@ public class ZeilBossController : MonoBehaviour
     
     #region Damage & Death
     
-   public void TakeDamage(float damage)
-{
-    if (isDead) return;
-    
-    if (currentState == BossState.SlimeIdle || currentState == BossState.SlimeShooting)
+    public void TakeDamage(float damage)
     {
-        currentHealth -= damage;
-        Debug.Log($"[Boss] Took {damage} damage! Current HP: {currentHealth}/{maxHealth}");
+        if (isDead) return;
         
-        PlaySound(hurtSound);
-        
-        // Health bar güncelle
-        UpdateHealthBar();
-        Debug.Log($"[Boss] Health bar updated - Fill target: {targetHealthFillAmount}");
+        if (currentState == BossState.SlimeIdle || currentState == BossState.SlimeShooting)
+        {
+            currentHealth -= damage;
+            
+            PlaySound(hurtSound);
+            UpdateHealthBar();
+        }
     }
-    else
-    {
-        Debug.Log($"[Boss] Immune! Current state: {currentState}");
-    }
-}
     
     void Die()
     {
+        if (isDead) return;
+        
         isDead = true;
+        currentState = BossState.Death;
+        
         StopAllCoroutines();
         
+        animator.ResetTrigger("isDeath");
         animator.SetTrigger("isDeath");
         
         rb.velocity = Vector2.zero;
+        rb.bodyType = RigidbodyType2D.Static;
         
         slimeCollider.SetActive(false);
         ballCollider.SetActive(false);
         
-        // Health bar'ı gizle
         HideHealthBar();
         
         StartCoroutine(HandleDeath());
@@ -475,9 +520,27 @@ public class ZeilBossController : MonoBehaviour
     
     IEnumerator HandleDeath()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(0.2f);
         
-        Debug.Log("[Boss] Zeil defeated!");
+        float animDuration = 2f;
+        
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.IsName("Death"))
+        {
+            animDuration = stateInfo.length / animator.speed;
+        }
+        
+        yield return new WaitForSeconds(animDuration);
+        
+        Debug.Log("[Boss] Zeil defeated! Advancing state...");
+        
+        CutsceneChief chief = FindObjectOfType<CutsceneChief>();
+        if (chief != null)
+        {
+            chief.AdvanceState();
+        }
+        
+        Destroy(gameObject);
     }
     
     #endregion
@@ -507,41 +570,56 @@ public class ZeilBossController : MonoBehaviour
     #region Collision Detection
     
     void OnTriggerEnter2D(Collider2D other)
-{
-    Debug.Log($"[Boss] OnTriggerEnter2D - Collider: {other.gameObject.name} | Tag: {other.tag}");
-    
-    // Ball mode collision with player
-    if (currentState == BossState.BallCharging && other.CompareTag("Player"))
     {
-        PlayerController playerController = other.GetComponent<PlayerController>();
-        if (playerController != null)
+        // Ball charge - Player hasar
+        if (currentState == BossState.BallCharging && other.CompareTag("Player"))
         {
-            playerController.TakeDamage(chargeDamage, transform.position);
-            PlaySound(crushSound);
+            PlayerController playerController = other.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.TakeDamage(chargeDamage, transform.position);
+                PlaySound(crushSound);
+            }
+        }
+        
+        // Player kılıç hasarı
+        if (other.CompareTag("PlayerAttack") || other.gameObject.name.Contains("HitBox"))
+        {
+            TakeDamage(10);
         }
     }
     
-    // KILIÇ HASARI TEST
-    if (other.CompareTag("PlayerAttack") || other.gameObject.layer == LayerMask.NameToLayer("PlayerAttack"))
-    {
-        Debug.Log("[Boss] SWORD HIT DETECTED!");
-        TakeDamage(10); // Test için 10 hasar
-    }
-}
-    
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (currentState == BossState.BallCharging)
+        // DUVARA ÇARPMA - CHARGE DURUR
+        if (currentState == BossState.BallCharging && isRolling)
         {
             if (collision.gameObject.CompareTag("Obstacle") || 
-                collision.gameObject.layer == LayerMask.NameToLayer("Obstacle") ||
-                collision.gameObject.CompareTag("Wall"))
+                collision.gameObject.CompareTag("Wall") ||
+                collision.gameObject.layer == LayerMask.NameToLayer("Obstacle"))
             {
+                Debug.Log("[Boss] HIT WALL! Stopping charge...");
+                
                 chargeHitWall = true;
+                isRolling = false;
+                
+                // ANİ DUR
                 rb.velocity = Vector2.zero;
+                
+                // Rotation reset başlat (ChargeAttack coroutine halledecek)
             }
         }
     }
     
     #endregion
+    
+    public float GetCurrentHealth()
+    {
+        return currentHealth;
+    }
+    
+    public float GetMaxHealth()
+    {
+        return maxHealth;
+    }
 }

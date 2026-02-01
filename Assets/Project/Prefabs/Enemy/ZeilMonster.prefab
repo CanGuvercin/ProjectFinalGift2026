@@ -125,7 +125,7 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 100
   m_LinearDrag: 0
-  m_AngularDrag: 0.5
+  m_AngularDrag: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -136,7 +136,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!114 &6266161881348207236
 MonoBehaviour:
@@ -154,6 +154,34 @@ MonoBehaviour:
   rb: {fileID: 9057926300885829598}
   player: {fileID: 0}
   maxHealth: 250
+  bossHealthBarRoot: {fileID: 0}
+  healthBarBG: {fileID: 0}
+  healthBarFill: {fileID: 0}
+  healthBarFadeInDuration: 2
+  fadeInCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   normalBulletPrefab: {fileID: 3707776937079977791, guid: 62048fbf4a8b0274a8a164fe98004723, type: 3}
   megaBulletPrefab: {fileID: 1911291842458772439, guid: 0eae6cc497ab19c4f9bf2834041049d4, type: 3}
   bulletSpawnPoint: {fileID: 2694851585280629041}
@@ -165,11 +193,14 @@ MonoBehaviour:
   slimeShootingMoveSpeed: 0.5
   megaBulletInterval: 3
   maxActiveMegaBullets: 2
-  chargeSpeed: 25
-  chargeDistance: 8
+  chargeSpeed: 15
+  chargeMaxDuration: 2
+  chargeTelegraphDelay: 0.15
   chargesPerCycle: 2
   chargeDamage: 40
   telegraphDuration: 0.3
+  ballUpDuration: 1.2
+  ballDownDuration: 0.5
   slimeCollider: {fileID: 5660352664739212282}
   ballCollider: {fileID: 8967437261814576666}
   crawlSound: {fileID: 0}
