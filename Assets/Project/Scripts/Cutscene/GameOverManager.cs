@@ -289,9 +289,9 @@ public class GameOverManager : MonoBehaviour
                 
             // Dungeon 1
             case 4:
-            case 5:
                 return "Dungeon1";
-                
+
+            case 5:                
             // Act 2 Cutscene & Field
             case 6:
             case 7:
@@ -299,9 +299,9 @@ public class GameOverManager : MonoBehaviour
                 
             // Dungeon 2
             case 8:
-            case 9:
                 return "Dungeon2";
-                
+            
+            case 9:    
             // Act 3 Cutscene & Field
             case 10:
             case 11:
@@ -309,31 +309,33 @@ public class GameOverManager : MonoBehaviour
                 
             // Dungeon 3
             case 12:
-            case 13:
                 return "Dungeon3";
-                
+
+            case 13:    
             // Act 4 Cutscene & Field
             case 14:
-            case 15:
                 return "WorldMap";
-                
+
+            case 15:
+                return "School";    
             // School Inside 1 (Dungeon 4 Final)
             case 16:
+                return "School2";
             case 17:
-                return "School";
+                return "WorldMap";
+
                 
             // School Inside 2
             case 18:
-                return "School2";
+                return "School3";
                 
             // Boss Fight
             case 19:
-            case 20:
                 return "WorldMap";
+            case 20:
                 
             // Ending
             case 21:
-                return "WorldMap";
                 
             default:
                 Debug.LogWarning($"[GameOver] Unknown state {state}, defaulting to WorldMap");
