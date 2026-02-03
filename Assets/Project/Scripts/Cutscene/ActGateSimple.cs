@@ -7,7 +7,7 @@ public class ActGateSimple : MonoBehaviour
     [Header("Activation Settings")]
     [SerializeField] private float activationRadius = 2f;
 
-    [Header("Message UI")]//.
+    [Header("Message UI")]
     [SerializeField] private GameObject messageCanvas;
     [SerializeField] private TextMeshProUGUI messageText;
 
@@ -29,6 +29,7 @@ public class ActGateSimple : MonoBehaviour
     private Transform player;
     private PlayerController playerController;
     private Animator playerAnimator;
+    private Rigidbody2D playerRb;
     private bool isPlayerNear;
     private bool hasBeenActivated;
     private GameObject blackScreen;
@@ -77,6 +78,7 @@ public class ActGateSimple : MonoBehaviour
                 player = playerObj.transform;
                 playerController = player.GetComponent<PlayerController>();
                 playerAnimator = player.GetComponent<Animator>();
+                playerRb = player.GetComponent<Rigidbody2D>();
             }
             else
             {
@@ -104,20 +106,37 @@ public class ActGateSimple : MonoBehaviour
     {
         Debug.Log("[ActGateSimple] ========== SEQUENCE START ==========");
 
-        // 1. Player'ı dondur ve idle yap
+        // 1. Player'ı TAMAMEN durdur
         if (playerController != null)
         {
             playerController.FreezePlayer();
             Debug.Log("[ActGateSimple] ✅ Player frozen");
         }
 
+        // Rigidbody'yi durdur (fiziksel hareketi kes)
+        if (playerRb != null)
+        {
+            playerRb.velocity = Vector2.zero;
+            playerRb.angularVelocity = 0f;
+            Debug.Log("[ActGateSimple] ✅ Rigidbody stopped");
+        }
+
+        // Animator'ü idle'a çek
         if (playerAnimator != null)
         {
-            // Velocity'yi sıfırla ki idle animasyona geçsin
+            // Tüm hareket parametrelerini sıfırla
             playerAnimator.SetFloat("Speed", 0f);
             playerAnimator.SetBool("isRunning", false);
-            Debug.Log("[ActGateSimple] ✅ Player set to idle animation");
+            playerAnimator.SetFloat("Horizontal", 0f);
+            playerAnimator.SetFloat("Vertical", -1f); // Aşağı bakıyor
+            
+            // Direkt idle state'ine geç
+            playerAnimator.Play("_Idle_Down_Ali");
+            Debug.Log("[ActGateSimple] ✅ Player set to _Idle_Down_Ali");
         }
+
+        // Kısa bir frame bekle ki animasyon kesinlikle geçmiş olsun
+        yield return null;
 
         // 2. Mesajı göster (3 saniye)
         ShowMessage(gateMessage);
