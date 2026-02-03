@@ -11,7 +11,6 @@ public class MainMenuController : MonoBehaviour
     
     [Header("Panels")]
     [SerializeField] private GameObject mainMenuPanel;
-    [SerializeField] private GameObject exitConfirmPanel;
     
     [Header("Settings Manager")]
     [SerializeField] private SettingsManager settingsManager;
@@ -21,10 +20,6 @@ public class MainMenuController : MonoBehaviour
     
     private void Start()
     {
-        // Exit confirm paneli başta kapalı
-        if (exitConfirmPanel != null) 
-            exitConfirmPanel.SetActive(false);
-        
         // Settings Back button listener
         if (settingsBackButton != null)
         {
@@ -110,33 +105,6 @@ public class MainMenuController : MonoBehaviour
     }
     
     public void OnExit()
-    {
-        Debug.Log("[MainMenu] Exit clicked - Showing confirmation");
-        
-        if (exitConfirmPanel != null)
-        {
-            exitConfirmPanel.SetActive(true);
-        }
-        else
-        {
-            QuitGame();
-        }
-    }
-    
-    public void OnExitConfirm()
-    {
-        QuitGame();
-    }
-    
-    public void OnExitCancel()
-    {
-        if (exitConfirmPanel != null)
-        {
-            exitConfirmPanel.SetActive(false);
-        }
-    }
-    
-    private void QuitGame()
     {
         Debug.Log("[MainMenu] Quitting game...");
         
