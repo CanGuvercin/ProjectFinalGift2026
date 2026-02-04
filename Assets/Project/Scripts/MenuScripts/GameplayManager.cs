@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class GameplayManager : MonoBehaviour
 {
@@ -6,6 +8,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Difficulty Settings")]
     [SerializeField] private DifficultyLevel currentDifficulty = DifficultyLevel.Normal;
+    [SerializeField] private TMP_Dropdown difficultyDropdown; // YENİ: Dropdown referansı
 
     [Header("Camera Shake Reference")]
     [SerializeField] private CameraShake cameraShake;
@@ -34,6 +37,9 @@ public class GameplayManager : MonoBehaviour
         InitializeCameraShake();
         LoadSettings();
         ApplyGraphicsSettings();
+        
+        // Dropdown setup
+        SetupDifficultyDropdown();
     }
 
     private void InitializeCameraShake()
@@ -41,6 +47,55 @@ public class GameplayManager : MonoBehaviour
         if (cameraShake == null)
         {
             cameraShake = FindObjectOfType<CameraShake>();
+        }
+    }
+
+    // YENİ: Dropdown setup
+    private void SetupDifficultyDropdown()
+    {
+        if (difficultyDropdown == null)
+        {
+            Debug.LogWarning("[GameplayManager] Difficulty dropdown not assigned!");
+            return;
+        }
+
+        // Dropdown'ı temizle ve seçenekleri ekle
+        difficultyDropdown.ClearOptions();
+        difficultyDropdown.AddOptions(new System.Collections.Generic.List<string> 
+        { 
+            "Easy", 
+            "Normal", 
+            "Hard" 
+        });
+
+        // Mevcut zorluk seviyesini dropdown'a yansıt
+        difficultyDropdown.value = (int)currentDifficulty;
+        difficultyDropdown.RefreshShownValue();
+
+        // Dropdown değiştiğinde çağrılacak
+        difficultyDropdown.onValueChanged.AddListener(OnDifficultyDropdownChanged);
+
+        Debug.Log($"[GameplayManager] Difficulty dropdown initialized to: {currentDifficulty}");
+    }
+
+    // YENİ: Dropdown değiştiğinde
+    private void OnDifficultyDropdownChanged(int index)
+    {
+        DifficultyLevel newDifficulty = (DifficultyLevel)index;
+        SetDifficulty(newDifficulty);
+        
+        Debug.Log($"[GameplayManager] 🎮 Difficulty changed via dropdown to: {newDifficulty}");
+        Debug.Log($"[GameplayManager] 📊 Incoming damage multiplier: {GetIncomingDamageMultiplier()}x");
+        Debug.Log($"[GameplayManager] 📊 Outgoing damage multiplier: {GetOutgoingDamageMultiplier()}x");
+    }
+
+    // YENİ: Dropdown'ı manuel güncelle (opsiyonel)
+    public void UpdateDifficultyDropdown()
+    {
+        if (difficultyDropdown != null)
+        {
+            difficultyDropdown.SetValueWithoutNotify((int)currentDifficulty);
+            difficultyDropdown.RefreshShownValue();
         }
     }
 
@@ -81,6 +136,8 @@ public class GameplayManager : MonoBehaviour
     {
         currentDifficulty = difficulty;
         SaveSettings();
+        
+        Debug.Log($"[GameplayManager] ⚙️ Difficulty set to: {difficulty}");
     }
 
     public DifficultyLevel GetDifficulty()
@@ -92,9 +149,9 @@ public class GameplayManager : MonoBehaviour
     {
         return currentDifficulty switch
         {
-            DifficultyLevel.Easy => 0.6f,
-            DifficultyLevel.Normal => 1.0f,
-            DifficultyLevel.Hard => 1.4f,
+            DifficultyLevel.Easy => 0.6f,    // %40 daha az hasar alırsın
+            DifficultyLevel.Normal => 1.0f,  // Normal hasar
+            DifficultyLevel.Hard => 1.4f,    // %40 daha fazla hasar alırsın
             _ => 1.0f
         };
     }
@@ -103,9 +160,9 @@ public class GameplayManager : MonoBehaviour
     {
         return currentDifficulty switch
         {
-            DifficultyLevel.Easy => 1.4f,
-            DifficultyLevel.Normal => 1.0f,
-            DifficultyLevel.Hard => 0.7f,
+            DifficultyLevel.Easy => 1.4f,    // %40 daha fazla hasar verirsin
+            DifficultyLevel.Normal => 1.0f,  // Normal hasar
+            DifficultyLevel.Hard => 0.7f,    // %30 daha az hasar verirsin
             _ => 1.0f
         };
     }
@@ -172,6 +229,8 @@ public class GameplayManager : MonoBehaviour
         PlayerPrefs.SetInt("Fullscreen", fullscreenEnabled ? 1 : 0);
         
         PlayerPrefs.Save();
+        
+        Debug.Log($"[GameplayManager] 💾 Settings saved - Difficulty: {currentDifficulty}");
     }
 
     private void LoadSettings()
@@ -182,6 +241,8 @@ public class GameplayManager : MonoBehaviour
         // Graphics
         vSyncEnabled = PlayerPrefs.GetInt("VSync", 1) == 1; // Default: ON
         fullscreenEnabled = PlayerPrefs.GetInt("Fullscreen", 1) == 1; // Default: ON
+        
+        Debug.Log($"[GameplayManager] 📂 Settings loaded - Difficulty: {currentDifficulty}");
     }
 
     public void ResetAllToDefaults()
@@ -198,6 +259,7 @@ public class GameplayManager : MonoBehaviour
         
         SaveSettings();
         ApplyGraphicsSettings();
+        UpdateDifficultyDropdown();
     }
 
     #endregion
@@ -218,6 +280,14 @@ public class GameplayManager : MonoBehaviour
 
     [ContextMenu("Test - Difficulty: Hard")]
     private void TestHard() => SetDifficulty(DifficultyLevel.Hard);
+    
+    [ContextMenu("Print Current Multipliers")]
+    private void PrintMultipliers()
+    {
+        Debug.Log($"=== DIFFICULTY: {currentDifficulty} ===");
+        Debug.Log($"Incoming Damage: {GetIncomingDamageMultiplier()}x");
+        Debug.Log($"Outgoing Damage: {GetOutgoingDamageMultiplier()}x");
+    }
 
     #endregion
 }
