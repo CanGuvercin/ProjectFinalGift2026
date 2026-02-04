@@ -43,7 +43,6 @@ public class CutsceneChief : MonoBehaviour
     private Coroutine musicFadeCoroutine;
     private Coroutine saveUICoroutine;
     
-    // 👇 YENİ: Timeline bitince otomatik state atlama kontrolü
     private bool shouldAutoAdvanceOnTimelineStop = true;
     
     private void Awake()
@@ -80,7 +79,29 @@ public class CutsceneChief : MonoBehaviour
             LoadState();
         }
         
+        // SAHNE YÜKLENDİĞİNDE GAMESAVED UI GÖSTER
+        StartCoroutine(ShowGameSavedUIOnStart());
+        
         PlayCurrentState();
+    }
+    
+    // YENİ: Sahne başlangıcında UI göster
+    private IEnumerator ShowGameSavedUIOnStart()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        if (gameSavedCanvas != null)
+        {
+            Debug.Log("[CutsceneChief] 💾 Showing GameSaved UI (Scene Start)");
+            gameSavedCanvas.SetActive(true);
+            yield return new WaitForSeconds(2f);
+            gameSavedCanvas.SetActive(false);
+            Debug.Log("[CutsceneChief] ✅ GameSaved UI hidden");
+        }
+        else
+        {
+            Debug.LogWarning("[CutsceneChief] ⚠️ GameSaved Canvas is NOT assigned in Inspector!");
+        }
     }
     
     public void PlayCurrentState()
@@ -275,13 +296,11 @@ public class CutsceneChief : MonoBehaviour
         }
     }
     
-    // 👇 DEĞİŞTİ: Otomatik atlama kontrolü eklendi
     private void OnTimelineStopped(PlayableDirector director)
     {
         Debug.Log($"[CutsceneChief] Timeline finished: {director.name}");
         director.stopped -= OnTimelineStopped;
         
-        // SADECE flag true ise otomatik state ilerlet
         if (shouldAutoAdvanceOnTimelineStop)
         {
             Debug.Log("[CutsceneChief] Auto-advancing state after timeline");
@@ -293,7 +312,6 @@ public class CutsceneChief : MonoBehaviour
         }
     }
     
-    // 👇 YENİ: Otomatik atlama kontrolü
     public void DisableAutoAdvance()
     {
         shouldAutoAdvanceOnTimelineStop = false;
@@ -321,12 +339,12 @@ public class CutsceneChief : MonoBehaviour
             {
                 Debug.Log($"[CutsceneChief] Scene change requested: {nextState.targetSceneName}");
                 
-                ShowGameSavedUI();
-                
+                // Sahne değişecek - yeni sahnede Start() UI'yı gösterecek
                 LoadingManager.LoadScene(nextState.targetSceneName, currentState, nextState.spawnPointName);
             }
             else
             {
+                // Aynı sahnede state değişimi - UI göster
                 ShowGameSavedUI();
                 PlayCurrentState();
             }
@@ -353,8 +371,6 @@ public class CutsceneChief : MonoBehaviour
         if (targetState.changeScene && !string.IsNullOrEmpty(targetState.targetSceneName))
         {
             Debug.Log($"[CutsceneChief] Scene change requested: {targetState.targetSceneName}");
-            
-            ShowGameSavedUI();
             
             LoadingManager.LoadScene(targetState.targetSceneName, currentState, targetState.spawnPointName);
         }
@@ -387,34 +403,33 @@ public class CutsceneChief : MonoBehaviour
     }
     
     private void ShowGameSavedUI()
-{
-    Debug.Log($"[CutsceneChief] ShowGameSavedUI called - Canvas null? {gameSavedCanvas == null}");
-    
-    if (gameSavedCanvas == null)
     {
-        Debug.LogWarning("[CutsceneChief] ⚠️ GameSaved Canvas is NULL! Trying to find it...");
+        Debug.Log($"[CutsceneChief] ShowGameSavedUI called - Canvas null? {gameSavedCanvas == null}");
         
-        // Sahnede varsa bul
-        GameObject foundCanvas = GameObject.Find("GameSaved");
-        if (foundCanvas != null)
+        if (gameSavedCanvas == null)
         {
-            gameSavedCanvas = foundCanvas;
-            Debug.Log("[CutsceneChief] ✅ Found GameSaved Canvas in scene!");
+            Debug.LogWarning("[CutsceneChief] ⚠️ GameSaved Canvas is NULL! Trying to find it...");
+            
+            GameObject foundCanvas = GameObject.Find("GameSaved");
+            if (foundCanvas != null)
+            {
+                gameSavedCanvas = foundCanvas;
+                Debug.Log("[CutsceneChief] ✅ Found GameSaved Canvas in scene!");
+            }
+            else
+            {
+                Debug.LogError("[CutsceneChief] ❌ GameSaved Canvas not found anywhere!");
+                return;
+            }
         }
-        else
+        
+        if (saveUICoroutine != null)
         {
-            Debug.LogError("[CutsceneChief] ❌ GameSaved Canvas not found anywhere!");
-            return;
+            StopCoroutine(saveUICoroutine);
         }
+        
+        saveUICoroutine = StartCoroutine(GameSavedUISequence());
     }
-    
-    if (saveUICoroutine != null)
-    {
-        StopCoroutine(saveUICoroutine);
-    }
-    
-    saveUICoroutine = StartCoroutine(GameSavedUISequence());
-}
     
     private IEnumerator GameSavedUISequence()
     {

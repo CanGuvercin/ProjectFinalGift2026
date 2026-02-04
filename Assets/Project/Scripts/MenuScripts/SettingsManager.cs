@@ -12,8 +12,9 @@ public class SettingsManager : MonoBehaviour
     [Header("Tab Manager")]
     [SerializeField] private SettingsTabManager tabManager;
     
-    [Header("Audio Manager")]
+    [Header("Settings Managers")]
     [SerializeField] private AudioSettingsManager audioManager;
+    [SerializeField] private VideoSettingsManager videoManager; // YENİ //
     
     private void Start()
     {
@@ -33,9 +34,13 @@ public class SettingsManager : MonoBehaviour
         if (settingsPanel != null)
         {
             settingsPanel.SetActive(true);
+            
             // Load current settings
             if (audioManager != null)
                 audioManager.LoadSettings();
+            
+            if (videoManager != null)
+                videoManager.LoadSettings();
         }
     }
     
@@ -49,9 +54,17 @@ public class SettingsManager : MonoBehaviour
     
     public void ApplySettings()
     {
+        Debug.Log("[SettingsManager] Applying all settings...");
+        
         // Save audio settings
         if (audioManager != null)
             audioManager.SaveSettings();
+        
+        // Save video settings
+        if (videoManager != null)
+            videoManager.ApplySettings();
+        
+        Debug.Log("[SettingsManager] ✅ All settings applied!");
     }
     
     public bool IsOpen()
