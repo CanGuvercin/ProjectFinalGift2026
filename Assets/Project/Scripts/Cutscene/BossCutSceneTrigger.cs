@@ -11,6 +11,10 @@ public class BossCutsceneTrigger : MonoBehaviour
     [Header("Cutscene")]
     [SerializeField] private PlayableDirector cutsceneDirector;
     
+    [Header("Camera Settings")]
+    [SerializeField] private GameObject mainCamera; // Ana kamera (kapatılacak)
+    [SerializeField] private GameObject cutsceneCamera; // Cutscene kamerası (açılacak)
+    
     [Header("State Management")]
     [SerializeField] private CutsceneChief cutsceneChief;
     
@@ -21,6 +25,7 @@ public class BossCutsceneTrigger : MonoBehaviour
     private Rigidbody2D playerRb;
     
     private bool hasTriggered = false;
+    private bool cutsceneFinished = false;
 
     private void Awake()
     {
@@ -58,6 +63,27 @@ public class BossCutsceneTrigger : MonoBehaviour
         
         Debug.Log($"[BossCutsceneTrigger] Trigger Area: {triggerArea.bounds.size}, isTrigger: {triggerArea.isTrigger}");
         
+        // Kamera kontrolü
+        if (mainCamera != null)
+        {
+            Debug.Log($"[BossCutsceneTrigger] ✅ Main Camera assigned: {mainCamera.name}");
+        }
+        else
+        {
+            Debug.LogWarning("[BossCutsceneTrigger] ⚠️ Main Camera NOT ASSIGNED!");
+        }
+        
+        if (cutsceneCamera != null)
+        {
+            Debug.Log($"[BossCutsceneTrigger] ✅ Cutscene Camera assigned: {cutsceneCamera.name}");
+            // Cutscene kamerasını başta kapat
+            cutsceneCamera.SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning("[BossCutsceneTrigger] ⚠️ Cutscene Camera NOT ASSIGNED!");
+        }
+        
         // CutsceneChief'i bul
         if (cutsceneChief == null)
         {
@@ -72,10 +98,14 @@ public class BossCutsceneTrigger : MonoBehaviour
             }
         }
         
-        // PlayableDirector kontrolü
+        // PlayableDirector kontrolü ve event listener
         if (cutsceneDirector != null)
         {
             Debug.Log($"[BossCutsceneTrigger] ✅ PlayableDirector assigned: {cutsceneDirector.name}");
+            
+            // Timeline bittiğinde tetiklenecek event
+            cutsceneDirector.stopped += OnCutsceneFinished;
+            Debug.Log("[BossCutsceneTrigger] ✅ Stopped event listener added");
         }
         else
         {
@@ -83,6 +113,16 @@ public class BossCutsceneTrigger : MonoBehaviour
         }
         
         Debug.Log("[BossCutsceneTrigger] Initialized and waiting for player...");
+    }
+
+    private void OnDestroy()
+    {
+        // Event listener'ı temizle
+        if (cutsceneDirector != null)
+        {
+            cutsceneDirector.stopped -= OnCutsceneFinished;
+            Debug.Log("[BossCutsceneTrigger] Event listener removed");
+        }
     }
 
     private void Update()
@@ -167,53 +207,70 @@ public class BossCutsceneTrigger : MonoBehaviour
     {
         Debug.Log("[BossCutsceneTrigger] ========== CUTSCENE SEQUENCE START ==========");
         
-        // 1. Player'ı dondur
+        // 0. KAMERA DEĞİŞTİR - ANA KAMERAYI KAPAT, CUTSCENE KAMERASINI AÇ
+        if (mainCamera != null)
+        {
+            mainCamera.SetActive(false);
+            Debug.Log("[BossCutsceneTrigger] 📷 Main Camera DISABLED");
+        }
+        
+        if (cutsceneCamera != null)
+        {
+            cutsceneCamera.SetActive(true);
+            Debug.Log("[BossCutsceneTrigger] 🎥 Cutscene Camera ENABLED");
+        }
+        
+        // 1. INPUT'U KES VE PLAYER'I DURDUR
         if (playerController != null)
         {
             playerController.FreezePlayer();
-            Debug.Log("[BossCutsceneTrigger] ✅ Player frozen");
-        }
-        else
-        {
-            Debug.LogError("[BossCutsceneTrigger] ❌ PlayerController is NULL!");
+            Debug.Log("[BossCutsceneTrigger] ✅ Player frozen (input cut)");
         }
         
-        // 2. Fiziksel hareketi durdur
+        // 2. Fiziksel hareketi ANINDA durdur
         if (playerRb != null)
         {
             playerRb.velocity = Vector2.zero;
             playerRb.angularVelocity = 0f;
             Debug.Log("[BossCutsceneTrigger] ✅ Rigidbody stopped");
         }
-        else
-        {
-            Debug.LogError("[BossCutsceneTrigger] ❌ Rigidbody2D is NULL!");
-        }
         
-        // 3. Ghost input ile idle'a geç (aşağı bakıyor)
+        // 3. TÜM ANIMATOR PARAMETRELERİNİ SIFIRLA
         if (playerAnimator != null)
         {
+            // Tüm parametreleri sıfırla
             playerAnimator.SetFloat("Horizontal", 0f);
-            playerAnimator.SetFloat("Vertical", -1f);
+            playerAnimator.SetFloat("Vertical", 0f);
             playerAnimator.SetFloat("Speed", 0f);
             playerAnimator.SetBool("isRunning", false);
+            playerAnimator.SetBool("isAttacking", false);
             
-            Debug.Log("[BossCutsceneTrigger] ✅ Ghost input applied");
-        }
-        else
-        {
-            Debug.LogError("[BossCutsceneTrigger] ❌ Animator is NULL!");
+            // Tüm trigger'ları reset et
+            playerAnimator.ResetTrigger("Attack");
+            
+            Debug.Log("[BossCutsceneTrigger] ✅ All animator parameters reset");
         }
         
         // Bir frame bekle
         yield return null;
         
-        // 4. Direkt idle state'e geç
+        // 4. ANIMATOR'Ü TAMAMEN SIFIRLA VE DEFAULT STATE'E ZORLA
         if (playerAnimator != null)
         {
-            playerAnimator.Play("_Idle_Down_Ali");
-            Debug.Log("[BossCutsceneTrigger] ✅ Player set to _Idle_Down_Ali");
+            // Animator'ü rebind et (tüm state'leri sıfırlar)
+            playerAnimator.Rebind();
+            Debug.Log("[BossCutsceneTrigger] ✅ Animator rebinded (full reset)");
+            
+            // Bir frame daha bekle
+            yield return null;
+            
+            // Şimdi idle state'e geç
+            playerAnimator.Play("_Idle_Down_Ali", 0, 0f);
+            Debug.Log("[BossCutsceneTrigger] ✅ Forced to _Idle_Down_Ali after rebind");
         }
+        
+        // Animasyon geçişinin tamamlanması için bekle
+        yield return new WaitForSeconds(0.1f);
         
         // 5. Cutscene'i başlat
         if (cutsceneDirector != null)
@@ -221,18 +278,24 @@ public class BossCutsceneTrigger : MonoBehaviour
             Debug.Log("[BossCutsceneTrigger] 🎬 Playing cutscene...");
             cutsceneDirector.Play();
             
+            // Event-based bekleme (daha güvenilir)
+            Debug.Log("[BossCutsceneTrigger] ⏳ Waiting for cutscene to finish via event...");
+            
             // Cutscene bitene kadar bekle
-            while (cutsceneDirector.state == PlayState.Playing)
+            while (!cutsceneFinished)
             {
                 yield return null;
             }
             
-            Debug.Log("[BossCutsceneTrigger] ✅ Cutscene finished!");
+            Debug.Log("[BossCutsceneTrigger] ✅ Cutscene finished via event!");
         }
         else
         {
             Debug.LogError("[BossCutsceneTrigger] ❌ PlayableDirector is NULL!");
         }
+        
+        // Kısa bir güvenlik beklemesi
+        yield return new WaitForSeconds(0.2f);
         
         // 6. State'i ilerlet (Boss fight sahnesine geçiş)
         if (cutsceneChief != null)
@@ -254,6 +317,13 @@ public class BossCutsceneTrigger : MonoBehaviour
         }
         
         Debug.Log("[BossCutsceneTrigger] ========== CUTSCENE SEQUENCE END ==========");
+    }
+
+    // Timeline bittiğinde otomatik tetiklenir
+    private void OnCutsceneFinished(PlayableDirector director)
+    {
+        Debug.Log("[BossCutsceneTrigger] 🎉 OnCutsceneFinished EVENT TRIGGERED!");
+        cutsceneFinished = true;
     }
 
     private void OnDrawGizmosSelected()
