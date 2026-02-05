@@ -348,12 +348,12 @@ MonoBehaviour:
   audioSource: {fileID: 1347253541359335308}
   chargeSfx: {fileID: 8300000, guid: 95c0f022574d22b45859dd2f67965f2a, type: 3}
   explosionSfx: {fileID: 8300000, guid: 58535394141487e46ac827403a7a5064, type: 3}
-  detectionRange: 15
+  detectionRange: 11
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 8192
-  chargeDuration: 3.5
-  chargeSpeed: 2
+  chargeDuration: 8
+  chargeSpeed: 4
   explosionRadius: 1.25
   explosionDamage: 80
   destroyDelay: 0.4
