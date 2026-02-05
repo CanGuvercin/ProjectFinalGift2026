@@ -153,7 +153,7 @@ MonoBehaviour:
   animator: {fileID: 4731970726825484848}
   rb: {fileID: 9057926300885829598}
   player: {fileID: 0}
-  maxHealth: 250
+  maxHealth: 400
   bossHealthBarRoot: {fileID: 0}
   healthBarBG: {fileID: 0}
   healthBarFill: {fileID: 0}
@@ -182,10 +182,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  normalBulletPrefab: {fileID: 3707776937079977791, guid: 62048fbf4a8b0274a8a164fe98004723, type: 3}
+  normalBulletPrefab: {fileID: 4361432344578256579, guid: 477c9e1b06ebea240b4478e100d02e16, type: 3}
   megaBulletPrefab: {fileID: 1911291842458772439, guid: 0eae6cc497ab19c4f9bf2834041049d4, type: 3}
   bulletSpawnPoint: {fileID: 2694851585280629041}
-  normalBulletSpeed: 5
+  normalBulletSpeed: 6
   spiralInterval: 0.2
   spiralWaveCount: 6
   bulletsPerWave: 6
@@ -196,9 +196,16 @@ MonoBehaviour:
   chargeSpeed: 15
   chargeMaxDuration: 2
   chargeTelegraphDelay: 0.15
-  chargesPerCycle: 2
+  chargeRotationSpeed: 720
+  rotationResetSpeed: 5
+  chargesPerCycle: 3
   chargeDamage: 40
   telegraphDuration: 0.3
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 8192
+  wallStopOffset: 0.25
+  maxRayDistance: 50
   ballUpDuration: 1.2
   ballDownDuration: 0.5
   slimeCollider: {fileID: 5660352664739212282}

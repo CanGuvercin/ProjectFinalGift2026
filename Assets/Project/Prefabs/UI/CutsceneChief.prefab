@@ -212,8 +212,8 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     playerSpawnPosition: {fileID: 0}
-    changeScene: 0
-    targetSceneName: 
+    changeScene: 1
+    targetSceneName: Worldmap
     spawnPointName: 
     ambientMusic: {fileID: 8300000, guid: 2a605d60bffd77e43a7e691cb7296d84, type: 3}
     musicVolume: 0.5
@@ -392,11 +392,49 @@ MonoBehaviour:
     playerSpawnPosition: {fileID: 0}
     changeScene: 1
     targetSceneName: School3
-    spawnPointName: 
+    spawnPointName: SpawnPoint
     ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 17
+  - stateName: State19_FinalBossFight
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 1
+    targetSceneName: WorldMap
+    spawnPointName: SpawnPoint
+    ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  - stateName: State20_FinalCutscene
+    timeline: {fileID: 0}
+    objectsToActivate:
+    - {fileID: 0}
+    objectsToDeactivate:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    playerSpawnPosition: {fileID: 0}
+    changeScene: 0
+    targetSceneName: WorldMap
+    spawnPointName: SpawnPoint
+    ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
+    musicVolume: 0.5
+    fadeMusic: 1
+  currentState: 19
   saveKey: GameState
   musicSource: {fileID: 752455669889845466}
   fadeDuration: 1.5

@@ -40,8 +40,12 @@ public class CutsceneChief : MonoBehaviour
     [Header("Save UI")]
     [SerializeField] private GameObject gameSavedCanvas;
     
+    [Header("End Credits Settings")]
+    [SerializeField] private float endCreditsDelay = 23f; // 23 saniye
+    
     private Coroutine musicFadeCoroutine;
     private Coroutine saveUICoroutine;
+    private Coroutine endCreditsCoroutine; // YENİ
     
     private bool shouldAutoAdvanceOnTimelineStop = true;
     
@@ -79,29 +83,47 @@ public class CutsceneChief : MonoBehaviour
             LoadState();
         }
         
-        // SAHNE YÜKLENDİĞİNDE GAMESAVED UI GÖSTER
-        StartCoroutine(ShowGameSavedUIOnStart());
-        
-        PlayCurrentState();
-    }
-    
-    // YENİ: Sahne başlangıcında UI göster
-    private IEnumerator ShowGameSavedUIOnStart()
-    {
-        yield return new WaitForSeconds(0.5f);
-
-        if (gameSavedCanvas != null)
+        // ÖNEMLİ: State 21 (End Credits) kontrolü
+        if (currentState == 21)
         {
-            Debug.Log("[CutsceneChief] 💾 Showing GameSaved UI (Scene Start)");
-            gameSavedCanvas.SetActive(true);
-            yield return new WaitForSeconds(2f);
-            gameSavedCanvas.SetActive(false);
-            Debug.Log("[CutsceneChief] ✅ GameSaved UI hidden");
+            Debug.Log("[CutsceneChief] 🎬 END CREDITS STATE DETECTED!");
+            StartEndCreditsSequence();
         }
         else
         {
-            Debug.LogWarning("[CutsceneChief] ⚠️ GameSaved Canvas is NOT assigned in Inspector!");
+            PlayCurrentState();
         }
+    }
+    
+    // YENİ: End Credits timer başlat
+    private void StartEndCreditsSequence()
+    {
+        Debug.Log($"[CutsceneChief] ⏱️ End credits will finish in {endCreditsDelay} seconds...");
+        
+        if (endCreditsCoroutine != null)
+        {
+            StopCoroutine(endCreditsCoroutine);
+        }
+        
+        endCreditsCoroutine = StartCoroutine(EndCreditsTimer());
+    }
+    
+    // YENİ: End Credits timer coroutine
+    private IEnumerator EndCreditsTimer()
+    {
+        yield return new WaitForSeconds(endCreditsDelay);
+        
+        Debug.Log("[CutsceneChief] ========== 🎬 GAME COMPLETED 🎬 ==========");
+        Debug.Log("[CutsceneChief] Thank you for playing Farewell to my PLAYGROUND");
+        
+        // Game state'i SİL
+        PlayerPrefs.DeleteKey(saveKey);
+        PlayerPrefs.Save();
+        Debug.Log("[CutsceneChief] 🗑️ Game state deleted - Fresh start available");
+        
+        // Ana menüye dön
+        Debug.Log("[CutsceneChief] 🏠 Returning to Main Menu...");
+        LoadingManager.LoadScene("MainMenu");
     }
     
     public void PlayCurrentState()
@@ -331,6 +353,14 @@ public class CutsceneChief : MonoBehaviour
         
         Debug.Log($"[CutsceneChief] ======= Advanced to state: {currentState} =======");
         
+        // ÖNEMLİ: State 21 - END CREDITS kontrolü
+        if (currentState == 21)
+        {
+            Debug.Log("[CutsceneChief] 🎬 FINAL STATE - Loading End Credits");
+            LoadingManager.LoadScene("EndCredits", 21, "");
+            return;
+        }
+        
         if (currentState < cutsceneStates.Length)
         {
             CutsceneState nextState = cutsceneStates[currentState];
@@ -338,13 +368,10 @@ public class CutsceneChief : MonoBehaviour
             if (nextState.changeScene && !string.IsNullOrEmpty(nextState.targetSceneName))
             {
                 Debug.Log($"[CutsceneChief] Scene change requested: {nextState.targetSceneName}");
-                
-                // Sahne değişecek - yeni sahnede Start() UI'yı gösterecek
                 LoadingManager.LoadScene(nextState.targetSceneName, currentState, nextState.spawnPointName);
             }
             else
             {
-                // Aynı sahnede state değişimi - UI göster
                 ShowGameSavedUI();
                 PlayCurrentState();
             }
@@ -371,7 +398,6 @@ public class CutsceneChief : MonoBehaviour
         if (targetState.changeScene && !string.IsNullOrEmpty(targetState.targetSceneName))
         {
             Debug.Log($"[CutsceneChief] Scene change requested: {targetState.targetSceneName}");
-            
             LoadingManager.LoadScene(targetState.targetSceneName, currentState, targetState.spawnPointName);
         }
         else
@@ -483,6 +509,10 @@ public class CutsceneChief : MonoBehaviour
     [ContextMenu("Go to State 3")]
     public void GoToState3() { SetState(3); }
     
+    // YENİ: End Credits test
+    [ContextMenu("Go to End Credits (State 21)")]
+    public void GoToEndCredits() { SetState(21); }
+    
     private void Update()
     {
         #if UNITY_EDITOR
@@ -558,6 +588,12 @@ public class CutsceneChief : MonoBehaviour
         {
             StopCoroutine(saveUICoroutine);
             saveUICoroutine = null;
+        }
+        
+        if (endCreditsCoroutine != null)
+        {
+            StopCoroutine(endCreditsCoroutine);
+            endCreditsCoroutine = null;
         }
         
         if (currentState >= 0 && currentState < cutsceneStates.Length)
