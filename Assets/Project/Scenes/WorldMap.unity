@@ -16343,7 +16343,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &453324505
 Transform:
   m_ObjectHideFlags: 0
@@ -241374,10 +241374,10 @@ PlayableDirector:
     value: {fileID: 189164079}
   - key: {fileID: 5905351552128190482, guid: fe5e1db6b1bc6104a888d5664594f69e, type: 2}
     value: {fileID: 1670906168}
-  - key: {fileID: 8244869432009725470, guid: fe5e1db6b1bc6104a888d5664594f69e, type: 2}
-    value: {fileID: 1615555240}
   - key: {fileID: 8633548598853315970, guid: fe5e1db6b1bc6104a888d5664594f69e, type: 2}
     value: {fileID: 1095654460}
+  - key: {fileID: 4803592118225513196, guid: fe5e1db6b1bc6104a888d5664594f69e, type: 2}
+    value: {fileID: 1615555240}
   m_ExposedReferences:
     m_References: []
 --- !u!4 &1515629485
@@ -242033,7 +242033,7 @@ Transform:
   m_GameObject: {fileID: 1615555239}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.32, y: 7.94, z: 0}
+  m_LocalPosition: {x: -13.66, y: 7.94, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

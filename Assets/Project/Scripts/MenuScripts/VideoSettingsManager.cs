@@ -20,8 +20,28 @@ public class VideoSettingsManager : MonoBehaviour
     [Header("Apply Button")]
     [SerializeField] private Button applyButton;
     
-    private Resolution[] resolutions;
-    private List<Resolution> filteredResolutions;
+    // FIXED: Sadece 16:9 standart çözünürlükler
+    private struct ResolutionOption
+    {
+        public int width;
+        public int height;
+        public string displayName;
+        
+        public ResolutionOption(int w, int h)
+        {
+            width = w;
+            height = h;
+            displayName = $"{w} x {h}";
+        }
+    }
+    
+    private List<ResolutionOption> supportedResolutions = new List<ResolutionOption>
+    {
+        new ResolutionOption(1280, 720),    // HD
+        new ResolutionOption(1920, 1080),   // Full HD (Default)
+        new ResolutionOption(2560, 1440),   // QHD
+        new ResolutionOption(3840, 2160)    // 4K
+    };
     
     private void Start()
     {
@@ -48,47 +68,58 @@ public class VideoSettingsManager : MonoBehaviour
             return;
         }
         
-        resolutions = Screen.resolutions;
-        filteredResolutions = new List<Resolution>();
-        
         resolutionDropdown.ClearOptions();
         List<string> options = new List<string>();
         
-        int currentResolutionIndex = 0;
-        
-        // Sadece unique çözünürlükleri al (refresh rate farklılıklarını ignore et)
-        for (int i = 0; i < resolutions.Length; i++)
+        // Dropdown seçeneklerini ekle
+        foreach (var res in supportedResolutions)
         {
-            // Duplicate kontrolü
-            bool isDuplicate = false;
-            foreach (Resolution res in filteredResolutions)
-            {
-                if (res.width == resolutions[i].width && res.height == resolutions[i].height)
-                {
-                    isDuplicate = true;
-                    break;
-                }
-            }
-            
-            if (!isDuplicate)
-            {
-                filteredResolutions.Add(resolutions[i]);
-                string option = resolutions[i].width + " x " + resolutions[i].height;
-                options.Add(option);
-                
-                // Şu anki çözünürlüğü bul
-                if (resolutions[i].width == Screen.width && resolutions[i].height == Screen.height)
-                {
-                    currentResolutionIndex = filteredResolutions.Count - 1;
-                }
-            }
+            options.Add(res.displayName);
         }
         
         resolutionDropdown.AddOptions(options);
-        resolutionDropdown.value = currentResolutionIndex;
+        
+        // Şu anki çözünürlüğe en yakın olanı bul
+        int currentIndex = FindClosestResolutionIndex();
+        resolutionDropdown.value = currentIndex;
         resolutionDropdown.RefreshShownValue();
         
-        Debug.Log($"[VideoSettings] Found {filteredResolutions.Count} resolutions, current: {currentResolutionIndex}");
+        Debug.Log($"[VideoSettings] Resolution initialized to: {supportedResolutions[currentIndex].displayName}");
+    }
+    
+    private int FindClosestResolutionIndex()
+    {
+        int currentWidth = Screen.width;
+        int currentHeight = Screen.height;
+        
+        // Tam eşleşme var mı?
+        for (int i = 0; i < supportedResolutions.Count; i++)
+        {
+            if (supportedResolutions[i].width == currentWidth && 
+                supportedResolutions[i].height == currentHeight)
+            {
+                return i;
+            }
+        }
+        
+        // Tam eşleşme yoksa en yakınını bul
+        int closestIndex = 1; // Default: 1920x1080
+        int minDifference = int.MaxValue;
+        
+        for (int i = 0; i < supportedResolutions.Count; i++)
+        {
+            int widthDiff = Mathf.Abs(supportedResolutions[i].width - currentWidth);
+            int heightDiff = Mathf.Abs(supportedResolutions[i].height - currentHeight);
+            int totalDiff = widthDiff + heightDiff;
+            
+            if (totalDiff < minDifference)
+            {
+                minDifference = totalDiff;
+                closestIndex = i;
+            }
+        }
+        
+        return closestIndex;
     }
     
     private void SetupQuality()
@@ -145,16 +176,16 @@ public class VideoSettingsManager : MonoBehaviour
         Debug.Log("[VideoSettings] ========== APPLYING SETTINGS ==========");
         
         // Resolution
-        if (resolutionDropdown != null && filteredResolutions.Count > 0)
+        if (resolutionDropdown != null)
         {
             int resIndex = resolutionDropdown.value;
-            if (resIndex >= 0 && resIndex < filteredResolutions.Count)
+            if (resIndex >= 0 && resIndex < supportedResolutions.Count)
             {
-                Resolution resolution = filteredResolutions[resIndex];
+                ResolutionOption res = supportedResolutions[resIndex];
                 bool isFullscreen = fullscreenToggle != null ? fullscreenToggle.isOn : Screen.fullScreen;
                 
-                Screen.SetResolution(resolution.width, resolution.height, isFullscreen);
-                Debug.Log($"[VideoSettings] ✅ Resolution set to: {resolution.width}x{resolution.height}, Fullscreen: {isFullscreen}");
+                Screen.SetResolution(res.width, res.height, isFullscreen);
+                Debug.Log($"[VideoSettings] ✅ Resolution set to: {res.displayName}, Fullscreen: {isFullscreen}");
             }
         }
         
@@ -165,16 +196,14 @@ public class VideoSettingsManager : MonoBehaviour
             
             if (qualityIndex == 0) // Normal
             {
-                // Normal ayarlar
                 Application.targetFrameRate = 60;
-                QualitySettings.antiAliasing = 0; // Pixel art için AA kapalı
+                QualitySettings.antiAliasing = 0;
                 Debug.Log($"[VideoSettings] ✅ Quality: Normal (60 FPS, No AA)");
             }
             else // High
             {
-                // High ayarlar
-                Application.targetFrameRate = -1; // Sınırsız FPS
-                QualitySettings.antiAliasing = 0; // Pixel art için yine kapalı
+                Application.targetFrameRate = -1;
+                QualitySettings.antiAliasing = 0;
                 Debug.Log($"[VideoSettings] ✅ Quality: High (Unlimited FPS, No AA)");
             }
             
@@ -225,10 +254,10 @@ public class VideoSettingsManager : MonoBehaviour
         Debug.Log("[VideoSettings] 📂 Loading settings...");
         
         // Resolution
-        if (resolutionDropdown != null && PlayerPrefs.HasKey("ResolutionIndex"))
+        if (resolutionDropdown != null)
         {
-            int resIndex = PlayerPrefs.GetInt("ResolutionIndex");
-            if (resIndex >= 0 && resIndex < filteredResolutions.Count)
+            int resIndex = PlayerPrefs.GetInt("ResolutionIndex", 1); // Default: 1920x1080
+            if (resIndex >= 0 && resIndex < supportedResolutions.Count)
             {
                 resolutionDropdown.value = resIndex;
                 resolutionDropdown.RefreshShownValue();

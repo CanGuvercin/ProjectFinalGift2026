@@ -356,7 +356,7 @@ MonoBehaviour:
   chargeSpeed: 2
   explosionRadius: 1.25
   explosionDamage: 80
-  destroyDelay: 1.2
+  destroyDelay: 0.4
   enablePatrol: 0
   idleSpeed: 0.6
   patrolPointA: {x: -15.25, y: 35.88}
