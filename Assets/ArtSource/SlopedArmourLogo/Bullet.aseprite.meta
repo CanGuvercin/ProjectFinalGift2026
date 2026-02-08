@@ -123,16 +123,36 @@ ScriptedImporter:
   animatedSpriteImportData:
   - name: Bullet
     originalName: 
-    pivot: {x: 0.5, y: 0}
+    pivot: {x: 0.5, y: -2.5810812}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 133
+      width: 460
+      height: 74
+    spriteID: bbc9fc91144722643b16ec2766240fb1
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 133}
+  - name: Bullet_Frame_1
+    originalName: 
+    pivot: {x: 0.45754716, y: -1.5785124}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     rect:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 600
-      height: 456
-    spriteID: bbc9fc91144722643b16ec2766240fb1
+      width: 424
+      height: 121
+    spriteID: edd6dfe0b41f97844a5230dc6184c060
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -150,14 +170,22 @@ ScriptedImporter:
     layerType: 0
     blendMode: 0
     cells:
-    - name: Bullet
+    - name: Bullet_Frame_0
       frameIndex: 0
       cellRect:
-        x: 0
-        y: 0
-        width: 600
-        height: 456
+        x: 70
+        y: 191
+        width: 460
+        height: 74
       spriteId: bbc9fc91144722643b16ec2766240fb1
+    - name: Bullet_Frame_1
+      frameIndex: 1
+      cellRect:
+        x: 106
+        y: 191
+        width: 424
+        height: 121
+      spriteId: edd6dfe0b41f97844a5230dc6184c060
     linkedCells: []
     parentIndex: -1
   platformSettings: []
