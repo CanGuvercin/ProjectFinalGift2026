@@ -42,20 +42,20 @@ public class ZeilBossController : MonoBehaviour
     [SerializeField] private float chargeSpeed = 12f;
     [SerializeField] private float chargeMaxDuration = 3f;
     [SerializeField] private float chargeTelegraphDelay = 0.15f;
-    [SerializeField] private float chargeRotationSpeed = 720f; // degree/sec
-    [SerializeField] private float rotationResetSpeed = 5f;    // smooth reset speed
+    [SerializeField] private float chargeRotationSpeed = 720f;
+    [SerializeField] private float rotationResetSpeed = 5f;
     [SerializeField] private int chargesPerCycle = 2;
     [SerializeField] private int chargeDamage = 2;
     [SerializeField] private float telegraphDuration = 0.3f;
 
     [Header("Charge Raycast Settings")]
-    [SerializeField] private LayerMask obstacleLayer;          // << Arena duvar layer'ı
-    [SerializeField] private float wallStopOffset = 0.25f;     // duvara yapışmasın
-    [SerializeField] private float maxRayDistance = 50f;       // sahneye göre yeterince büyük
+    [SerializeField] private LayerMask obstacleLayer;
+    [SerializeField] private float wallStopOffset = 0.25f;
+    [SerializeField] private float maxRayDistance = 50f;
 
     private int currentChargeCount = 0;
     private bool isRolling = false;
-    private Vector2 chargeTarget;                               // raycast ile kilitlenen hedef
+    private Vector2 chargeTarget;
 
     [Header("Animation Timings")]
     [SerializeField] private float ballUpDuration = 1.2f;
@@ -76,6 +76,9 @@ public class ZeilBossController : MonoBehaviour
     [Header("Attack Pattern")]
     [SerializeField] private int slimeAttacksBeforeBall = 4;
     private int currentSlimeAttacks = 0;
+
+    [Header("Death Settings")]
+    [SerializeField] private float deathAnimationDuration = 2f; // Death animasyonu süresi
 
     private enum BossState
     {
@@ -103,7 +106,6 @@ public class ZeilBossController : MonoBehaviour
 
         SetColliderMode(true);
 
-        // Rigidbody güvenli ayarlar (charge delme riskini iyice azaltır)
         rb.freezeRotation = true;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -236,7 +238,6 @@ public class ZeilBossController : MonoBehaviour
             {
                 float moveSpeed = currentState == BossState.SlimeShooting ? slimeShootingMoveSpeed : slimeIdleMoveSpeed;
 
-                // Not: burada transform ile yürütüyorsun. İleride istersen rb.MovePosition'a çeviririz.
                 transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
             }
 
@@ -337,14 +338,12 @@ public class ZeilBossController : MonoBehaviour
     {
         if (player == null) yield break;
 
-        // Telegraph
         currentState = BossState.BallCharging;
         animator.SetTrigger("Charge");
 
         yield return new WaitForSeconds(telegraphDuration);
         yield return new WaitForSeconds(chargeTelegraphDelay);
 
-        // Player'ın telegraph anındaki pozisyonuna kilitlen
         Vector2 targetPosition = player.position;
         Vector2 startPos = rb.position;
 
@@ -352,27 +351,22 @@ public class ZeilBossController : MonoBehaviour
         if (chargeDirection.sqrMagnitude < 0.0001f)
             chargeDirection = Vector2.right;
 
-        // Raycast ile duvarı bul → chargeTarget kilitle
         chargeTarget = GetChargeTarget(startPos, chargeDirection);
 
-        // Rolling başlat
         isRolling = true;
-        rb.velocity = Vector2.zero;       // velocity KULLANMIYORUZ artık
+        rb.velocity = Vector2.zero;
         rb.freezeRotation = false;
 
-        // Rotation yönü (senin eski mantığını korudum)
         float rotationDir = chargeDirection.y > 0 ? -1f : 1f;
 
         PlaySound(crushSound);
 
         float elapsed = 0f;
 
-        // Fixed timestep ile güvenli hareket
         while (elapsed < chargeMaxDuration && isRolling)
         {
             elapsed += Time.fixedDeltaTime;
 
-            // hedefe doğru ilerle
             Vector2 newPos = Vector2.MoveTowards(
                 rb.position,
                 chargeTarget,
@@ -380,22 +374,18 @@ public class ZeilBossController : MonoBehaviour
             );
             rb.MovePosition(newPos);
 
-            // dönme
             float rotationAmount = chargeRotationSpeed * rotationDir * Time.fixedDeltaTime;
             rb.MoveRotation(rb.rotation + rotationAmount);
 
-            // hedefe vardın mı?
             if (Vector2.Distance(rb.position, chargeTarget) <= 0.05f)
                 break;
 
             yield return new WaitForFixedUpdate();
         }
 
-        // Charge bitti
         isRolling = false;
         rb.velocity = Vector2.zero;
 
-        // Rotation reset
         yield return StartCoroutine(ResetRotationRB());
 
         rb.freezeRotation = true;
@@ -412,12 +402,10 @@ public class ZeilBossController : MonoBehaviour
 
         if (hit.collider != null)
         {
-            // duvara yapışmayı engelle
             Vector2 point = hit.point - dir * wallStopOffset;
             return point;
         }
 
-        // hiçbir şeye çarpmadıysa max mesafeye kadar git
         return startPos + dir * maxDist;
     }
 
@@ -426,12 +414,10 @@ public class ZeilBossController : MonoBehaviour
         rb.freezeRotation = false;
 
         float current = rb.rotation;
-        // normalize -180..180
         if (current > 180f) current -= 360f;
 
         float elapsed = 0f;
 
-        // Eski formülünü koruyarak süreyi dinamik tuttum
         float duration = Mathf.Abs(current) / (rotationResetSpeed * 90f);
         if (duration < 0.05f) duration = 0.05f;
 
@@ -503,49 +489,51 @@ public class ZeilBossController : MonoBehaviour
 {
     if (isDead) return;
 
+    Debug.Log("[Boss] Die() called - stopping all boss behaviors");
+
     isDead = true;
     currentState = BossState.Death;
 
-    // ❌ StopAllCoroutines() KALDIR
-    // StopAllCoroutines();
+    // ÖNCE tüm coroutine'leri durdur (ateş etme, hareket, AI)
+    StopAllCoroutines();
 
+    // Fizik ve collider'ları kapat
     rb.velocity = Vector2.zero;
-
-    // ❌ Static yapma – Animator kilitleniyor
-    // rb.bodyType = RigidbodyType2D.Static;
-
-    // ✅ Fizik kapalı, animator açık
     rb.simulated = false;
 
     slimeCollider.SetActive(false);
     ballCollider.SetActive(false);
 
-    // ❌ Trigger karmaşası yok
-    // animator.ResetTrigger("isDeath");
-    // animator.SetTrigger("isDeath");
-
-    // ✅ Direkt state
+    // Death animasyonu başlat
     animator.Play("Death", 0, 0f);
 
+    // Health bar'ı gizle
     HideHealthBar();
 
+    // Death sequence'ı başlat (yeni coroutine)
     StartCoroutine(HandleDeath());
 }
 
-    IEnumerator HandleDeath()
+
+ IEnumerator HandleDeath()
 {
-    yield return null; // Animator state yerleşsin
+    Debug.Log("[Boss] Zeil defeated! Playing death animation...");
 
-    AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
-    float duration = info.length / animator.speed;
+    // Death animasyonu için 2 saniye bekle (nefeslenme)
+    yield return new WaitForSeconds(deathAnimationDuration);
 
-    yield return new WaitForSeconds(duration);
+    Debug.Log("[Boss] Death animation complete. Loading EndCredits...");
 
-    Debug.Log("[Boss] Zeil defeated!");
-
+    // CutsceneChief ile state'i ilerlet (o loading screen açacak)
     CutsceneChief chief = FindObjectOfType<CutsceneChief>();
     if (chief != null)
-        chief.AdvanceState();
+    {
+        chief.AdvanceState(); // Bu EndCredits'e geçişi tetikleyecek
+    }
+    else
+    {
+        Debug.LogError("[Boss] CutsceneChief not found! Cannot advance to EndCredits.");
+    }
 
     Destroy(gameObject);
 }
@@ -576,7 +564,6 @@ public class ZeilBossController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        // Ball charge - Player damage
         if (currentState == BossState.BallCharging && other.CompareTag("Player"))
         {
             PlayerController playerController = other.GetComponent<PlayerController>();
@@ -587,15 +574,12 @@ public class ZeilBossController : MonoBehaviour
             }
         }
 
-        // Player sword damage
         if (other.CompareTag("PlayerAttack") || other.gameObject.name.Contains("HitBox"))
         {
             TakeDamage(10);
         }
     }
 
-    // Artık charge duvarı durdurmak için collision'a muhtaç değiliz.
-    // İstersen kalsın; "extra safety" olarak charge'ı iptal eder.
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (currentState == BossState.BallCharging && isRolling)
@@ -607,11 +591,11 @@ public class ZeilBossController : MonoBehaviour
                 isRolling = false;
                 rb.velocity = Vector2.zero;
             }
-        } //
+        }
     }
 
     #endregion
 
     public float GetCurrentHealth() => currentHealth;
     public float GetMaxHealth() => maxHealth;
-}
+}//

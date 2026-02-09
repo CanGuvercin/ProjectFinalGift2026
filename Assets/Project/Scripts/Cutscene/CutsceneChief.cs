@@ -85,10 +85,13 @@ public class CutsceneChief : MonoBehaviour
         
         // ÖNEMLİ: State 21 (End Credits) kontrolü
         if (currentState == 21)
-        {
-            Debug.Log("[CutsceneChief] 🎬 END CREDITS STATE DETECTED!");
-            StartEndCreditsSequence();
-        }
+{
+    Debug.Log("[CutsceneChief] 🎬 FINAL STATE - End Credits");
+    ShowGameSavedUI();
+    PlayCurrentState(); // Objeleri aktif/pasif yap
+    StartEndCreditsSequence(); // Timer'ı başlat
+    return;
+}
         else
         {
             PlayCurrentState();
@@ -355,11 +358,13 @@ public class CutsceneChief : MonoBehaviour
         
         // ÖNEMLİ: State 21 - END CREDITS kontrolü
         if (currentState == 21)
-        {
-            Debug.Log("[CutsceneChief] 🎬 FINAL STATE - Loading End Credits");
-            LoadingManager.LoadScene("EndCredits", 21, "");
-            return;
-        }
+{
+    Debug.Log("[CutsceneChief] 🎬 FINAL STATE - End Credits");
+    ShowGameSavedUI();
+    PlayCurrentState(); // Objeleri aktif/pasif yap
+    StartEndCreditsSequence(); // Timer'ı başlat
+    return;
+}
         
         if (currentState < cutsceneStates.Length)
         {
