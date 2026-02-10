@@ -35,4 +35,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/School3.unity
     guid: 4264c5ca118a85b47873def79dd54236
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.input.settings: {fileID: 11400000, guid: 3c2e33b01cde20641869e550d1a68fe4, type: 2}

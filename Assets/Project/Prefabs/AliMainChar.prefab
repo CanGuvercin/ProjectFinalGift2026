@@ -602,6 +602,12 @@ MonoBehaviour:
   hitBoxLeft: {fileID: 6074527280215241222}
   hitBoxUp: {fileID: 49111028638459229}
   hitBoxDown: {fileID: 6131714513079789663}
+  perryActivationDelay: 0.05
+  perryActiveDuration: 1
+  perryCooldown: 0.3
+  bulletPlusPrefab: {fileID: 3707776937079977791, guid: fafde3490212ef6469feed71f060df3b, type: 3}
+  bulletReflectSpeed: 10
+  playerBodyCollider: {fileID: 9023769278335123522}
   sfxSource: {fileID: 6919709539321117686}
   swordSwing: {fileID: 8300000, guid: b10b4edeb42aa9e40abd6b7a66c211df, type: 3}
   swordHit: {fileID: 8300000, guid: edf8491defa9e8c42843b6b8cbec064a, type: 3}
