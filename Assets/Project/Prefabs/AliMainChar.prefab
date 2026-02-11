@@ -714,8 +714,8 @@ MonoBehaviour:
   hitBoxUp: {fileID: 49111028638459229}
   hitBoxDown: {fileID: 6131714513079789663}
   perryActivationDelay: 0.01
-  perryActiveDuration: 0.4
-  perryCooldown: 0.1
+  perryActiveDuration: 0.32
+  perryCooldown: 0.2
   bulletPlusPrefab: {fileID: 3707776937079977791, guid: fafde3490212ef6469feed71f060df3b, type: 3}
   bulletReflectSpeed: 20
   playerBodyCollider: {fileID: 9023769278335123522}
