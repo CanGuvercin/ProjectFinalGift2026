@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioClip dashSfx;
     [SerializeField] private AudioClip walkSfx;
     [SerializeField] private AudioClip hurtSfx;
+    [SerializeField] private AudioClip perryDeflectSfx;
 
     [Header("Dash")]
     [SerializeField] private float dashSpeed = 10f;
@@ -77,6 +78,7 @@ public class PlayerController : MonoBehaviour
     private bool canPerry = true;
     private GameObject activePerryHitbox = null;
     private HashSet<Collider2D> detectedBulletsInPerryZone = new HashSet<Collider2D>();
+    private HashSet<Collider2D> alreadyDeflectedBullets = new HashSet<Collider2D>();
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -101,42 +103,6 @@ public class PlayerController : MonoBehaviour
 
         if (cameraController == null)
             cameraController = Camera.main.GetComponent<PixelPerfectCameraController>();
-            
-        Debug.Log("[PERRY INIT] PlayerController initialized");
-        DebugPerrySetup();
-    }
-
-    private void DebugPerrySetup()
-    {
-        Debug.Log($"[PERRY INIT] === Perry System Setup ===");
-        Debug.Log($"[PERRY INIT] HitBoxDown: {(hitBoxDown != null ? hitBoxDown.name : "NULL")}");
-        Debug.Log($"[PERRY INIT] HitBoxUp: {(hitBoxUp != null ? hitBoxUp.name : "NULL")}");
-        Debug.Log($"[PERRY INIT] HitBoxLeft: {(hitBoxLeft != null ? hitBoxLeft.name : "NULL")}");
-        Debug.Log($"[PERRY INIT] HitBoxRight: {(hitBoxRight != null ? hitBoxRight.name : "NULL")}");
-        Debug.Log($"[PERRY INIT] PlayerBodyCollider: {(playerBodyCollider != null ? "Assigned" : "NULL - WARNING!")}");
-        Debug.Log($"[PERRY INIT] BulletPlusPrefab: {(bulletPlusPrefab != null ? bulletPlusPrefab.name : "NULL - WARNING!")}");
-        
-        // HitBox collider kontrolü
-        if (hitBoxDown != null)
-        {
-            Collider2D col = hitBoxDown.GetComponent<Collider2D>();
-            Debug.Log($"[PERRY INIT] HitBoxDown Collider2D: {(col != null ? col.GetType().Name : "MISSING!")}, IsTrigger: {(col != null ? col.isTrigger : false)}");
-        }
-        if (hitBoxUp != null)
-        {
-            Collider2D col = hitBoxUp.GetComponent<Collider2D>();
-            Debug.Log($"[PERRY INIT] HitBoxUp Collider2D: {(col != null ? col.GetType().Name : "MISSING!")}, IsTrigger: {(col != null ? col.isTrigger : false)}");
-        }
-        if (hitBoxLeft != null)
-        {
-            Collider2D col = hitBoxLeft.GetComponent<Collider2D>();
-            Debug.Log($"[PERRY INIT] HitBoxLeft Collider2D: {(col != null ? col.GetType().Name : "MISSING!")}, IsTrigger: {(col != null ? col.isTrigger : false)}");
-        }
-        if (hitBoxRight != null)
-        {
-            Collider2D col = hitBoxRight.GetComponent<Collider2D>();
-            Debug.Log($"[PERRY INIT] HitBoxRight Collider2D: {(col != null ? col.GetType().Name : "MISSING!")}, IsTrigger: {(col != null ? col.isTrigger : false)}");
-        }
     }
 
     private void OnEnable()
@@ -208,17 +174,7 @@ public class PlayerController : MonoBehaviour
     
     public void TakeDamage(int damage, Vector2 damageSourcePos)
     {
-        if (isInvulnerable)
-        {
-            Debug.Log("[PERRY DEBUG] TakeDamage blocked - isInvulnerable");
-            return;
-        }
-        
-        if (isPerryActive)
-        {
-            Debug.Log("[PERRY DEBUG] TakeDamage blocked - isPerryActive!");
-            return;
-        }
+        if (isInvulnerable || isPerryActive) return;
 
         float difficultyMultiplier = GameplayManager.Instance != null 
             ? GameplayManager.Instance.GetIncomingDamageMultiplier() 
@@ -371,6 +327,8 @@ public class PlayerController : MonoBehaviour
     }
     public void PlayHurtSfx() => PlaySfx(hurtSfx, 0.95f, 1.05f);
 
+    public void PlayPerryDeflectSfx() => PlaySfx(perryDeflectSfx, 0.95f, 1.05f);
+
     // ================= HITBOX / COMBAT ZONE =================
 
     public void EnableHitBox()
@@ -483,8 +441,6 @@ public class PlayerController : MonoBehaviour
 
     private void TryPerry()
     {
-        Debug.Log($"[PERRY] TryPerry called - isInteracting: {isInteracting}, isDashing: {isDashing}, isPerryActive: {isPerryActive}, canPerry: {canPerry}");
-        
         if (isInteracting || isDashing || isPerryActive) return;
         if (!canPerry) return;
 
@@ -492,231 +448,163 @@ public class PlayerController : MonoBehaviour
     }
 
     private IEnumerator PerryCoroutine()
-{
-    canPerry = false;
-    isPerryActive = false;
-
-    Debug.Log($"[PERRY] === PERRY STARTED === Direction: {lastMoveDir}");
-
-    // Hareketi durdur
-    rb.velocity = Vector2.zero;
-
-    // Animator tetikle
-    animator.SetTrigger("Perry");
-    animator.SetFloat("moveX", lastMoveDir.x);
-    animator.SetFloat("moveY", lastMoveDir.y);
-
-    // Aktif perry hitbox'u belirle ve AKTİF ET!
-    activePerryHitbox = GetActivePerryHitbox(lastMoveDir);
-    Debug.Log($"[PERRY] Active hitbox set to: {(activePerryHitbox != null ? activePerryHitbox.name : "NULL!")}");
-    
-    // *** HİTBOX'U AKTİF ET ***
-    if (activePerryHitbox != null)
     {
-        activePerryHitbox.SetActive(true);
-        Debug.Log($"[PERRY] Hitbox {activePerryHitbox.name} ACTIVATED");
+        canPerry = false;
+        isPerryActive = false;
+
+        Vector2 directionBeforePerry = lastMoveDir;
+
+        rb.velocity = Vector2.zero;
+
+        animator.SetTrigger("Perry");
+        animator.SetFloat("moveX", lastMoveDir.x);
+        animator.SetFloat("moveY", lastMoveDir.y);
+
+        activePerryHitbox = GetActivePerryHitbox(lastMoveDir);
+        
+        if (activePerryHitbox != null)
+        {
+            activePerryHitbox.SetActive(true);
+        }
+
+        yield return new WaitForSeconds(perryActivationDelay);
+
+        isPerryActive = true;
+        detectedBulletsInPerryZone.Clear();
+        alreadyDeflectedBullets.Clear();
+
+        yield return new WaitForSeconds(perryActiveDuration);
+
+        isPerryActive = false;
+        
+        if (activePerryHitbox != null)
+        {
+            activePerryHitbox.SetActive(false);
+        }
+        
+        activePerryHitbox = null;
+        detectedBulletsInPerryZone.Clear();
+        alreadyDeflectedBullets.Clear();
+
+        lastMoveDir = directionBeforePerry;
+        animator.SetFloat("moveX", lastMoveDir.x);
+        animator.SetFloat("moveY", lastMoveDir.y);
+
+        yield return new WaitForSeconds(perryCooldown);
+        canPerry = true;
     }
-
-    // Aktivasyon gecikmesi
-    yield return new WaitForSeconds(perryActivationDelay);
-
-    // Perry window AÇILDI
-    isPerryActive = true;
-    detectedBulletsInPerryZone.Clear();
-
-    Debug.Log($"[PERRY] ═══ WINDOW ACTIVE for {perryActiveDuration}s ═══");
-
-    // Perry aktif süresi
-    yield return new WaitForSeconds(perryActiveDuration);
-
-    // Perry window KAPANDI
-    isPerryActive = false;
-    
-    // *** HİTBOX'U DEAKTİF ET ***
-    if (activePerryHitbox != null)
-    {
-        activePerryHitbox.SetActive(false);
-        Debug.Log($"[PERRY] Hitbox {activePerryHitbox.name} DEACTIVATED");
-    }
-    
-    activePerryHitbox = null;
-    detectedBulletsInPerryZone.Clear();
-
-    Debug.Log("[PERRY] ═══ WINDOW CLOSED ═══");
-
-    // Cooldown
-    yield return new WaitForSeconds(perryCooldown);
-    canPerry = true;
-
-    Debug.Log("[PERRY] ✓ Ready again!");
-}
 
     private GameObject GetActivePerryHitbox(Vector2 direction)
     {
-        GameObject selectedHitbox;
-        
         if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
         {
-            selectedHitbox = direction.x > 0 ? hitBoxRight : hitBoxLeft;
-            Debug.Log($"[PERRY] Horizontal direction - Selected: {(selectedHitbox != null ? selectedHitbox.name : "NULL")}");
+            return direction.x > 0 ? hitBoxRight : hitBoxLeft;
         }
         else
         {
-            selectedHitbox = direction.y > 0 ? hitBoxUp : hitBoxDown;
-            Debug.Log($"[PERRY] Vertical direction - Selected: {(selectedHitbox != null ? selectedHitbox.name : "NULL")}");
+            return direction.y > 0 ? hitBoxUp : hitBoxDown;
         }
-        
-        return selectedHitbox;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
+{
+    // Sadece ismi "Bullet" veya "Projectile" içeren objeleri kabul et
+    bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
+                    && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
+    
+    if (isPerryActive && isBullet)
     {
-        Debug.Log($"[PERRY TRIGGER] OnTriggerEnter2D - Object: '{collision.gameObject.name}', Tag: '{collision.tag}', isPerryActive: {isPerryActive}, activeHitbox: {(activePerryHitbox != null ? activePerryHitbox.name : "NULL")}");
-        
-        // Hem Enemy hem Bullet tag'lerini destekle
-        bool isBullet = collision.CompareTag("Enemy") || collision.CompareTag("Bullet");
-        
-        if (isPerryActive && isBullet)
+        if (IsColliderInActivePerryZone(collision))
         {
-            Debug.Log($"[PERRY TRIGGER] Bullet detected! Checking if in perry zone...");
-            
-            if (IsColliderInActivePerryZone(collision))
-            {
-                detectedBulletsInPerryZone.Add(collision);
-                Debug.Log($"[PERRY] ✓✓✓ BULLET ADDED TO PERRY ZONE: {collision.name} ✓✓✓");
-            }
-            else
-            {
-                Debug.Log($"[PERRY] ✗ Bullet NOT in active perry zone: {collision.name}");
-            }
+            detectedBulletsInPerryZone.Add(collision);
         }
     }
+}
 
-    private void OnTriggerStay2D(Collider2D collision)
+private void OnTriggerStay2D(Collider2D collision)
+{
+    if (!isPerryActive || activePerryHitbox == null) return;
+
+    // Sadece ismi "Bullet" veya "Projectile" içeren objeleri kabul et
+    bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
+                    && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
+    
+    if (isBullet)
     {
-        if (!isPerryActive || activePerryHitbox == null) return;
-
-        // Hem Enemy hem Bullet tag'lerini destekle
-        bool isBullet = collision.CompareTag("Enemy") || collision.CompareTag("Bullet");
-        
-        if (isBullet)
+        if (alreadyDeflectedBullets.Contains(collision))
         {
-            Debug.Log($"[PERRY STAY] Bullet in trigger: {collision.name}, In zone list: {detectedBulletsInPerryZone.Contains(collision)}");
-            
-            if (detectedBulletsInPerryZone.Contains(collision))
+            return;
+        }
+        
+        if (detectedBulletsInPerryZone.Contains(collision))
+        {
+            if (!IsBulletTouchingPlayerBody(collision))
             {
-                bool touchingBody = IsBulletTouchingPlayerBody(collision);
-                Debug.Log($"[PERRY STAY] Touching player body: {touchingBody}");
-                
-                if (!touchingBody)
-                {
-                    Debug.Log($"[PERRY] ►►► DEFLECTING BULLET! ◄◄◄");
-                    DeflectBullet(collision);
-                    detectedBulletsInPerryZone.Remove(collision);
-                }
-                else
-                {
-                    Debug.Log($"[PERRY] Bullet already touching body - too late!");
-                }
+                alreadyDeflectedBullets.Add(collision);
+                DeflectBullet(collision);
+                detectedBulletsInPerryZone.Remove(collision);
             }
         }
     }
-
-    private void OnTriggerExit2D(Collider2D collision)
+}
+  
+private void OnTriggerExit2D(Collider2D collision)
+{
+    // Sadece ismi "Bullet" veya "Projectile" içeren objeleri kabul et
+    bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
+                    && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
+    
+    if (isBullet)
     {
-        // Hem Enemy hem Bullet tag'lerini destekle
-        bool isBullet = collision.CompareTag("Enemy") || collision.CompareTag("Bullet");
-        
-        if (isBullet)
-        {
-            bool wasInZone = detectedBulletsInPerryZone.Contains(collision);
-            detectedBulletsInPerryZone.Remove(collision);
-            Debug.Log($"[PERRY EXIT] Bullet left trigger: {collision.name}, Was in zone: {wasInZone}");
-        }
+        detectedBulletsInPerryZone.Remove(collision);
     }
-
+}
     private bool IsColliderInActivePerryZone(Collider2D bullet)
     {
-        if (activePerryHitbox == null)
-        {
-            Debug.LogWarning("[PERRY CHECK] activePerryHitbox is NULL!");
-            return false;
-        }
+        if (activePerryHitbox == null) return false;
 
         Collider2D hitboxCollider = activePerryHitbox.GetComponent<Collider2D>();
-        if (hitboxCollider == null)
-        {
-            Debug.LogError($"[PERRY CHECK] {activePerryHitbox.name} has NO Collider2D component!");
-            return false;
-        }
+        if (hitboxCollider == null) return false;
 
-        bool isTouching = hitboxCollider.IsTouching(bullet);
-        Debug.Log($"[PERRY CHECK] Hitbox '{activePerryHitbox.name}' (enabled: {hitboxCollider.enabled}) touching bullet: {isTouching}");
-        
-        return isTouching;
+        return hitboxCollider.IsTouching(bullet);
     }
 
     private bool IsBulletTouchingPlayerBody(Collider2D bullet)
     {
-        if (playerBodyCollider == null)
-        {
-            Debug.LogWarning("[PERRY CHECK] playerBodyCollider is NULL!");
-            return false;
-        }
-        
-        bool touching = playerBodyCollider.IsTouching(bullet);
-        Debug.Log($"[PERRY CHECK] Player body touching bullet: {touching}");
-        return touching;
+        if (playerBodyCollider == null) return false;
+        return playerBodyCollider.IsTouching(bullet);
     }
 
     private void DeflectBullet(Collider2D bulletCollider)
+{
+    Rigidbody2D bulletRb = bulletCollider.GetComponent<Rigidbody2D>();
+    if (bulletRb == null) return;
+
+    Vector2 incomingDirection = bulletRb.velocity.normalized;
+    Vector2 reflectDirection = -incomingDirection;
+
+    // Bullet'ı yok et
+    Destroy(bulletCollider.gameObject);
+
+    if (bulletPlusPrefab == null) return;
+
+    // Player'ın capsule collider merkezinden spawn et
+    Vector3 spawnPos = playerBodyCollider != null 
+        ? playerBodyCollider.bounds.center 
+        : transform.position;
+
+    GameObject reflectedBullet = Instantiate(bulletPlusPrefab, spawnPos, Quaternion.identity);
+    
+    Rigidbody2D reflectedRb = reflectedBullet.GetComponent<Rigidbody2D>();
+    if (reflectedRb != null)
     {
-        Debug.Log($"[PERRY DEFLECT] ═══ STARTING DEFLECTION ═══");
-        
-        Rigidbody2D bulletRb = bulletCollider.GetComponent<Rigidbody2D>();
-        if (bulletRb == null)
-        {
-            Debug.LogWarning("[PERRY DEFLECT] Bullet has no Rigidbody2D!");
-            return;
-        }
-
-        Vector2 incomingDirection = bulletRb.velocity.normalized;
-        Vector2 reflectDirection = -incomingDirection;
-        
-        Debug.Log($"[PERRY DEFLECT] Incoming: {incomingDirection}, Reflect: {reflectDirection}");
-
-        Vector3 bulletPos = bulletCollider.transform.position;
-        Destroy(bulletCollider.gameObject);
-        Debug.Log($"[PERRY DEFLECT] Original bullet destroyed");
-
-        if (bulletPlusPrefab == null)
-        {
-            Debug.LogError("[PERRY DEFLECT] bulletPlusPrefab is NULL! Cannot spawn reflected bullet!");
-            return;
-        }
-
-        GameObject reflectedBullet = Instantiate(
-            bulletPlusPrefab,
-            bulletPos,
-            Quaternion.identity
-        );
-        
-        Debug.Log($"[PERRY DEFLECT] BulletPlus spawned at {bulletPos}");
-
-        Rigidbody2D reflectedRb = reflectedBullet.GetComponent<Rigidbody2D>();
-        if (reflectedRb != null)
-        {
-            reflectedRb.velocity = reflectDirection * bulletReflectSpeed;
-            Debug.Log($"[PERRY DEFLECT] BulletPlus velocity set to: {reflectedRb.velocity}");
-        }
-        else
-        {
-            Debug.LogError("[PERRY DEFLECT] BulletPlus has no Rigidbody2D!");
-        }
-
-        Debug.Log($"[PERRY DEFLECT] ✓✓✓ SUCCESS! Bullet deflected ✓✓✓");
+        reflectedRb.velocity = reflectDirection * bulletReflectSpeed;
     }
 
+    // Perry deflect SFX çal
+    PlayPerryDeflectSfx();
+}
+//
     // ================= ATTACK =================
 
     private void TryAttack()

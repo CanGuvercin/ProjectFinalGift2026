@@ -247,72 +247,87 @@ public class SlimeEnemyV2 : MonoBehaviour
 
     private void UpdateDecision()
     {
-        if (!player)
+        if (!player) return;
+
+        float dist = Vector2.Distance(transform.position, player.position);
+
+        // aktif coroutine varsa bekle
+        if (shootCo != null || chargeCo != null || patrolWaitCo != null || retreatCo != null) return;
+
+        // Separation aktifse çok müdahale etme
+        if (isSeparating)
         {
-            state = enablePatrol ? State.Patrol : State.Investigate;
+            if (state != State.Charge && state != State.Retreat)
+                state = State.Separate;
             return;
         }
 
-        float dist = Vector2.Distance(transform.position, player.position);
-        
-        // CRITICAL FIX: Detection range kontrolü ekledim
-        bool inDetectionRange = dist <= detectionRange;
-        bool sees = inDetectionRange && HasLineOfSight();
-
-        bool hitRecently = (Time.time - lastHitTime) <= hitMemoryTime;
-
-        // 1) Retreat: dayak + çok yakın
-        if (!isDead && hitRecently && dist <= retreatTriggerDistance && state != State.Charge)
+        // 1) RETREAT (yeni dayak yedi ve player çok yakın)
+        if (WantsToRetreat(dist))
         {
             StartRetreat();
             return;
         }
 
-        // 2) Charge: yakın + cooldown bitti + (sees veya alerted taze) + detection range içinde
-        bool canCharge = Time.time >= nextChargeTime;
-        bool hasRecentInfo = sees || (isAlerted && (Time.time - lastSeenTime) < 1.0f);
-
-        if (inDetectionRange && dist <= chargeRange && canCharge && hasRecentInfo && state != State.Retreat)
-        {
-            StartCharge();
-            return;
-        }
-
-        // 3) Shoot: LoS varsa ve (normal menzil) ya da (alerted ise uzun menzil) + detection range içinde
-        bool canShoot = Time.time >= nextShootTime;
-        bool inNormalShoot = dist <= shootRange;
-        bool inAlertShoot = isAlerted && dist <= alertedShootRange;
-
-        if (inDetectionRange && sees && canShoot && (inNormalShoot || inAlertShoot) && state != State.Charge)
-        {
-            StartShoot();
-            return;
-        }
-
-        // 4) Chase: sadece detection range içinde ve görüyorsa
-        if (sees)
-        {
-            state = State.Chase;
-            return;
-        }
-
-        // sees yok ama alerted var: lastKnownPlayerPos'a investigate
+        // 2) ALERTED
         if (isAlerted)
         {
-            state = State.Investigate;
-            return;
-        }
+            bool sees = HasLineOfSight();
 
-        // 5) Patrol
-        state = enablePatrol ? State.Patrol : State.Investigate;
+            // a) Charge mesafesi
+            if (sees && dist <= chargeRange && Time.time >= nextChargeTime)
+            {
+                StartCharge();
+                return;
+            }
+
+            // b) Shoot mesafesi
+            bool inShoot = sees && dist <= shootRange;
+            // veya alertedShootRange içinde ve LoS var
+            bool inAlertedShoot = sees && dist <= alertedShootRange;
+
+            if ((inShoot || inAlertedShoot) && Time.time >= nextShootTime)
+            {
+                StartShoot();
+                return;
+            }
+
+            // c) Chase / Investigate
+            if (sees)
+            {
+                state = State.Chase;
+            }
+            else
+            {
+                // lastKnownPlayerPos'a git
+                float distToLast = Vector2.Distance(transform.position, lastKnownPlayerPos);
+                if (distToLast > investigateStopDistance)
+                    state = State.Investigate;
+                else
+                    state = State.Patrol; // artık unut
+            }
+        }
+        else
+        {
+            // 3) NOT ALERTED -> Patrol
+            state = State.Patrol;
+        }
+    }
+
+    private bool WantsToRetreat(float distToPlayer)
+    {
+        // yakın zamanda dayak yedi mi?
+        if (Time.time - lastHitTime > hitMemoryTime) return false;
+        // player yeterince yakın mı?
+        return distToPlayer <= retreatTriggerDistance;
     }
 
     // ================== MOVEMENT ==================
 
     private void ApplyMovement()
     {
-        // Separation önceliği en yüksek (Charge ve Retreat hariç)
-        if (isSeparating && state != State.Charge && state != State.Retreat)
+        // Separation devredeyse öncelik ona
+        if (isSeparating)
         {
             rb.velocity = separationDirection * separationForce;
             return;
@@ -321,88 +336,74 @@ public class SlimeEnemyV2 : MonoBehaviour
         switch (state)
         {
             case State.Patrol:
-                PatrolMove();
+                Patrol();
                 break;
 
             case State.Chase:
-                MoveTowardWithSeparation(player.position, chaseSpeed);
+                ChasePlayer();
                 break;
 
             case State.Investigate:
-                InvestigateMove();
+                Investigate();
                 break;
 
+            case State.Shoot:
+            case State.Charge:
+            case State.Retreat:
             case State.Separate:
-                // Separation zaten yukarıda handle edildi
-                break;
-
-            default:
-                // Shoot, Charge, Retreat: kendi coroutine'leri velocity'yi halleder
+                // zaten coroutine kontrolü
                 break;
         }
     }
 
-    private void MoveToward(Vector2 target, float speed)
+    private void Patrol()
     {
-        Vector2 dir = ((Vector2)target - (Vector2)transform.position).normalized;
-        rb.velocity = dir * speed;
-    }
-
-    private void MoveTowardWithSeparation(Vector2 target, float speed)
-    {
-        Vector2 dir = ((Vector2)target - (Vector2)transform.position).normalized;
-        
-        // Eğer separation aktifse, direction'ı blend et
-        if (isSeparating)
-        {
-            // %70 target yönü, %30 separation yönü
-            dir = (dir * 0.7f + separationDirection * 0.3f).normalized;
-        }
-        
-        rb.velocity = dir * speed;
-    }
-
-    private void InvestigateMove()
-    {
-        if (!isAlerted)
+        if (!enablePatrol)
         {
             rb.velocity = Vector2.zero;
             return;
         }
 
-        float d = Vector2.Distance(transform.position, lastKnownPlayerPos);
-        if (d <= investigateStopDistance)
-        {
-            rb.velocity = Vector2.zero;
-            return;
-        }
-
-        MoveTowardWithSeparation(lastKnownPlayerPos, patrolSpeed);
-    }
-
-    private void PatrolMove()
-    {
         if (isWaitingAtPatrolPoint)
         {
             rb.velocity = Vector2.zero;
             return;
         }
 
-        float d = Vector2.Distance(transform.position, currentPatrolTarget);
-        if (d <= patrolPointThreshold)
-        {
-            rb.velocity = Vector2.zero;
-            if (patrolWaitCo == null)
-                patrolWaitCo = StartCoroutine(PatrolWaitAndSwitch());
-            return;
-        }
+        Vector2 dir = (currentPatrolTarget - (Vector2)transform.position).normalized;
+        rb.velocity = dir * patrolSpeed;
 
-        MoveToward(currentPatrolTarget, patrolSpeed);
+        float dist = Vector2.Distance(transform.position, currentPatrolTarget);
+        if (dist < patrolPointThreshold)
+        {
+            ReachedPatrolPoint();
+        }
     }
 
-    private IEnumerator PatrolWaitAndSwitch()
+    private void ChasePlayer()
+    {
+        if (!player) return;
+
+        Vector2 dir = ((Vector2)player.position - (Vector2)transform.position).normalized;
+        rb.velocity = dir * chaseSpeed;
+    }
+
+    private void Investigate()
+    {
+        Vector2 dir = (lastKnownPlayerPos - (Vector2)transform.position).normalized;
+        rb.velocity = dir * chaseSpeed;
+    }
+
+    private void ReachedPatrolPoint()
     {
         isWaitingAtPatrolPoint = true;
+        rb.velocity = Vector2.zero;
+
+        patrolWaitCo = StartCoroutine(PatrolWaitRoutine());
+    }
+
+    private IEnumerator PatrolWaitRoutine()
+    {
         yield return new WaitForSeconds(patrolWaitTime);
 
         isGoingToA = !isGoingToA;
@@ -444,6 +445,7 @@ public class SlimeEnemyV2 : MonoBehaviour
 
     private void ShootProjectile()
     {
+        if (isDead) return; // ← EKLENDI!
         if (!projectilePrefab || !player) return;
 
         Vector2 dir = ((Vector2)player.position - (Vector2)transform.position).normalized;
@@ -580,6 +582,13 @@ public class SlimeEnemyV2 : MonoBehaviour
         if (isDead) return;
 
         isDead = true;
+        
+        // TÜM COROUTINE'LERİ DURDUR - EKLENDI!
+        if (shootCo != null) { StopCoroutine(shootCo); shootCo = null; }
+        if (chargeCo != null) { StopCoroutine(chargeCo); chargeCo = null; }
+        if (retreatCo != null) { StopCoroutine(retreatCo); retreatCo = null; }
+        if (patrolWaitCo != null) { StopCoroutine(patrolWaitCo); patrolWaitCo = null; }
+        
         animator.SetTrigger("Die");
         PlaySfx(dieSfx);
 

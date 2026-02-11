@@ -267,7 +267,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 683955557842113744, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1874212113085408542, guid: 29a9c25b555ebfd4da39c644d70e82d2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2358,6 +2358,10 @@ PrefabInstance:
     - target: {fileID: 6938837167199594358, guid: 451fd35f7027abe4eabf6c5326c08316, type: 3}
       propertyPath: m_Name
       value: BomberSlime
+      objectReference: {fileID: 0}
+    - target: {fileID: 6938837167199594358, guid: 451fd35f7027abe4eabf6c5326c08316, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

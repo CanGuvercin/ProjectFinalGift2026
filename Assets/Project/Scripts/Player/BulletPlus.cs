@@ -14,10 +14,13 @@ public class BulletPlus : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
+        Debug.Log($"[BULLETPLUS] Hit: {collision.name}, Tag: {collision.tag}, Layer: {LayerMask.LayerToName(collision.gameObject.layer)}");
+        
         // Slime enemy'e çarptı mı?
         SlimeEnemyV2 slime = collision.GetComponent<SlimeEnemyV2>();
         if (slime != null)
         {
+            Debug.Log($"[BULLETPLUS] Damaging slime!");
             slime.TakeDamage((int)damage, transform.position);
             Destroy(gameObject);
             return;
@@ -27,6 +30,7 @@ public class BulletPlus : MonoBehaviour
         ZeilBossController boss = collision.GetComponent<ZeilBossController>();
         if (boss != null)
         {
+            Debug.Log($"[BULLETPLUS] Damaging boss!");
             boss.TakeDamage((int)damage); // Sadece damage parametresi
             Destroy(gameObject);
             return;
@@ -35,6 +39,7 @@ public class BulletPlus : MonoBehaviour
         // Duvara çarptığında yok ol
         if (collision.CompareTag("Wall"))
         {
+            Debug.Log($"[BULLETPLUS] Hit wall, destroying");
             Destroy(gameObject);
         }
     }
