@@ -53,10 +53,14 @@ public class MainMenuController : MonoBehaviour
     }
     
     public void OnContinue()
-    {
-        Debug.Log("[MainMenu] Continue clicked - Loading saved game...");
-        LoadingManager.LoadScene("WorldMap");
-    }
+{
+    Debug.Log("[MainMenu] Continue clicked - Loading saved game...");
+    
+    string savedScene = PlayerPrefs.GetString("GameScene", "WorldMap");
+    Debug.Log($"[MainMenu] Loading saved scene: {savedScene}");
+    
+    LoadingManager.LoadScene(savedScene);
+}
     
     public void OnNewGame()
     {
