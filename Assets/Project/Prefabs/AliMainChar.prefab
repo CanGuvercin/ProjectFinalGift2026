@@ -90,7 +90,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c930d77dbcde82145ab11d7571f0eecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 7
+  damage: 12
 --- !u!1 &5182356928041664884
 GameObject:
   m_ObjectHideFlags: 0
@@ -181,7 +181,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c930d77dbcde82145ab11d7571f0eecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 7
+  damage: 12
 --- !u!1 &6074527280215241222
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c930d77dbcde82145ab11d7571f0eecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 7
+  damage: 12
 --- !u!1 &6131714513079789663
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,7 +363,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c930d77dbcde82145ab11d7571f0eecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 7
+  damage: 12
 --- !u!1 &7427458669614903550
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,7 +725,7 @@ MonoBehaviour:
   dashSfx: {fileID: 8300000, guid: b10b4edeb42aa9e40abd6b7a66c211df, type: 3}
   walkSfx: {fileID: 8300000, guid: 6bbe3a0a950b30545bad70dd095218eb, type: 3}
   hurtSfx: {fileID: 8300000, guid: 4bc49a37728b80f49a5bd5964b9bd2fa, type: 3}
-  perryDeflectSfx: {fileID: 0}
+  perryDeflectSfx: {fileID: 8300000, guid: ccd7d6107f7e8fe4fa41e37a6902f514, type: 3}
   dashSpeed: 15
   dashDuration: 0.15
   dashCooldown: 0.5

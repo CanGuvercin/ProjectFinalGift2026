@@ -18,6 +18,7 @@ public class IntroSceneLoader : MonoBehaviour
 
     private void Awake()
     {
+        Shader.WarmupAllShaders();
         // PlayableDirector otomatik bul (aynı GameObject'te yoksa)
         if (playableDirector == null)
         {
@@ -33,6 +34,8 @@ public class IntroSceneLoader : MonoBehaviour
         if (showDebugLogs)
             Debug.Log("[IntroSceneLoader] Script hazır. Timeline bitince MainMenu yüklenecek.");
     }
+
+    
 
     private void OnEnable()
     {

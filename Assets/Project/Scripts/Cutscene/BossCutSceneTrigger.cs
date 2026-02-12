@@ -4,6 +4,9 @@ using System.Collections;
 
 public class BossCutsceneTrigger : MonoBehaviour
 {
+    [Header("Deactivate On Cutscene")]
+[SerializeField] private GameObject[] objectsToDeactivateOnCutscene;
+
     [Header("Trigger Settings")]
     [SerializeField] private BoxCollider2D triggerArea;
     [SerializeField] private float checkRadius = 2f; // Manuel kontrol için
@@ -227,6 +230,19 @@ public class BossCutsceneTrigger : MonoBehaviour
             Debug.Log("[BossCutsceneTrigger] ✅ Player frozen (input cut)");
         }
         
+        // DÜŞMANLAR VE DİĞER OBJELERİ DEAKTIF ET
+if (objectsToDeactivateOnCutscene != null)
+{
+    foreach (GameObject obj in objectsToDeactivateOnCutscene)
+    {
+        if (obj != null)
+        {
+            // Objeyi ve tüm child'larını deaktif et
+            obj.SetActive(false);
+            Debug.Log($"[BossCutsceneTrigger] Deactivated: {obj.name}");
+        }
+    }
+}
         // 2. Fiziksel hareketi ANINDA durdur
         if (playerRb != null)
         {
@@ -340,4 +356,6 @@ public class BossCutsceneTrigger : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, checkRadius);
     }
+
+    
 }

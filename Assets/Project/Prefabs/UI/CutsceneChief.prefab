@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d95a031def64fe4980cd668c60bf55a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sceneSafetyRules: []
   cutsceneStates:
   - stateName: State0_OpeningCutscene
     timeline: {fileID: 0}
@@ -392,7 +393,7 @@ MonoBehaviour:
     playerSpawnPosition: {fileID: 0}
     changeScene: 1
     targetSceneName: School3
-    spawnPointName: SpawnPoint
+    spawnPointName: 
     ambientMusic: {fileID: 8300000, guid: bda51aa18564a6142bf1816c98317636, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
@@ -449,7 +450,7 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 0
+  currentState: 18
   saveKey: GameState
   musicSource: {fileID: 752455669889845466}
   fadeDuration: 1.5

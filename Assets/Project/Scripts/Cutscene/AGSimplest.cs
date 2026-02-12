@@ -7,15 +7,14 @@ public class AGSimplest : MonoBehaviour
     [SerializeField] private KeyCode interactionKey = KeyCode.E;
     
     [Header("UI")]
-    [SerializeField] private GameObject pressELabel; // "Press E" sprite child objesi
+    [SerializeField] private GameObject pressELabel;
     
-    [Header("Teleport")]
-    [SerializeField] private Transform spawnPoint;
+    // NOT: spawnPoint kaldırıldı! Spawn işini CutsceneChief hallediyor.
+    // State'in playerSpawnPosition alanına spawn noktasını Inspector'da ata!
     
     [Header("References")]
     [SerializeField] private CutsceneChief cutsceneChief;
 
-    //    
     private Transform player;
     private PlayerController playerController;
     private bool isPlayerNear = false;
@@ -25,22 +24,14 @@ public class AGSimplest : MonoBehaviour
     {
         Debug.Log($"[ActGateSimplest] Initialized at {transform.position}");
         
-        // CutsceneChief'i otomatik bul
         if (cutsceneChief == null)
         {
             cutsceneChief = FindObjectOfType<CutsceneChief>();
         }
         
-        // Press E label'ı gizle
         if (pressELabel != null)
         {
             pressELabel.SetActive(false);
-        }
-        
-        // Spawn point kontrolü
-        if (spawnPoint == null)
-        {
-            Debug.LogWarning("[ActGateSimplest] No spawn point assigned!");
         }
     }
     
@@ -48,7 +39,6 @@ public class AGSimplest : MonoBehaviour
     {
         if (hasBeenActivated) return;
         
-        // Player'ı bul
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -63,12 +53,10 @@ public class AGSimplest : MonoBehaviour
             }
         }
         
-        // Mesafe kontrolü
         float distance = Vector2.Distance(transform.position, player.position);
         bool wasNear = isPlayerNear;
         isPlayerNear = distance <= activationRadius;
         
-        // Press E label'ı göster/gizle
         if (isPlayerNear != wasNear)
         {
             if (pressELabel != null)
@@ -78,7 +66,6 @@ public class AGSimplest : MonoBehaviour
             }
         }
         
-        // E tuşuna basıldı mı?
         if (isPlayerNear && Input.GetKeyDown(interactionKey))
         {
             Activate();
@@ -92,34 +79,22 @@ public class AGSimplest : MonoBehaviour
         
         Debug.Log("[ActGateSimplest] ========== ACTIVATION ==========");
         
-        // Press E label'ı gizle
         if (pressELabel != null)
-        {
             pressELabel.SetActive(false);
-        }
         
-        // Player'ı dondur
         if (playerController != null)
         {
             playerController.FreezePlayer();
             Debug.Log("[ActGateSimplest] Player frozen");
         }
         
-        // Player'ı teleport et
-        if (player != null && spawnPoint != null)
-        {
-            Debug.Log($"[ActGateSimplest] Teleporting to: {spawnPoint.position}");
-            player.position = spawnPoint.position;
-        }
-        
-        // State ilerlet
+        // ✅ Spawn yok! CutsceneChief.AdvanceState() → PlayCurrentState() → SpawnPlayer() halleder
         if (cutsceneChief != null)
         {
             Debug.Log("[ActGateSimplest] Advancing state...");
             cutsceneChief.AdvanceState();
         }
         
-        // Player'ı çöz
         if (playerController != null)
         {
             playerController.UnfreezePlayer();
@@ -131,16 +106,7 @@ public class AGSimplest : MonoBehaviour
     
     private void OnDrawGizmosSelected()
     {
-        // Activation radius
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, activationRadius);
-        
-        // Spawn point
-        if (spawnPoint != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(spawnPoint.position, 0.5f);
-            Gizmos.DrawLine(transform.position, spawnPoint.position);
-        }
     }
 }

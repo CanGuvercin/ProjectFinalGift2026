@@ -154,7 +154,7 @@ MonoBehaviour:
   animator: {fileID: 4731970726825484848}
   rb: {fileID: 9057926300885829598}
   player: {fileID: 0}
-  maxHealth: 400
+  maxHealth: 800
   bossHealthBarRoot: {fileID: 0}
   healthBarBG: {fileID: 0}
   healthBarFill: {fileID: 0}
@@ -218,6 +218,7 @@ MonoBehaviour:
   crushSound: {fileID: 8300000, guid: 067a88b138f22ee43ae6a72b88b7ef8e, type: 3}
   audioSource: {fileID: 8190698389656584147}
   slimeAttacksBeforeBall: 4
+  deathAnimationDuration: 2
 --- !u!82 &8190698389656584147
 AudioSource:
   m_ObjectHideFlags: 0
