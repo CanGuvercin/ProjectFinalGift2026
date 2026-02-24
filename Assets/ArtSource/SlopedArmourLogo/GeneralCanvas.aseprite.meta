@@ -123,15 +123,15 @@ ScriptedImporter:
   animatedSpriteImportData:
   - name: GeneralCanvas_Frame_0
     originalName: 
-    pivot: {x: 0.5058548, y: -0.37419355}
+    pivot: {x: 0.5, y: 0}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     rect:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 854
-      height: 155
+      width: 1024
+      height: 1024
     spriteID: d140a0c5c2b575a4fb8484285dda3be4
     spriteBone: []
     spriteOutline: []
@@ -141,6 +141,226 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 4, y: 4}
+  - name: GeneralCanvas_Frame_1
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.3771518}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1036
+      width: 903
+      height: 639
+    spriteID: 0e91690f398de524d8156a9a06f0dd0a
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1036}
+  - name: GeneralCanvas_Frame_2
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1683
+      width: 903
+      height: 538
+    spriteID: b38643e90010287438942766f94b5d63
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1683}
+  - name: GeneralCanvas_Frame_3
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 2229
+      width: 903
+      height: 538
+    spriteID: 4d15615a214441f4d8d40362196f6f18
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 2229}
+  - name: GeneralCanvas_Frame_4
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 2775
+      width: 903
+      height: 538
+    spriteID: 0630046029c3ffd479fc99cb06634ea2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 2775}
+  - name: GeneralCanvas_Frame_5
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 3321
+      width: 903
+      height: 538
+    spriteID: 9b1a2cc05df15dd4b9bd7053c218a3b5
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 3321}
+  - name: GeneralCanvas_Frame_6
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 1036
+      y: 4
+      width: 903
+      height: 538
+    spriteID: b8f8ec6f22acbe94da412fa4b607dc7d
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 1036, y: 4}
+  - name: GeneralCanvas_Frame_7
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 1036
+      y: 550
+      width: 903
+      height: 538
+    spriteID: 5d5621311dd3b304783d0740a59aac21
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 1036, y: 550}
+  - name: GeneralCanvas_Frame_8
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 1036
+      y: 1096
+      width: 903
+      height: 538
+    spriteID: 3ae407f751c93d14db636e9225f77c74
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 1036, y: 1096}
+  - name: GeneralCanvas_Frame_9
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 1036
+      y: 1642
+      width: 903
+      height: 538
+    spriteID: d932d565f61737a488ddd79561803e19
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 1036, y: 1642}
+  - name: GeneralCanvas_Frame_10
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 1036
+      y: 2188
+      width: 903
+      height: 538
+    spriteID: dee544439be85b54299c73194a1c98be
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 1036, y: 2188}
+  - name: GeneralCanvas_Frame_11
+    originalName: 
+    pivot: {x: 0.5669989, y: -0.4479554}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 1036
+      y: 2734
+      width: 903
+      height: 538
+    spriteID: d1dea59cbe0656f4e9de4728ba3aca57
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 1036, y: 2734}
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
@@ -150,14 +370,102 @@ ScriptedImporter:
     layerType: 0
     blendMode: 0
     cells:
-    - name: GeneralCanvas
+    - name: GeneralCanvas_Frame_0
       frameIndex: 0
       cellRect:
-        x: 80
-        y: 58
-        width: 854
-        height: 155
+        x: 0
+        y: 0
+        width: 1024
+        height: 1024
       spriteId: d140a0c5c2b575a4fb8484285dda3be4
+    - name: GeneralCanvas_Frame_1
+      frameIndex: 1
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 639
+      spriteId: 0e91690f398de524d8156a9a06f0dd0a
+    - name: GeneralCanvas_Frame_2
+      frameIndex: 2
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: b38643e90010287438942766f94b5d63
+    - name: GeneralCanvas_Frame_3
+      frameIndex: 3
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: 4d15615a214441f4d8d40362196f6f18
+    - name: GeneralCanvas_Frame_4
+      frameIndex: 4
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: 0630046029c3ffd479fc99cb06634ea2
+    - name: GeneralCanvas_Frame_5
+      frameIndex: 5
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: 9b1a2cc05df15dd4b9bd7053c218a3b5
+    - name: GeneralCanvas_Frame_6
+      frameIndex: 6
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: b8f8ec6f22acbe94da412fa4b607dc7d
+    - name: GeneralCanvas_Frame_7
+      frameIndex: 7
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: 5d5621311dd3b304783d0740a59aac21
+    - name: GeneralCanvas_Frame_8
+      frameIndex: 8
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: 3ae407f751c93d14db636e9225f77c74
+    - name: GeneralCanvas_Frame_9
+      frameIndex: 9
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: d932d565f61737a488ddd79561803e19
+    - name: GeneralCanvas_Frame_10
+      frameIndex: 10
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: dee544439be85b54299c73194a1c98be
+    - name: GeneralCanvas_Frame_11
+      frameIndex: 11
+      cellRect:
+        x: 0
+        y: 241
+        width: 903
+        height: 538
+      spriteId: d1dea59cbe0656f4e9de4728ba3aca57
     linkedCells: []
     parentIndex: -1
   platformSettings: []

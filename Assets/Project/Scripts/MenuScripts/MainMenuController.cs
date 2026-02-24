@@ -16,20 +16,18 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private SettingsManager settingsManager;
     
     [Header("Settings Back Button")]
-    [SerializeField] private Button settingsBackButton; // Settings içindeki Back button
+    [SerializeField] private Button settingsBackButton;
+    
+    private const string SAVE_KEY = "GameState";
+    private const string SAVE_SCENE_KEY = "GameScene";
     
     private void Start()
     {
-        // Settings Back button listener
         if (settingsBackButton != null)
-        {
             settingsBackButton.onClick.AddListener(OnBackFromSettings);
-        }
         
-        // Save var mı kontrol et
         CheckSaveData();
         
-        // Button listener'lar
         continueButton.onClick.AddListener(OnContinue);
         newGameButton.onClick.AddListener(OnNewGame);
         optionsButton.onClick.AddListener(OnOptions);
@@ -38,74 +36,60 @@ public class MainMenuController : MonoBehaviour
     
     private void CheckSaveData()
     {
-        bool hasSave = PlayerPrefs.HasKey("GameState");
+        bool hasSave = PlayerPrefs.HasKey(SAVE_KEY);
+        continueButton.interactable = hasSave;
         
-        if (hasSave)
-        {
-            continueButton.interactable = true;
-            Debug.Log("[MainMenu] Save found! Continue button enabled.");
-        }
-        else
-        {
-            continueButton.interactable = false;
-            Debug.Log("[MainMenu] No save found. Continue button disabled.");
-        }
+        Debug.Log(hasSave
+            ? "[MainMenu] ✅ Save found! Continue button enabled."
+            : "[MainMenu] ❌ No save found. Continue button disabled.");
     }
     
     public void OnContinue()
-{
-    Debug.Log("[MainMenu] Continue clicked - Loading saved game...");
-    
-    string savedScene = PlayerPrefs.GetString("GameScene", "WorldMap");
-    Debug.Log($"[MainMenu] Loading saved scene: {savedScene}");
-    
-    LoadingManager.LoadScene(savedScene);
-}
+    {
+        Debug.Log("[MainMenu] Continue clicked - Loading saved game...");
+        
+        string savedScene = PlayerPrefs.GetString(SAVE_SCENE_KEY, "WorldMap");
+        Debug.Log($"[MainMenu] Loading saved scene: {savedScene}");
+        
+        LoadingManager.LoadScene(savedScene);
+    }
     
     public void OnNewGame()
     {
-        Debug.Log("[MainMenu] New Game clicked - Resetting save...");
+        Debug.Log("[MainMenu] New Game clicked - Clearing save data...");
         
-        PlayerPrefs.DeleteKey("GameState");
-        PlayerPrefs.SetInt("GameState", 0);
+        // ÖNEMLİ: Sadece sil, tekrar SetInt yapma!
+        // SetInt yapılırsa key yeniden oluşur ve Continue aktifleşir.
+        PlayerPrefs.DeleteKey(SAVE_KEY);
+        PlayerPrefs.DeleteKey(SAVE_SCENE_KEY);
         PlayerPrefs.Save();
         
-        LoadingManager.LoadScene("WorldMap");
+        // State 0'dan başlat, spawn noktası boş
+        LoadingManager.LoadScene("WorldMap", 0, "");
+        
+        Debug.Log("[MainMenu] Save cleared. Starting from state 0.");
     }
     
     public void OnOptions()
     {
         Debug.Log("[MainMenu] Options clicked");
         
-        // Main menu'yü gizle
         if (mainMenuPanel != null)
-        {
             mainMenuPanel.SetActive(false);
-        }
         
-        // Settings'i aç
         if (settingsManager != null)
-        {
             settingsManager.OpenSettings();
-        }
     }
     
-    // Settings'den geri dön
     public void OnBackFromSettings()
     {
         Debug.Log("[MainMenu] Back from settings clicked");
         
-        // Settings'i kapat
         if (settingsManager != null)
-        {
             settingsManager.CloseSettings();
-        }
         
-        // Main menu'yü göster
         if (mainMenuPanel != null)
-        {
             mainMenuPanel.SetActive(true);
-        }
     }
     
     public void OnExit()
