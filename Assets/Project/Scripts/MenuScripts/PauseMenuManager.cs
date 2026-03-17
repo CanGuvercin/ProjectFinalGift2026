@@ -173,4 +173,11 @@ public class PauseMenuManager : MonoBehaviour
         if (Time.timeScale != 1f)
             Time.timeScale = 1f;
     }
+
+    // Dışarıdan zorla pause açmak için
+public void ForcePause()
+{
+    if (isPaused) return;
+    Pause();
+}
 }
