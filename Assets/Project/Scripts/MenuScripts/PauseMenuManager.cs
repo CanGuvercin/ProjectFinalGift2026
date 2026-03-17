@@ -3,6 +3,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+#if !DISABLESTEAMWORKS
+using Steamworks;
+#endif
 
 public class PauseMenuManager : MonoBehaviour
 {
@@ -22,18 +25,22 @@ public class PauseMenuManager : MonoBehaviour
     [SerializeField] private Button backButton;
     
     [Header("Player Input")]
-    [SerializeField] private PlayerInput playerInput; // YENİ
+    [SerializeField] private PlayerInput playerInput;
     
     [Header("Pause Settings")]
     [SerializeField] private bool pauseGameWhenOpen = true;
     [SerializeField] private string mainMenuSceneName = "MainMenu";
     [SerializeField] private float inputCooldown = 0.2f;
+    
     [Header("Blur Effect")]
     [SerializeField] private PauseBlurBackground blurBackground;
 
-    
     private bool isPaused = false;
     private float lastInputTime = -999f;
+    
+    #if !DISABLESTEAMWORKS
+    protected Callback<GameOverlayActivated_t> overlayCallback;
+    #endif
     
     private void Start()
     {
@@ -49,10 +56,33 @@ public class PauseMenuManager : MonoBehaviour
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(false);
         
-        // PlayerInput'u otomatik bul
         if (playerInput == null)
             playerInput = FindObjectOfType<PlayerInput>();
     }
+    
+    private void OnEnable()
+    {
+        #if !DISABLESTEAMWORKS
+        if (SteamManager.Initialized)
+        {
+            overlayCallback = Callback<GameOverlayActivated_t>.Create(OnSteamOverlayActivated);
+            Debug.Log("[Steam] Overlay callback registered");
+        }
+        #endif
+    }
+    
+    #if !DISABLESTEAMWORKS
+    private void OnSteamOverlayActivated(GameOverlayActivated_t callback)
+    {
+        // m_bActive: 1 = overlay açıldı, 0 = overlay kapandı
+        if (callback.m_bActive != 0)
+        {
+            Debug.Log("[Steam] Overlay opened - pausing game");
+            ForcePause();
+        }
+        // Overlay kapandığında resume YAPMIYORUZ - kullanıcı manuel kapatır
+    }
+    #endif
     
     private void Update()
     {
@@ -86,40 +116,37 @@ public class PauseMenuManager : MonoBehaviour
     }
     
     private void Pause()
-{
-    if (isPaused) return;
-    
-    Debug.Log("=== PAUSING ===");
-    isPaused = true;
-    
-    // 1. ÖNCE blur'u yakala
-    if (blurBackground != null)
-        blurBackground.CaptureAndBlur();
-    
-    // 2. Sonra diğer işlemler...
-    if (playerInput != null)
-        playerInput.enabled = false;
-    
-    if (pauseMenuPanel != null)
-        pauseMenuPanel.SetActive(true);
-    
-    if (settingsManager != null)
-        settingsManager.OpenSettings();
-    
-    if (pauseGameWhenOpen)
-        Time.timeScale = 0f;
-    
-    if (firstSelected != null && EventSystem.current != null)
-        EventSystem.current.SetSelectedGameObject(firstSelected.gameObject);
-}
+    {
+        if (isPaused) return;
+        
+        Debug.Log("=== PAUSING ===");
+        isPaused = true;
+        
+        if (blurBackground != null)
+            blurBackground.CaptureAndBlur();
+        
+        if (playerInput != null)
+            playerInput.enabled = false;
+        
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(true);
+        
+        if (settingsManager != null)
+            settingsManager.OpenSettings();
+        
+        if (pauseGameWhenOpen)
+            Time.timeScale = 0f;
+        
+        if (firstSelected != null && EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(firstSelected.gameObject);
+    }
     
     public void Resume()
     {
         if (!isPaused) return;
 
-        // Blur'u temizle
         if (blurBackground != null)
-        blurBackground.ClearBlur();
+            blurBackground.ClearBlur();
         
         Debug.Log("=== RESUMING ===");
         isPaused = false;
@@ -133,7 +160,6 @@ public class PauseMenuManager : MonoBehaviour
         if (pauseGameWhenOpen)
             Time.timeScale = 1f;
         
-        // Player input'u aç
         if (playerInput != null)
             playerInput.enabled = true;
     }
@@ -174,10 +200,9 @@ public class PauseMenuManager : MonoBehaviour
             Time.timeScale = 1f;
     }
 
-    // Dışarıdan zorla pause açmak için
-public void ForcePause()
-{
-    if (isPaused) return;
-    Pause();
-}
+    public void ForcePause()
+    {
+        if (isPaused) return;
+        Pause();
+    }
 }
