@@ -117,12 +117,15 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // Pause'dayken input okuma
+    if (Time.timeScale == 0f) return;
         ReadInput();
         UpdateAnimator();
     }
 
     private void FixedUpdate()
     {
+        if (Time.timeScale == 0f) return;
         Move();
     }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using System.Collections;
 using UnityEngine.Playables;
 using TMPro;
@@ -19,7 +20,7 @@ public class ActGateII : MonoBehaviour
     [Header("Dialog Content")]
     [TextArea(2, 3)]
     [SerializeField] private string npcDialogue = "İyi iş Ali! Şimdi diğer zindanı bulmalı ve ileri kapıyı açmalısın!";
-    [SerializeField] private float dialogShowDelay = 1f; // UI kaç saniye sonra gözüksün
+    [SerializeField] private float dialogShowDelay = 1f;
     [SerializeField] private float dialogueDuration = 3f;
 
     [Header("Dialog SFX")]
@@ -47,15 +48,27 @@ public class ActGateII : MonoBehaviour
     private bool isPlayerNear;
     private bool hasBeenActivated;
     private GameObject blackScreen;
+    private PlayerInputActions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+    }
+
+    private void OnEnable()
+    {
+        inputActions.Player.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Player.Disable();
+    }
 
     private void Start()
     {
-        Debug.Log($"[ActGateII] Initialized at {transform.position}");
-
         if (cutsceneChief == null)
-        {
             cutsceneChief = FindObjectOfType<CutsceneChief>();
-        }
 
         if (audioSource == null)
         {
@@ -66,25 +79,13 @@ public class ActGateII : MonoBehaviour
         CreateBlackScreen();
 
         if (promptUI != null)
-        {
             promptUI.SetActive(false);
-        }
 
         if (dialogCanvas != null)
-        {
             dialogCanvas.SetActive(false);
-        }
 
         if (playableDirector != null)
-        {
             playableDirector.Stop();
-            Debug.Log("[ActGateII] PlayableDirector found and stopped");
-        }
-
-        if (spawnPoint == null)
-        {
-            Debug.LogWarning("[ActGateII] No spawn point assigned!");
-        }
     }
 
     private void Update()
@@ -95,17 +96,13 @@ public class ActGateII : MonoBehaviour
 
         if (useManualActivation)
         {
-            if (isPlayerNear && Input.GetKeyDown(KeyCode.E))
-            {
+            if (isPlayerNear && inputActions.Player.Interact.WasPressedThisFrame())
                 TriggerGate();
-            }
         }
         else
         {
             if (isPlayerNear)
-            {
                 TriggerGate();
-            }
         }
     }
 
@@ -119,10 +116,7 @@ public class ActGateII : MonoBehaviour
                 player = playerObj.transform;
                 playerController = player.GetComponent<PlayerController>();
             }
-            else
-            {
-                return;
-            }
+            else return;
         }
 
         float distance = Vector2.Distance(transform.position, player.position);
@@ -130,9 +124,7 @@ public class ActGateII : MonoBehaviour
         isPlayerNear = distance <= activationRadius;
 
         if (useManualActivation && isPlayerNear != wasNear && promptUI != null)
-        {
             promptUI.SetActive(isPlayerNear);
-        }
     }
 
     private void TriggerGate()
@@ -142,164 +134,90 @@ public class ActGateII : MonoBehaviour
         hasBeenActivated = true;
         if (promptUI != null) promptUI.SetActive(false);
 
-        Debug.Log($"[ActGateII] 🚪 Gate triggered! Starting sequence...");
-
         StartCoroutine(GateSequence());
     }
 
     private IEnumerator GateSequence()
     {
-        Debug.Log("[ActGateII] ========== SEQUENCE START ==========");
-
-        // 1. Player'ı dondur
         if (playerController != null)
-        {
             playerController.FreezePlayer();
-            Debug.Log("[ActGateII] ✅ Player frozen");
-        }
 
-        // 2. State ilerlet
         if (cutsceneChief != null)
         {
-            Debug.Log("[ActGateII] ⏩ Advancing state...");
             cutsceneChief.DisableAutoAdvance();
             cutsceneChief.AdvanceState();
-            Debug.Log("[ActGateII] ✅ State advanced");
         }
 
-        // 3. Timeline oynat (varsa)
         if (playableDirector != null)
         {
-            Debug.Log("[ActGateII] 🎬 Playing Timeline...");
             playableDirector.Play();
-
-            // Timeline oynarken AYNI ANDA dialog göster (delay ile)
             StartCoroutine(DelayedDialogShow());
 
-            // Timeline bitene kadar bekle
-            float waitTime = 0f;
             while (playableDirector.state == PlayState.Playing)
-            {
-                waitTime += Time.deltaTime;
                 yield return null;
-            }
 
-            Debug.Log($"[ActGateII] ✅ Timeline finished after {waitTime:F2} seconds");
-            
-            // Timeline bitti, dialog'u gizle
             HideDialog();
-            Debug.Log("[ActGateII] ✅ Dialog hidden after timeline");
         }
         else
         {
-            // Timeline yoksa direkt dialog göster
             yield return new WaitForSeconds(dialogShowDelay);
             ShowDialog(npcDialogue);
-            
+
             if (audioSource != null && dialogSfx != null)
-            {
                 audioSource.PlayOneShot(dialogSfx);
-            }
-            
+
             yield return new WaitForSeconds(dialogueDuration);
             HideDialog();
         }
 
-        // 4. Black screen
-        Debug.Log("[ActGateII] ⚫ Black screen ON");
         ShowBlackScreen();
-
-        Debug.Log("[ActGateII] ⏱️ Waiting 2 seconds in darkness...");
         yield return new WaitForSeconds(2f);
 
-        // 5. Kapı sesi çal
         if (doorSound != null && audioSource != null)
-        {
-            Debug.Log("[ActGateII] 🔊 Playing door sound");
             audioSource.PlayOneShot(doorSound);
-        }
 
         yield return new WaitForSeconds(doorSoundDuration + blackScreenDelay);
 
-        // 6. Player'ı teleport et
         if (player != null && spawnPoint != null)
-        {
-            Debug.Log($"[ActGateII] 📍 Teleporting player to: {spawnPoint.position}");
             player.position = spawnPoint.position;
-        }
 
-        // 7. Gameplay state'ine geç
         if (cutsceneChief != null)
         {
-            Debug.Log("[ActGateII] ⏩ Advancing to gameplay state...");
             cutsceneChief.EnableAutoAdvance();
             cutsceneChief.AdvanceState();
-            Debug.Log("[ActGateII] ✅ State advanced to gameplay");
         }
 
-        // 8. Ekranı aç
-        Debug.Log("[ActGateII] ⚪ Black screen OFF - BAM!");
         HideBlackScreen();
 
-        // 9. Player'ı çöz
         if (playerController != null)
-        {
             playerController.UnfreezePlayer();
-            Debug.Log("[ActGateII] ✅ Player unfrozen");
-        }
-
-        Debug.Log("[ActGateII] ========== SEQUENCE END ==========");
     }
 
     private IEnumerator DelayedDialogShow()
     {
-        Debug.Log($"[ActGateII] ⏱️ Waiting {dialogShowDelay}s before showing dialog...");
         yield return new WaitForSeconds(dialogShowDelay);
-
         ShowDialog(npcDialogue);
 
         if (audioSource != null && dialogSfx != null)
-        {
             audioSource.PlayOneShot(dialogSfx);
-        }
 
-        Debug.Log("[ActGateII] ✅ Dialog shown!");
-        
-        // Dialog süresi kadar bekle, sonra otomatik gizle
         yield return new WaitForSeconds(dialogueDuration);
-        
         HideDialog();
-        Debug.Log($"[ActGateII] ✅ Dialog auto-hidden after {dialogueDuration}s");
     }
-
-    #region Dialog System
 
     private void ShowDialog(string text)
     {
         if (dialogCanvas != null)
-        {
             dialogCanvas.SetActive(true);
-        }
-
         if (dialogText != null)
-        {
             dialogText.text = text;
-        }
-
-        Debug.Log($"[ActGateII] 💬 NPC: {text}");
     }
 
     private void HideDialog()
     {
         if (dialogCanvas != null)
-        {
             dialogCanvas.SetActive(false);
-        }
     }
-
-    #endregion
-
-    #region Black Screen System
 
     private void CreateBlackScreen()
     {
@@ -328,20 +246,14 @@ public class ActGateII : MonoBehaviour
     private void ShowBlackScreen()
     {
         if (blackScreen != null)
-        {
             blackScreen.SetActive(true);
-        }
     }
 
     private void HideBlackScreen()
     {
         if (blackScreen != null)
-        {
             blackScreen.SetActive(false);
-        }
     }
-
-    #endregion
 
     private void OnDrawGizmosSelected()
     {
@@ -353,9 +265,6 @@ public class ActGateII : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(spawnPoint.position, 0.5f);
             Gizmos.DrawLine(transform.position, spawnPoint.position);
-
-            Vector3 direction = (spawnPoint.position - transform.position).normalized;
-            Gizmos.DrawRay(transform.position, direction * activationRadius);
         }
     }
 }

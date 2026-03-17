@@ -1,11 +1,11 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ActGateAdvance : MonoBehaviour
 {
     [Header("Activation Settings")]
     [SerializeField] private float activationRadius = 1.5f;
-    [SerializeField] private KeyCode interactionKey = KeyCode.E;
-    [SerializeField] private bool autoActivate = false; // true: yaklaşınca otomatik, false: E tuşu
+    [SerializeField] private bool autoActivate = false;
 
     [Header("UI")]
     [SerializeField] private GameObject pressELabel;
@@ -16,6 +16,22 @@ public class ActGateAdvance : MonoBehaviour
     private Transform player;
     private bool isPlayerNear = false;
     private bool hasBeenActivated = false;
+    private PlayerInputActions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+    }
+
+    private void OnEnable()
+    {
+        inputActions.Player.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Player.Disable();
+    }
 
     private void Start()
     {
@@ -45,7 +61,7 @@ public class ActGateAdvance : MonoBehaviour
 
         if (isPlayerNear)
         {
-            if (autoActivate || Input.GetKeyDown(interactionKey))
+            if (autoActivate || inputActions.Player.Interact.WasPressedThisFrame())
                 Activate();
         }
     }
@@ -58,15 +74,13 @@ public class ActGateAdvance : MonoBehaviour
         if (pressELabel != null)
             pressELabel.SetActive(false);
 
-        Debug.Log("[ActGateAdvance] AdvanceState called");
-
         if (cutsceneChief != null)
             cutsceneChief.AdvanceState();
     }
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;//
+        Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, activationRadius);
     }
 }

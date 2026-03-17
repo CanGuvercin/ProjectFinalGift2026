@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -14,10 +16,21 @@ public class PauseMenuManager : MonoBehaviour
     [Header("Settings Manager")]
     [SerializeField] private SettingsManager settingsManager;
     
+    [Header("Controller Navigation")]
+    [SerializeField] private Selectable firstSelected;
+    [SerializeField] private Button applyButton;
+    [SerializeField] private Button backButton;
+    
+    [Header("Player Input")]
+    [SerializeField] private PlayerInput playerInput; // YENİ
+    
     [Header("Pause Settings")]
     [SerializeField] private bool pauseGameWhenOpen = true;
     [SerializeField] private string mainMenuSceneName = "MainMenu";
     [SerializeField] private float inputCooldown = 0.2f;
+    [Header("Blur Effect")]
+    [SerializeField] private PauseBlurBackground blurBackground;
+
     
     private bool isPaused = false;
     private float lastInputTime = -999f;
@@ -35,83 +48,94 @@ public class PauseMenuManager : MonoBehaviour
         
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(false);
+        
+        // PlayerInput'u otomatik bul
+        if (playerInput == null)
+            playerInput = FindObjectOfType<PlayerInput>();
     }
     
     private void Update()
     {
-        // ESC tuşu - tek toggle
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Time.unscaledTime - lastInputTime < inputCooldown)
+            return;
+
+        bool pausePressed = Input.GetKeyDown(KeyCode.Escape);
+        
+        if (Gamepad.current != null)
         {
-            // Cooldown kontrolü
-            if (Time.unscaledTime - lastInputTime < inputCooldown)
+            if (Gamepad.current.startButton.wasPressedThisFrame)
+                pausePressed = true;
+            
+            if (isPaused && Gamepad.current.buttonEast.wasPressedThisFrame)
             {
+                lastInputTime = Time.unscaledTime;
+                Resume();
                 return;
             }
-            
+        }
+
+        if (pausePressed)
+        {
             lastInputTime = Time.unscaledTime;
             
-            // Basit toggle: açıksa kapat, kapalıysa aç
             if (isPaused)
-            {
                 Resume();
-            }
             else
-            {
                 Pause();
-            }
         }
     }
     
     private void Pause()
-    {
-        if (isPaused) return;
-        
-        Debug.Log("=== PAUSING ===");
-        isPaused = true;
-        
-        // Ana pause panel'i aç
-        if (pauseMenuPanel != null)
-        {
-            pauseMenuPanel.SetActive(true);
-        }
-        
-        // Settings'i aç
-        if (settingsManager != null)
-        {
-            settingsManager.OpenSettings();
-        }
-        
-        // Oyunu duraklat
-        if (pauseGameWhenOpen)
-        {
-            Time.timeScale = 0f;
-        }
-    }
+{
+    if (isPaused) return;
+    
+    Debug.Log("=== PAUSING ===");
+    isPaused = true;
+    
+    // 1. ÖNCE blur'u yakala
+    if (blurBackground != null)
+        blurBackground.CaptureAndBlur();
+    
+    // 2. Sonra diğer işlemler...
+    if (playerInput != null)
+        playerInput.enabled = false;
+    
+    if (pauseMenuPanel != null)
+        pauseMenuPanel.SetActive(true);
+    
+    if (settingsManager != null)
+        settingsManager.OpenSettings();
+    
+    if (pauseGameWhenOpen)
+        Time.timeScale = 0f;
+    
+    if (firstSelected != null && EventSystem.current != null)
+        EventSystem.current.SetSelectedGameObject(firstSelected.gameObject);
+}
     
     public void Resume()
     {
         if (!isPaused) return;
+
+        // Blur'u temizle
+        if (blurBackground != null)
+        blurBackground.ClearBlur();
         
         Debug.Log("=== RESUMING ===");
         isPaused = false;
         
-        // Settings'i kapat
         if (settingsManager != null)
-        {
             settingsManager.CloseSettings();
-        }
         
-        // Ana pause panel'i kapat
         if (pauseMenuPanel != null)
-        {
             pauseMenuPanel.SetActive(false);
-        }
         
-        // Oyunu devam ettir
         if (pauseGameWhenOpen)
-        {
             Time.timeScale = 1f;
-        }
+        
+        // Player input'u aç
+        if (playerInput != null)
+            playerInput.enabled = true;
     }
     
     private void ReturnToMainMenu()
@@ -119,6 +143,10 @@ public class PauseMenuManager : MonoBehaviour
         Debug.Log("Returning to main menu...");
         Time.timeScale = 1f;
         isPaused = false;
+        
+        if (playerInput != null)
+            playerInput.enabled = true;
+        
         SceneManager.LoadScene(mainMenuSceneName);
     }
     
@@ -137,16 +165,12 @@ public class PauseMenuManager : MonoBehaviour
     private void OnDestroy()
     {
         if (Time.timeScale != 1f)
-        {
             Time.timeScale = 1f;
-        }
     }
     
     private void OnApplicationQuit()
     {
         if (Time.timeScale != 1f)
-        {
             Time.timeScale = 1f;
-        }
     }
 }
