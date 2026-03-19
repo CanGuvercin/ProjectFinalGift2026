@@ -117,8 +117,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // Pause'dayken input okuma
-    if (Time.timeScale == 0f) return;
+        if (Time.timeScale == 0f) return;
         ReadInput();
         UpdateAnimator();
     }
@@ -329,7 +328,6 @@ public class PlayerController : MonoBehaviour
         PlaySfx(walkSfx, 0.9f, 1.05f);
     }
     public void PlayHurtSfx() => PlaySfx(hurtSfx, 0.95f, 1.05f);
-
     public void PlayPerryDeflectSfx() => PlaySfx(perryDeflectSfx, 0.95f, 1.05f);
 
     // ================= HITBOX / COMBAT ZONE =================
@@ -344,16 +342,12 @@ public class PlayerController : MonoBehaviour
             if (lastMoveDir.x > 0)
             {
                 if (hitBoxRight != null)
-                {
                     hitBoxRight.SetActive(true);
-                }
             }
             else
             {
                 if (hitBoxLeft != null)
-                {
                     hitBoxLeft.SetActive(true);
-                }
             }
         }
         else
@@ -361,16 +355,12 @@ public class PlayerController : MonoBehaviour
             if (lastMoveDir.y > 0)
             {
                 if (hitBoxUp != null)
-                {
                     hitBoxUp.SetActive(true);
-                }
             }
             else
             {
                 if (hitBoxDown != null)
-                {
                     hitBoxDown.SetActive(true);
-                }
             }
         }
     }
@@ -466,9 +456,7 @@ public class PlayerController : MonoBehaviour
         activePerryHitbox = GetActivePerryHitbox(lastMoveDir);
         
         if (activePerryHitbox != null)
-        {
             activePerryHitbox.SetActive(true);
-        }
 
         yield return new WaitForSeconds(perryActivationDelay);
 
@@ -481,9 +469,7 @@ public class PlayerController : MonoBehaviour
         isPerryActive = false;
         
         if (activePerryHitbox != null)
-        {
             activePerryHitbox.SetActive(false);
-        }
         
         activePerryHitbox = null;
         detectedBulletsInPerryZone.Clear();
@@ -500,68 +486,54 @@ public class PlayerController : MonoBehaviour
     private GameObject GetActivePerryHitbox(Vector2 direction)
     {
         if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
-        {
             return direction.x > 0 ? hitBoxRight : hitBoxLeft;
-        }
         else
-        {
             return direction.y > 0 ? hitBoxUp : hitBoxDown;
-        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
-{
-    // Sadece ismi "Bullet" veya "Projectile" içeren objeleri kabul et
-    bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
-                    && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
-    
-    if (isPerryActive && isBullet)
     {
-        if (IsColliderInActivePerryZone(collision))
+        bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
+                        && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
+        
+        if (isPerryActive && isBullet)
         {
-            detectedBulletsInPerryZone.Add(collision);
+            if (IsColliderInActivePerryZone(collision))
+                detectedBulletsInPerryZone.Add(collision);
         }
     }
-}
 
-private void OnTriggerStay2D(Collider2D collision)
-{
-    if (!isPerryActive || activePerryHitbox == null) return;
-
-    // Sadece ismi "Bullet" veya "Projectile" içeren objeleri kabul et
-    bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
-                    && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
-    
-    if (isBullet)
+    private void OnTriggerStay2D(Collider2D collision)
     {
-        if (alreadyDeflectedBullets.Contains(collision))
-        {
-            return;
-        }
+        if (!isPerryActive || activePerryHitbox == null) return;
+
+        bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
+                        && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
         
-        if (detectedBulletsInPerryZone.Contains(collision))
+        if (isBullet)
         {
-            if (!IsBulletTouchingPlayerBody(collision))
+            if (alreadyDeflectedBullets.Contains(collision))
+                return;
+            
+            if (detectedBulletsInPerryZone.Contains(collision))
             {
+                // Body check KALDIRILDI - perry aktifken zaten hasar almıyorsun
                 alreadyDeflectedBullets.Add(collision);
                 DeflectBullet(collision);
                 detectedBulletsInPerryZone.Remove(collision);
             }
         }
     }
-}
   
-private void OnTriggerExit2D(Collider2D collision)
-{
-    // Sadece ismi "Bullet" veya "Projectile" içeren objeleri kabul et
-    bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
-                    && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
-    
-    if (isBullet)
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        detectedBulletsInPerryZone.Remove(collision);
+        bool isBullet = (collision.CompareTag("Enemy") || collision.CompareTag("Bullet")) 
+                        && (collision.gameObject.name.Contains("Bullet") || collision.gameObject.name.Contains("Projectile"));
+        
+        if (isBullet)
+            detectedBulletsInPerryZone.Remove(collision);
     }
-}
+
     private bool IsColliderInActivePerryZone(Collider2D bullet)
     {
         if (activePerryHitbox == null) return false;
@@ -579,35 +551,30 @@ private void OnTriggerExit2D(Collider2D collision)
     }
 
     private void DeflectBullet(Collider2D bulletCollider)
-{
-    Rigidbody2D bulletRb = bulletCollider.GetComponent<Rigidbody2D>();
-    if (bulletRb == null) return;
-
-    Vector2 incomingDirection = bulletRb.velocity.normalized;
-    Vector2 reflectDirection = -incomingDirection;
-
-    // Bullet'ı yok et
-    Destroy(bulletCollider.gameObject);
-
-    if (bulletPlusPrefab == null) return;
-
-    // Player'ın capsule collider merkezinden spawn et
-    Vector3 spawnPos = playerBodyCollider != null 
-        ? playerBodyCollider.bounds.center 
-        : transform.position;
-
-    GameObject reflectedBullet = Instantiate(bulletPlusPrefab, spawnPos, Quaternion.identity);
-    
-    Rigidbody2D reflectedRb = reflectedBullet.GetComponent<Rigidbody2D>();
-    if (reflectedRb != null)
     {
-        reflectedRb.velocity = reflectDirection * bulletReflectSpeed;
+        Rigidbody2D bulletRb = bulletCollider.GetComponent<Rigidbody2D>();
+        if (bulletRb == null) return;
+
+        Vector2 incomingDirection = bulletRb.velocity.normalized;
+        Vector2 reflectDirection = -incomingDirection;
+
+        Destroy(bulletCollider.gameObject);
+
+        if (bulletPlusPrefab == null) return;
+
+        Vector3 spawnPos = playerBodyCollider != null 
+            ? playerBodyCollider.bounds.center 
+            : transform.position;
+
+        GameObject reflectedBullet = Instantiate(bulletPlusPrefab, spawnPos, Quaternion.identity);
+        
+        Rigidbody2D reflectedRb = reflectedBullet.GetComponent<Rigidbody2D>();
+        if (reflectedRb != null)
+            reflectedRb.velocity = reflectDirection * bulletReflectSpeed;
+
+        PlayPerryDeflectSfx();
     }
 
-    // Perry deflect SFX çal
-    PlayPerryDeflectSfx();
-}
-//
     // ================= ATTACK =================
 
     private void TryAttack()
@@ -654,21 +621,13 @@ private void OnTriggerExit2D(Collider2D collision)
         Vector2 nudgeDirection;
         
         if (attackCounter % 4 == 1)
-        {
             nudgeDirection = Vector2.right;
-        }
         else if (attackCounter % 4 == 2)
-        {
             nudgeDirection = Vector2.left;
-        }
         else if (attackCounter % 4 == 3)
-        {
             nudgeDirection = Vector2.right;
-        }
         else
-        {
             nudgeDirection = Vector2.left;
-        }
         
         Vector3 newPos = transform.position + (Vector3)(nudgeDirection * nudgeAmount);
         transform.position = newPos;
@@ -732,15 +691,11 @@ private void OnTriggerExit2D(Collider2D collision)
     public void PlaySlashVFX()
     {
         if (slashVFXAnimator == null)
-        {
             return;
-        }
         
         AnimatorStateInfo stateInfo = slashVFXAnimator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.IsName("SlashBlendTree") && stateInfo.normalizedTime < 0.9f)
-        {
             return;
-        }
         
         slashVFXAnimator.SetFloat("moveX", lastMoveDir.x);
         slashVFXAnimator.SetFloat("moveY", lastMoveDir.y);

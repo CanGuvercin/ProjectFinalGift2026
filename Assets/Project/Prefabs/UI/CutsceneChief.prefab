@@ -450,12 +450,14 @@ MonoBehaviour:
     ambientMusic: {fileID: 8300000, guid: bcc871061b70879459395db73b95e70d, type: 3}
     musicVolume: 0.5
     fadeMusic: 1
-  currentState: 18
+  currentState: 19
   saveKey: GameState
   musicSource: {fileID: 752455669889845466}
   fadeDuration: 1.5
   gameSavedCanvas: {fileID: 0}
   endCreditsDelay: 23
+  debugStateNumberText: {fileID: 0}
+  debugStateNameText: {fileID: 0}
 --- !u!82 &752455669889845466
 AudioSource:
   m_ObjectHideFlags: 0

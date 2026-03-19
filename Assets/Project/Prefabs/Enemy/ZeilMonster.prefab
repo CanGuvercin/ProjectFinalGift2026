@@ -154,7 +154,7 @@ MonoBehaviour:
   animator: {fileID: 4731970726825484848}
   rb: {fileID: 9057926300885829598}
   player: {fileID: 0}
-  maxHealth: 800
+  maxHealth: 500
   bossHealthBarRoot: {fileID: 0}
   healthBarBG: {fileID: 0}
   healthBarFill: {fileID: 0}
@@ -194,12 +194,12 @@ MonoBehaviour:
   slimeShootingMoveSpeed: 0.5
   megaBulletInterval: 3
   maxActiveMegaBullets: 2
-  chargeSpeed: 15
-  chargeMaxDuration: 2
+  chargeSpeed: 25
+  chargeMaxDuration: 3
   chargeTelegraphDelay: 0.15
   chargeRotationSpeed: 720
   rotationResetSpeed: 5
-  chargesPerCycle: 3
+  chargesPerCycle: 2
   chargeDamage: 40
   telegraphDuration: 0.3
   obstacleLayer:

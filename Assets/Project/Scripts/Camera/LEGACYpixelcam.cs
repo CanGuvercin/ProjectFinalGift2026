@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections;
 
 [RequireComponent(typeof(Camera))]
-public class PixelPerfectCameraController : MonoBehaviour
+public class LEGACYpixelcam : MonoBehaviour
 {
     [Header("Target")]
     [SerializeField] private Transform target;
@@ -11,10 +10,6 @@ public class PixelPerfectCameraController : MonoBehaviour
     [Header("Follow")]
     [SerializeField] private float followSpeed = 3f;
     [SerializeField] private Vector3 offset = new Vector3(0, 0, -10);
-    
-    [Header("Lookahead")]
-    [SerializeField] private float lookaheadDistance = 2f;
-    [SerializeField] private float lookaheadSpeed = 3f;
     
     [Header("Pixel Perfect")]
     [SerializeField] private int pixelsPerUnit = 16;
@@ -25,7 +20,7 @@ public class PixelPerfectCameraController : MonoBehaviour
     [SerializeField] private float zoomSpeed = 8f;
     [SerializeField] private float attackZoomOut = 1.05f;
     [SerializeField] private float hitZoomStep = 0.05f;
-    [SerializeField] private int maxHitCombo = 3;
+    [SerializeField] private int maxHitCombo = 3;//
     
     [Header("Shake Reference (Parent)")]
     [SerializeField] private CameraShake cameraShake;
@@ -37,65 +32,25 @@ public class PixelPerfectCameraController : MonoBehaviour
     private int screenHeight;
     private float unitsPerPixel;
     private float baseOrthographicSize;
-    
-    // Lookahead
-    private Rigidbody2D targetRb;
-    private Vector2 currentLookahead;
 
     private void Awake()
     {
         cam = GetComponent<Camera>();
         
+        if (target == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) target = player.transform;
+        }
+        
+        // Parent'tan CameraShake bul
         if (cameraShake == null)
+        {
             cameraShake = GetComponentInParent<CameraShake>();
+        }
         
         CalculatePixelPerfectSize();
         targetZoom = baseZoom;
-    }
-    
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-    
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-    
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // Scene yüklendiğinde referansları sıfırla
-        StartCoroutine(RefreshTargetDelayed());
-    }
-    
-    private IEnumerator Start()
-    {
-        yield return null;
-        FindTarget();
-    }
-    
-    private IEnumerator RefreshTargetDelayed()
-    {
-        // Yeni Player'ın spawn olmasını bekle
-        yield return null;
-        yield return null;
-        
-        target = null;
-        targetRb = null;
-        currentLookahead = Vector2.zero;
-        
-        FindTarget();
-    }
-    
-    private void FindTarget()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            target = player.transform;
-            targetRb = player.GetComponent<Rigidbody2D>();
-        }
     }
     
     private void CalculatePixelPerfectSize()
@@ -104,42 +59,25 @@ public class PixelPerfectCameraController : MonoBehaviour
         unitsPerPixel = 1f / pixelsPerUnit;
         baseOrthographicSize = (referenceResolutionY / 2f) * unitsPerPixel;
         cam.orthographicSize = baseOrthographicSize * baseZoom;
-    }
+        
+            }
 
     private void LateUpdate()
     {
-        // Target null veya destroyed ise tekrar bul
-        if (target == null)
-        {
-            FindTarget();
-            if (target == null) return;
-        }
-        
-        // targetRb null ise tekrar al
-        if (targetRb == null)
-            targetRb = target.GetComponent<Rigidbody2D>();
+        if (target == null) return;
         
         // 1. Zoom hesapla (smooth)
         float desiredSize = baseOrthographicSize * targetZoom;
         cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, desiredSize, zoomSpeed * Time.deltaTime);
         
-        // 2. Lookahead hesapla
-        Vector2 targetLookahead = Vector2.zero;
-        if (targetRb != null && targetRb.velocity.sqrMagnitude > 0.01f)
-        {
-            targetLookahead = targetRb.velocity.normalized * lookaheadDistance;
-        }
-        currentLookahead = Vector2.Lerp(currentLookahead, targetLookahead, lookaheadSpeed * Time.deltaTime);
-        
-        // 3. Follow target + lookahead
-        Vector3 lookaheadOffset = new Vector3(currentLookahead.x, currentLookahead.y, 0);
-        Vector3 targetPos = target.position + offset + lookaheadOffset;
+        // 2. Follow target
+        Vector3 targetPos = target.position + offset;
         Vector3 smoothPos = Vector3.Lerp(transform.position, targetPos, followSpeed * Time.deltaTime);
         
-        // 4. Pixel snap position
+        // 3. Pixel snap position
         Vector3 snappedPos = SnapToPixelGrid(smoothPos);
         
-        // 5. Pozisyonu ayarla
+        // 4. Pozisyonu ayarla (shake parent'ta yapılıyor)
         transform.position = snappedPos;
     }
     
