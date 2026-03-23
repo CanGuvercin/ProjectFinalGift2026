@@ -38162,37 +38162,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: target
-      value: 
-      objectReference: {fileID: 1603027728}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: followSpeed
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: pixelsPerUnit
-      value: 16
-      objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: referenceResolutionY
-      value: 180
-      objectReference: {fileID: 0}
     - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
       propertyPath: m_Name
       value: CamRootV2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_TagString
-      value: MainCamera
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -38245,6 +38217,8 @@ MonoBehaviour:
   target: {fileID: 1603027728}
   followSpeed: 2
   offset: {x: 0, y: 0, z: -10}
+  lookaheadDistance: 2
+  lookaheadSpeed: 3
   pixelsPerUnit: 16
   referenceResolutionY: 180
   baseZoom: 1

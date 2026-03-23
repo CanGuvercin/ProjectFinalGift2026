@@ -16151,7 +16151,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactionRadius: 3
-  interactKey: 101
   promptUI: {fileID: 163968298}
   promptText: {fileID: 0}
   collectMessage: Press E to Collect Key
@@ -38916,11 +38915,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4864609980641263158, guid: 451fd35f7027abe4eabf6c5326c08316, type: 3}
   m_PrefabInstance: {fileID: 1576925579}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1603027728 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6024420791389536263, guid: c6d948a8766677b44a7b94ca59a9d033, type: 3}
-  m_PrefabInstance: {fileID: 486484134}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1658495871
 GameObject:
   m_ObjectHideFlags: 0
@@ -39575,18 +39569,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 5699365754830953745, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_BackGroundColor.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699365754830953745, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_BackGroundColor.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699365754830953745, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_BackGroundColor.r
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6922136216768008664, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -39627,37 +39609,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: target
-      value: 
-      objectReference: {fileID: 1603027728}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: followSpeed
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: pixelsPerUnit
-      value: 16
-      objectReference: {fileID: 0}
-    - target: {fileID: 7267673894438026873, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: referenceResolutionY
-      value: 180
-      objectReference: {fileID: 0}
     - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
       propertyPath: m_Name
       value: CamRootV2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8055659313630892190, guid: ae8213c3f6454d54b909d1cf96a4c812, type: 3}
-      propertyPath: m_TagString
-      value: MainCamera
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

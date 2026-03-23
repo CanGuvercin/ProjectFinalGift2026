@@ -162,10 +162,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  followSpeed: 2
+  followSpeed: 12
   offset: {x: 0, y: 0, z: -10}
-  lookaheadDistance: 2
-  lookaheadSpeed: 3
+  lookaheadDistance: 0
+  lookaheadSpeed: 0
   pixelsPerUnit: 16
   referenceResolutionY: 180
   baseZoom: 1
